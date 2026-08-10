@@ -92,8 +92,14 @@
   }
   .nav-social-btn:hover{background:var(--gold);color:var(--navy);}
 
-  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;}
-  .burger span{width:24px;height:2px;background:#f5f1e8;display:block;}
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;position:relative;width:40px;height:40px;align-items:center;justify-content:center;}
+  .burger span{width:22px;height:2px;background:#f5f1e8;display:block;position:absolute;transition:transform .3s ease,opacity .2s ease,top .3s ease;}
+  .burger span:nth-child(1){top:14px;}
+  .burger span:nth-child(2){top:19px;}
+  .burger span:nth-child(3){top:24px;}
+  .burger[aria-expanded="true"] span:nth-child(1){top:19px;transform:rotate(45deg);}
+  .burger[aria-expanded="true"] span:nth-child(2){opacity:0;}
+  .burger[aria-expanded="true"] span:nth-child(3){top:19px;transform:rotate(-45deg);}
 
   #mobile-nav{
     position:fixed;inset:76px 0 0 0;background:var(--navy);z-index:99;
@@ -130,8 +136,8 @@
     position:relative;overflow:hidden;
   }
   .hero-top{
-    padding:56px 0 64px;position:relative;z-index:1;
-    display:flex;align-items:center;gap:56px;
+    padding:36px 0 56px;position:relative;z-index:1;
+    display:flex;align-items:flex-start;gap:56px;
   }
   .hero-text{flex:1.05;min-width:0;}
   .hero-photo{
@@ -141,8 +147,11 @@
   }
   .hero-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   @media(max-width:900px){
-    .hero-top{flex-direction:column;gap:36px;}
-    .hero-photo{order:-1;width:100%;}
+    .hero-top{flex-direction:column;gap:24px;padding-top:8px;}
+    .hero-photo{width:100%;aspect-ratio:3/2;order:-1;}
+  }
+  @media(max-width:520px){
+    .hero-photo{aspect-ratio:4/3;}
   }
   .eyebrow{
     font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);
@@ -292,8 +301,8 @@
     </nav>
     <a href="join.html" class="nav-cta">入部案内</a>
     <div class="nav-social">
-      <a href="#" class="nav-social-btn" aria-label="X（旧Twitter）">X</a>
-      <a href="#" class="nav-social-btn" aria-label="Instagram">Instagram</a>
+      <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
+      <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
     </div>
     <button class="burger" id="burgerBtn" aria-label="メニューを開く" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -310,10 +319,10 @@
   <a href="obog.html"><span class="num">06</span>OB・OG会サイト</a>
   <a href="join.html"><span class="num">07</span>入部案内</a>
   <div class="mobile-nav-social">
-    <a href="#">X（旧Twitter）</a>
-    <a href="#">Instagram</a>
+    <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
+    <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
   </div>
-  <p style="padding:14px 4px 0;font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);">お問い合わせはDMでお願いします</p>
+  <p style="padding:14px 4px 0;font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);">お問い合わせはDMまで</p>
 </div>
 
 <main>
@@ -325,7 +334,7 @@
         <span class="eyebrow">AICHI UNIVERSITY OF EDUCATION</span>
         <h1 class="headline">その本気が、<br><em>自分</em>を変える。</h1>
         <p class="hero-sub">
-          愛知教育大学陸上競技部の公式サイトです。短距離・中長距離・フィールドの3ブロックに分かれ、それぞれの種目で自己ベストを追い続ける部員たちの活動、記録、そして仲間を紹介しています。
+          愛知教育大学陸上競技部の公式サイトです。挑戦し続ける部員たちの活動を発信しています。
         </p>
         <div class="hero-actions">
           <a href="join.html" class="btn btn-gold">入部案内を見る →</a>
@@ -346,8 +355,7 @@
         <h2 class="section-title">自分史上、<br>最高へ。</h2>
         <p class="about-lead" style="margin-top:28px;">
           愛知教育大学陸上競技部は、<strong>短距離・中長距離・フィールドの3ブロックに分かれ</strong>、
-          個々の目標に向けて日々練習に励んでいます。競技経験の有無を問わず、初心者から大会入賞を目指す選手まで、
-          それぞれのペースで「本気」を追える環境があります。
+          個々の目標に向けて日々練習に励んでいます。競技経験の有無を問わず、それぞれのペースで「本気」を追える環境があります。
         </p>
         <ul class="about-list">
           <li><b>活動ブロック</b><span>短距離ブロック・中長距離ブロック・フィールドブロック</span></li>
@@ -366,15 +374,15 @@
     <div class="wrap">
       <div class="lane-list">
         <a class="lane-card" href="index.html" data-reveal>
-          <span class="lane-name">ホーム<span class="lane-desc">部の紹介と最新情報をまとめたトップページ</span></span>
+          <span class="lane-name">ホーム<span class="lane-desc">部の紹介と最新情報</span></span>
           <span class="lane-arrow">→</span>
         </a>
         <a class="lane-card" href="blog.html" data-reveal>
-          <span class="lane-name">ブログ<span class="lane-desc">大会レポートや行事を更新</span></span>
+          <span class="lane-name">ブログ<span class="lane-desc">日々の活動の様子を発信</span></span>
           <span class="lane-arrow">→</span>
         </a>
         <a class="lane-card" href="records.html" data-reveal>
-          <span class="lane-name">愛教大10傑<span class="lane-desc">種目別・歴代トップ10記録一覧</span></span>
+          <span class="lane-name">愛教大10傑<span class="lane-desc">種目別・歴代トップ10を掲載</span></span>
           <span class="lane-arrow">→</span>
         </a>
         <a class="lane-card" href="links.html" data-reveal>
@@ -386,18 +394,18 @@
           <span class="lane-arrow">→</span>
         </a>
         <a class="lane-card" href="obog.html" data-reveal>
-          <span class="lane-name">OB・OG会サイト<span class="lane-desc">卒業生ネットワーク</span></span>
+          <span class="lane-name">OB・OG会サイト<span class="lane-desc">卒部生ネットワーク</span></span>
           <span class="lane-arrow">→</span>
         </a>
         <a class="lane-card" href="join.html" data-reveal>
           <span class="lane-name">入部案内<span class="lane-desc">入部を考えている方へ</span></span>
           <span class="lane-arrow">→</span>
         </a>
-        <a class="lane-card" href="#" data-reveal>
-          <span class="lane-name">X（旧Twitter）<span class="lane-desc">大会結果や最新情報を発信</span></span>
+        <a class="lane-card" href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" data-reveal>
+          <span class="lane-name">X(旧Twitter)<span class="lane-desc">大会結果や最新情報を発信</span></span>
           <span class="lane-arrow">→</span>
         </a>
-        <a class="lane-card" href="#" data-reveal>
+        <a class="lane-card" href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener" data-reveal>
           <span class="lane-name">Instagram<span class="lane-desc">練習や大会の様子を発信</span></span>
           <span class="lane-arrow">→</span>
         </a>
@@ -445,9 +453,9 @@
       </div>
       <div class="footer-col">
         <h4>FOLLOW</h4>
-        <a href="#">X（旧Twitter）</a>
-        <a href="#">Instagram</a>
-        <p style="color:var(--paper-dim);margin-top:8px;">お問い合わせはDMでお願いします</p>
+        <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
+        <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
+        <p style="color:var(--paper-dim);margin-top:8px;">お問い合わせはDMまで</p>
       </div>
     </div>
     <div class="footer-bottom">

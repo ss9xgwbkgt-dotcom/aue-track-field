@@ -55,8 +55,14 @@
     padding:9px 14px;border-radius:20px;transition:background .2s,color .2s;
   }
   .nav-social-btn:hover{background:var(--gold);color:var(--navy);}
-  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;}
-  .burger span{width:24px;height:2px;background:#f5f1e8;display:block;}
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;position:relative;width:40px;height:40px;align-items:center;justify-content:center;}
+  .burger span{width:22px;height:2px;background:#f5f1e8;display:block;position:absolute;transition:transform .3s ease,opacity .2s ease,top .3s ease;}
+  .burger span:nth-child(1){top:14px;}
+  .burger span:nth-child(2){top:19px;}
+  .burger span:nth-child(3){top:24px;}
+  .burger[aria-expanded="true"] span:nth-child(1){top:19px;transform:rotate(45deg);}
+  .burger[aria-expanded="true"] span:nth-child(2){opacity:0;}
+  .burger[aria-expanded="true"] span:nth-child(3){top:19px;transform:rotate(-45deg);}
   #mobile-nav{
     position:fixed;inset:76px 0 0 0;background:var(--navy);z-index:99;padding:12px 20px 40px;overflow-y:auto;
     transform:translateY(-100%);opacity:0;visibility:hidden;
@@ -128,8 +134,8 @@
     </nav>
     <a href="join.html" class="nav-cta">入部案内</a>
     <div class="nav-social">
-      <a href="#" class="nav-social-btn" aria-label="X（旧Twitter）">X</a>
-      <a href="#" class="nav-social-btn" aria-label="Instagram">Instagram</a>
+      <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X</a>
+      <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
     </div>
     <button class="burger" id="burgerBtn" aria-label="メニューを開く" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
@@ -144,10 +150,10 @@
   <a href="obog.html"><span class="num">06</span>OB・OG会サイト</a>
   <a href="join.html"><span class="num">07</span>入部案内</a>
   <div class="mobile-nav-social">
-    <a href="#">X（旧Twitter）</a>
-    <a href="#">Instagram</a>
+    <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X</a>
+    <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
   </div>
-  <p style="padding:14px 4px 0;font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);">お問い合わせはDMでお願いします</p>
+  <p style="padding:14px 4px 0;font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);">お問い合わせはDMまで</p>
 </div>
 
 <section class="page-hero">
@@ -161,11 +167,12 @@
 <div class="filters">
   <div class="wrap filter-list" id="filterList">
     <a href="#" class="active" data-filter="すべて">すべて</a>
-    <a href="#" data-filter="試合">試合</a>
+    <a href="#" data-filter="大会">大会</a>
     <a href="#" data-filter="練習日誌">練習日誌</a>
     <a href="#" data-filter="お知らせ">お知らせ</a>
-    <a href="#" data-filter="新入部員">新入部員</a>
+    <a href="#" data-filter="部員紹介">部員紹介</a>
     <a href="#" data-filter="行事">行事</a>
+    <a href="#" data-filter="その他">その他</a>
   </div>
 </div>
 
@@ -173,10 +180,10 @@
   <div class="wrap">
     <div class="post-list">
 
-      <a class="post-card" id="post-taikai-800" href="#post-taikai-800" data-category="試合">
+      <a class="post-card" id="post-taikai-800" href="#post-taikai-800" data-category="大会">
         <span class="post-date">2026.07.28</span>
         <span>
-          <span class="post-cat">試合</span>
+          <span class="post-cat">大会</span>
           <h2 class="post-title">東海学生選手権 男子800mで部員が自己ベスト更新</h2>
           <p class="post-excerpt">中長距離ブロックの3年生が予選から積極的なレース運びを見せ、自己ベストを1秒近く更新。決勝進出とはなりませんでしたが、チーム全体の士気につながる走りとなりました。</p>
         </span>
@@ -193,20 +200,20 @@
         <span class="post-arrow">→</span>
       </a>
 
-      <a class="post-card" id="post-taiken" href="#post-taiken" data-category="新入部員">
+      <a class="post-card" id="post-taiken" href="#post-taiken" data-category="部員紹介">
         <span class="post-date">2026.06.02</span>
         <span>
-          <span class="post-cat">新入部員</span>
+          <span class="post-cat">部員紹介</span>
           <h2 class="post-title">体験練習会を開催しました（参加レポート）</h2>
           <p class="post-excerpt">陸上競技場にて新入生向けの体験練習会を実施。短距離・中長距離・フィールドの3ブロックそれぞれのメニューを体験してもらい、部の雰囲気を知ってもらう機会になりました。</p>
         </span>
         <span class="post-arrow">→</span>
       </a>
 
-      <a class="post-card" id="post-kirokukai" href="#post-kirokukai" data-category="試合">
+      <a class="post-card" id="post-kirokukai" href="#post-kirokukai" data-category="大会">
         <span class="post-date">2026.05.18</span>
         <span>
-          <span class="post-cat">試合</span>
+          <span class="post-cat">大会</span>
           <h2 class="post-title">春季記録会 フィールドブロックが好調な仕上がり</h2>
           <p class="post-excerpt">走幅跳・砲丸投で自己ベストが続出。シーズン序盤から順調な仕上がりを見せています。</p>
         </span>
@@ -217,8 +224,8 @@
         <span class="post-date">2026.04.09</span>
         <span>
           <span class="post-cat">行事</span>
-          <h2 class="post-title">新学期スタート。新入部員を迎えて全体練習を再開</h2>
-          <p class="post-excerpt">新年度がスタートし、新入部員を迎えて全体でのアップから練習を再開しました。</p>
+          <h2 class="post-title">新学期スタート。部員紹介を迎えて全体練習を再開</h2>
+          <p class="post-excerpt">新年度がスタートし、部員紹介を迎えて全体でのアップから練習を再開しました。</p>
         </span>
         <span class="post-arrow">→</span>
       </a>
@@ -249,9 +256,9 @@
       </div>
       <div class="footer-col">
         <h4>FOLLOW</h4>
-        <a href="#">X（旧Twitter）</a>
-        <a href="#">Instagram</a>
-        <p style="color:var(--paper-dim);margin-top:8px;">お問い合わせはDMでお願いします</p>
+        <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X</a>
+        <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
+        <p style="color:var(--paper-dim);margin-top:8px;">お問い合わせはDMまで</p>
       </div>
     </div>
     <div class="footer-bottom">
