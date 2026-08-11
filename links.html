@@ -155,19 +155,30 @@
   .footer-bottom{padding-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--f-mono);font-size:12px;color:var(--paper-dim);}
   @media(max-width:860px){.footer-grid{grid-template-columns:1fr 1fr;}}
   @media(max-width:520px){.footer-grid{grid-template-columns:1fr;}}
+
+  .records-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .records-modal[hidden]{display:none;}
+  .records-modal-backdrop{position:absolute;inset:0;background:rgba(24,28,38,0.72);}
+  .records-modal-box{position:relative;background:#fff;border-radius:6px;max-width:900px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+  .records-modal-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:1px solid var(--cream-line);background:#fff;font-size:18px;line-height:1;cursor:pointer;z-index:2;}
+  .records-modal-body{flex:1;overflow:auto;}
+  .records-modal-body iframe{width:100%;height:80vh;border:0;display:block;}
+  .records-modal-body img{width:100%;display:block;}
+  .records-modal-fallback{padding:50px 30px;text-align:center;font-family:var(--f-mono);font-size:13px;color:var(--ink-dim);}
+  .records-modal-fallback .btn{display:inline-block;margin-top:16px;font-family:var(--f-display);font-size:13px;background:var(--rust);color:#fff;padding:11px 22px;border-radius:4px;text-decoration:none;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="nav-inner">
-    <a href="index.html" class="brand">
+    <a href="admin.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
-      <a href="records.html">愛教大10傑</a>
+      <a href="records.html" class="records-link">愛教大10傑</a>
       <a href="links.html" class="active">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
@@ -184,11 +195,11 @@
 <div id="mobile-nav">
   <a href="index.html"><span class="num">01</span>ホーム</a>
   <a href="blog.html"><span class="num">02</span>ブログ</a>
-  <a href="records.html"><span class="num">03</span>愛教大10傑</a>
-  <a href="links.html"><span class="num">04</span>リンク集</a>
+  <a href="records.html" class="records-link"><span class="num">03</span>愛教大10傑</a>
+  <a href="join.html"><span class="num">04</span>入部案内</a>
   <a href="documents.html"><span class="num">05</span>各種資料</a>
-  <a href="obog.html"><span class="num">06</span>OB・OG会サイト</a>
-  <a href="join.html"><span class="num">07</span>入部案内</a>
+  <a href="links.html"><span class="num">06</span>リンク集</a>
+  <a href="obog.html"><span class="num">07</span>OB・OG会サイト</a>
   <div class="mobile-nav-social">
     <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
     <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
@@ -502,7 +513,7 @@
         <h4>SITE</h4>
         <a href="index.html">ホーム</a>
         <a href="blog.html">ブログ</a>
-        <a href="records.html">愛教大10傑</a>
+        <a href="records.html" class="records-link">愛教大10傑</a>
         <a href="links.html">リンク集</a>
       </div>
       <div class="footer-col">
@@ -545,6 +556,7 @@
   } else {
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
+
 </script>
 
 </body>

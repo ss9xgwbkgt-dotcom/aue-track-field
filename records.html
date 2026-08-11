@@ -3,25 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ブログ｜愛知教育大学 陸上競技部</title>
+<title>愛教大10傑｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#181c26;
-    --navy-soft:#20242f;
-    --rust:#b8402b;
-    --rust-dark:#8c2f1f;
-    --olive:#3e5233;
-    --gold:#d3a548;
-    --gold-soft:rgba(211,165,72,0.4);
-    --cream:#f5f1e8;
-    --cream-line:rgba(24,28,38,0.12);
-    --ink:#181c26;
-    --ink-dim:rgba(24,28,38,0.6);
-    --paper-dim:rgba(245,241,232,0.68);
-    --line-on-dark:rgba(245,241,232,0.22);
-
+    --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
+    --olive:#3e5233;--gold:#d3a548;--gold-soft:rgba(211,165,72,0.4);
+    --cream:#f5f1e8;--cream-line:rgba(24,28,38,0.12);--ink:#181c26;--ink-dim:rgba(24,28,38,0.6);
+    --paper-dim:rgba(245,241,232,0.68);--line-on-dark:rgba(245,241,232,0.22);
     --f-display:'Oswald','Zen Kaku Gothic New',sans-serif;
     --f-body:'Noto Sans JP','Zen Kaku Gothic New',sans-serif;
     --f-mono:'Roboto Mono',monospace;
@@ -30,14 +20,12 @@
   html{scroll-behavior:smooth;}
   body{background:var(--cream);color:var(--ink);font-family:var(--f-body);line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
   a{color:inherit;text-decoration:none;}
-  ul{list-style:none;}
   .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
   @media(max-width:640px){.wrap{padding:0 20px;}}
 
   header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(24,28,38,0.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--gold-soft);}
   .nav-inner{max-width:1180px;margin:0 auto;padding:0 28px;height:76px;display:flex;align-items:center;justify-content:space-between;color:#f5f1e8;}
   .brand{display:flex;align-items:center;gap:12px;}
-  .brand-mark{width:38px;height:38px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-weight:700;font-size:12px;color:var(--gold);flex-shrink:0;}
   .brand-text{font-family:var(--f-display);font-weight:600;letter-spacing:0.03em;font-size:15px;line-height:1.3;}
   .brand-text small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.14em;color:var(--gold);font-weight:400;margin-top:3px;}
   nav.primary{display:flex;gap:2px;}
@@ -49,11 +37,7 @@
   .nav-cta{font-family:var(--f-display);font-size:13px;letter-spacing:0.05em;background:var(--gold);color:var(--navy);padding:10px 20px;border-radius:2px;transition:filter .2s;}
   .nav-cta:hover{filter:brightness(1.08);}
   .nav-social{display:flex;align-items:center;gap:8px;margin-left:10px;}
-  .nav-social-btn{
-    font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;
-    border:1px solid var(--gold-soft);color:var(--gold);
-    padding:9px 14px;border-radius:20px;transition:background .2s,color .2s;
-  }
+  .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;border:1px solid var(--gold-soft);color:var(--gold);padding:9px 14px;border-radius:20px;transition:background .2s,color .2s;}
   .nav-social-btn:hover{background:var(--gold);color:var(--navy);}
   .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;position:relative;width:40px;height:40px;align-items:center;justify-content:center;}
   .burger span{width:22px;height:2px;background:#f5f1e8;display:block;position:absolute;transition:transform .3s ease,opacity .2s ease,top .3s ease;}
@@ -68,14 +52,8 @@
     transform:translateY(-100%);opacity:0;visibility:hidden;
     transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease,visibility 0s linear .38s;
   }
-  #mobile-nav.open{
-    transform:translateY(0);opacity:1;visibility:visible;
-    transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease,visibility 0s linear 0s;
-  }
-  @media(prefers-reduced-motion:reduce){
-    #mobile-nav{transition:none;}
-    #mobile-nav.open{transition:none;}
-  }
+  #mobile-nav.open{transform:translateY(0);opacity:1;visibility:visible;transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease,visibility 0s linear 0s;}
+  @media(prefers-reduced-motion:reduce){#mobile-nav{transition:none;}#mobile-nav.open{transition:none;}}
   #mobile-nav a{display:flex;align-items:baseline;gap:14px;padding:18px 4px;color:#f5f1e8;border-bottom:1px solid var(--line-on-dark);font-family:var(--f-display);font-size:20px;letter-spacing:0.03em;}
   #mobile-nav a span.num{font-family:var(--f-mono);color:var(--gold);font-size:13px;}
   .mobile-nav-social{display:flex;gap:18px;padding:20px 4px;}
@@ -86,35 +64,29 @@
   .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;}
   .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold);}
   h1.page-title{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,52px);letter-spacing:0.005em;}
-  .page-sub{margin-top:16px;max-width:52ch;color:var(--paper-dim);font-size:14px;line-height:1.9;}
+  .page-sub{margin-top:16px;max-width:56ch;color:var(--paper-dim);font-size:14px;line-height:1.9;}
 
-  .filters{background:var(--navy);padding:20px 0;border-bottom:1px solid var(--line-on-dark);}
-  .filter-list{display:flex;gap:10px;flex-wrap:wrap;}
-  .filter-list a{font-family:var(--f-mono);font-size:12px;letter-spacing:0.05em;color:var(--paper-dim);border:1px solid var(--line-on-dark);padding:8px 16px;border-radius:20px;transition:.2s;}
-  .filter-list a.active,.filter-list a:hover{color:var(--navy);background:var(--gold);border-color:var(--gold);}
+  main{padding:64px 0 100px;}
 
-  main{padding:80px 0 100px;}
-  .post-list{display:flex;flex-direction:column;border-top:1px solid var(--cream-line);}
-  .post-card{border-bottom:1px solid var(--cream-line);position:relative;}
-  .post-card::before{content:"";position:absolute;left:-4px;top:0;bottom:0;width:0;background:var(--rust);transition:width .25s;}
-  .post-card:hover::before,.post-card.open::before{width:4px;}
-  .post-toggle{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;width:100%;padding:26px 4px;background:none;border:0;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background .2s;}
-  .post-toggle:hover{background:rgba(184,64,43,0.05);}
-  .post-title{font-family:var(--f-display);font-size:clamp(18px,2.2vw,23px);font-weight:600;color:var(--navy);line-height:1.5;}
-  .post-arrow{font-family:var(--f-mono);font-size:20px;color:var(--ink-dim);transition:transform .25s,color .2s;flex-shrink:0;}
-  .post-card.open .post-arrow{transform:rotate(90deg);color:var(--rust);}
-  .post-body{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;padding:0 4px;}
-  .post-card.open .post-body{max-height:1400px;padding:0 4px 26px;}
-  .post-meta{display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
-  .post-date{font-family:var(--f-mono);font-size:12px;color:var(--rust);}
-  .post-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.06em;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:20px;}
-  .post-excerpt{font-size:13px;color:var(--ink-dim);max-width:60ch;line-height:1.85;}
-  .post-image{width:100%;max-width:520px;border-radius:6px;display:block;margin-bottom:14px;}
-  .post-attachment{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 14px;margin-bottom:14px;text-decoration:none;transition:border-color .2s;}
-  .post-attachment:hover{border-color:var(--rust);}
-  .post-attachment-icon{font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--olive);background:var(--cream);border:1px solid var(--cream-line);border-radius:4px;padding:4px 8px;}
-  .post-attachment-name{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);}
-  @media(max-width:760px){.post-arrow{display:none;}}
+  .records-panel{
+    background:#fff;border:1px solid var(--cream-line);border-radius:6px;padding:60px 30px;text-align:center;
+  }
+  .records-panel .icon-badge{
+    width:56px;height:56px;border-radius:50%;background:var(--cream);border:1px solid var(--cream-line);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-family:var(--f-mono);
+    font-size:11px;font-weight:700;color:var(--rust);
+  }
+  .records-panel h2{font-family:var(--f-display);font-weight:700;font-size:20px;color:var(--navy);margin-bottom:12px;}
+  .records-panel p{font-size:13px;color:var(--ink-dim);max-width:50ch;margin:0 auto 22px;line-height:1.9;}
+  .records-open-btn{
+    font-family:var(--f-display);font-size:14px;letter-spacing:0.04em;background:var(--rust);color:#fff;
+    border:0;padding:13px 28px;border-radius:4px;cursor:pointer;transition:filter .2s;
+  }
+  .records-open-btn:hover{filter:brightness(1.08);}
+
+  [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
+  [data-reveal].in{opacity:1;transform:translateY(0);}
+  @media(prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}}
 
   footer{padding:70px 0 40px;background:var(--navy-soft);color:#f5f1e8;}
   .footer-grid{display:grid;grid-template-columns:1.3fr 0.7fr 0.7fr 0.9fr;gap:40px;padding-bottom:50px;border-bottom:1px solid var(--line-on-dark);}
@@ -146,8 +118,8 @@
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
-      <a href="blog.html" class="active">ブログ</a>
-      <a href="records.html" class="records-link">愛教大10傑</a>
+      <a href="blog.html">ブログ</a>
+      <a href="records.html" class="active">愛教大10傑</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
@@ -164,7 +136,7 @@
 <div id="mobile-nav">
   <a href="index.html"><span class="num">01</span>ホーム</a>
   <a href="blog.html"><span class="num">02</span>ブログ</a>
-  <a href="records.html" class="records-link"><span class="num">03</span>愛教大10傑</a>
+  <a href="records.html"><span class="num">03</span>愛教大10傑</a>
   <a href="join.html"><span class="num">04</span>入部案内</a>
   <a href="documents.html"><span class="num">05</span>各種資料</a>
   <a href="links.html"><span class="num">06</span>リンク集</a>
@@ -178,28 +150,19 @@
 
 <section class="page-hero">
   <div class="wrap">
-    <span class="eyebrow">BLOG</span>
-    <h1 class="page-title">ブログ</h1>
-    <p class="page-sub">大会レポート、練習日誌、行事などを中心に更新しています。</p>
+    <span class="eyebrow">RECORDS</span>
+    <h1 class="page-title">愛教大10傑</h1>
+    <p class="page-sub">種目別の歴代トップ10記録です。このページを開くと、最新の記録表（PDF）がその場で自動的に表示されます。</p>
   </div>
 </section>
 
-<div class="filters">
-  <div class="wrap filter-list" id="filterList">
-    <a href="#" class="active" data-filter="すべて">すべて</a>
-    <a href="#" data-filter="大会">大会</a>
-    <a href="#" data-filter="練習日誌">練習日誌</a>
-    <a href="#" data-filter="お知らせ">お知らせ</a>
-    <a href="#" data-filter="部員紹介">部員紹介</a>
-    <a href="#" data-filter="行事">行事</a>
-    <a href="#" data-filter="その他">その他</a>
-  </div>
-</div>
-
 <main>
   <div class="wrap">
-    <div class="post-list" id="postList">
-      <p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">読み込み中…</p>
+    <div class="records-panel" data-reveal>
+      <div class="icon-badge">PDF</div>
+      <h2 id="recordsPanelTitle">記録表を読み込み中です</h2>
+      <p id="recordsPanelText">少々お待ちください。自動的に表示されない場合は、下のボタンからも開けます。</p>
+      <button class="records-open-btn" id="recordsOpenBtn">記録表を開く</button>
     </div>
   </div>
 </main>
@@ -215,7 +178,7 @@
         <h4>SITE</h4>
         <a href="index.html">ホーム</a>
         <a href="blog.html">ブログ</a>
-        <a href="records.html" class="records-link">愛教大10傑</a>
+        <a href="records.html">愛教大10傑</a>
         <a href="links.html">リンク集</a>
       </div>
       <div class="footer-col">
@@ -250,109 +213,90 @@
     burger.setAttribute('aria-expanded','false');
   }));
 
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
+  }
+
+  /* ===== 愛教大10傑：編集者画面(admin.html)で登録されたPDFをその場でモーダル表示 ===== */
+  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
+
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
-  }
-  function formatDate(iso) {
-    const d = new Date(iso);
-    if (isNaN(d)) return iso;
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-  }
-  function isImageDataUrl(dataUrl) {
-    return typeof dataUrl === 'string' && dataUrl.startsWith('data:image/');
   }
   function getExtLabel(fileName) {
     const parts = String(fileName).split('.');
     if (parts.length < 2) return 'FILE';
     return parts.pop().slice(0, 4).toUpperCase();
   }
-  function renderAttachment(image, title) {
-    if (!image || !image.dataUrl) return '';
-    if (isImageDataUrl(image.dataUrl)) {
-      return `<img class="post-image" src="${image.dataUrl}" alt="${escapeHtml(title)}">`;
-    }
-    return `
-      <a class="post-attachment" href="${image.dataUrl}" download="${escapeHtml(image.fileName)}">
-        <span class="post-attachment-icon">${escapeHtml(getExtLabel(image.fileName))}</span>
-        <span class="post-attachment-name">${escapeHtml(image.fileName)}</span>
-      </a>
+  function loadRecordsFile() {
+    try { return JSON.parse(localStorage.getItem(RECORDS_STORAGE_KEY) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function ensureModal() {
+    if (document.getElementById('recordsModal')) return document.getElementById('recordsModal');
+    const modal = document.createElement('div');
+    modal.id = 'recordsModal';
+    modal.className = 'records-modal';
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="records-modal-backdrop"></div>
+      <div class="records-modal-box">
+        <button class="records-modal-close" aria-label="閉じる">×</button>
+        <div class="records-modal-body"></div>
+      </div>
     `;
+    document.body.appendChild(modal);
+    const close = () => { modal.hidden = true; modal.querySelector('.records-modal-body').innerHTML = ''; };
+    modal.querySelector('.records-modal-backdrop').addEventListener('click', close);
+    modal.querySelector('.records-modal-close').addEventListener('click', close);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) close(); });
+    return modal;
   }
-  function loadFromStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
-  const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
-  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
 
-
-  // ブログ一覧：data/posts.json ＋ 編集者画面から追加された記事をマージして見出しカードを生成。クリックで本文を開閉
-  fetch('data/posts.json')
-    .then(res => res.json())
-    .then(posts => {
-      const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const merged = posts.concat(dynamicPosts);
-      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date));
-      const listEl = document.getElementById('postList');
-      listEl.innerHTML = sorted.map(p => `
-        <div class="post-card" id="${escapeHtml(p.id)}" data-category="${escapeHtml(p.category)}">
-          <button class="post-toggle" aria-expanded="false">
-            <h2 class="post-title">${escapeHtml(p.title)}</h2>
-            <span class="post-arrow">→</span>
-          </button>
-          <div class="post-body">
-            <div class="post-meta">
-              <span class="post-date">${formatDate(p.date)}</span>
-              <span class="post-cat">${escapeHtml(p.category)}</span>
-            </div>
-            ${renderAttachment(p.image, p.title)}
-            <p class="post-excerpt">${escapeHtml(p.body || '')}</p>
-          </div>
+  function openRecordsModal(rec) {
+    const modal = ensureModal();
+    const body = modal.querySelector('.records-modal-body');
+    const isImage = rec.dataUrl.startsWith('data:image/');
+    const isPdf = rec.dataUrl.startsWith('data:application/pdf') || /\.pdf$/i.test(rec.fileName);
+    if (isImage) {
+      body.innerHTML = `<img src="${rec.dataUrl}" alt="${escapeHtml(rec.fileName)}">`;
+    } else if (isPdf) {
+      body.innerHTML = `<iframe src="${rec.dataUrl}" title="${escapeHtml(rec.fileName)}"></iframe>`;
+    } else {
+      body.innerHTML = `
+        <div class="records-modal-fallback">
+          <p>このファイル形式（${escapeHtml(getExtLabel(rec.fileName))}）はブラウザ上でのプレビューに対応していません。</p>
+          <a class="btn" href="${rec.dataUrl}" download="${escapeHtml(rec.fileName)}">ダウンロード</a>
         </div>
-      `).join('');
+      `;
+    }
+    modal.hidden = false;
+  }
 
-      listEl.querySelectorAll('.post-toggle').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const card = btn.closest('.post-card');
-          const open = card.classList.toggle('open');
-          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-      });
+  const rec = loadRecordsFile();
+  const panelTitle = document.getElementById('recordsPanelTitle');
+  const panelText = document.getElementById('recordsPanelText');
+  const openBtn = document.getElementById('recordsOpenBtn');
 
-      // ページ読み込み時にハッシュ指定があれば該当カードを開く
-      if (location.hash) {
-        const target = document.querySelector(location.hash);
-        if (target && target.classList.contains('post-card')) {
-          target.classList.add('open');
-          target.querySelector('.post-toggle')?.setAttribute('aria-expanded', 'true');
-          target.scrollIntoView({ block: 'start' });
-        }
-      }
-    })
-    .catch(() => {
-      document.getElementById('postList').innerHTML =
-        '<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">記事を読み込めませんでした。サーバー上で開いているかご確認ください。</p>';
-    });
-
-  // カテゴリフィルター（カードは動的生成のためクリック時に都度取得）
-  const filterButtons = document.querySelectorAll('#filterList a');
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.dataset.filter;
-      document.querySelectorAll('.post-card').forEach(card => {
-        card.style.display = (filter === 'すべて' || card.dataset.category === filter) ? '' : 'none';
-      });
-    });
-  });
+  if (rec && rec.dataUrl) {
+    panelTitle.textContent = rec.fileName;
+    panelText.textContent = '記録表を表示しています。閉じてしまった場合は、下のボタンからもう一度開けます。';
+    openBtn.addEventListener('click', () => openRecordsModal(rec));
+    // ページを開いたら自動でモーダル表示
+    openRecordsModal(rec);
+  } else {
+    panelTitle.textContent = '記録表はまだ登録されていません';
+    panelText.textContent = '編集者画面から愛教大10傑のPDFが登録され次第、このページで自動的に表示されます。';
+    openBtn.style.display = 'none';
+  }
 </script>
 
 </body>

@@ -280,13 +280,24 @@
     [data-reveal]{opacity:1;transform:none;transition:none;}
     html{scroll-behavior:auto;}
   }
+
+  .records-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .records-modal[hidden]{display:none;}
+  .records-modal-backdrop{position:absolute;inset:0;background:rgba(24,28,38,0.72);}
+  .records-modal-box{position:relative;background:#fff;border-radius:6px;max-width:900px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+  .records-modal-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:1px solid var(--cream-line);background:#fff;font-size:18px;line-height:1;cursor:pointer;z-index:2;}
+  .records-modal-body{flex:1;overflow:auto;}
+  .records-modal-body iframe{width:100%;height:80vh;border:0;display:block;}
+  .records-modal-body img{width:100%;display:block;}
+  .records-modal-fallback{padding:50px 30px;text-align:center;font-family:var(--f-mono);font-size:13px;color:var(--ink-dim);}
+  .records-modal-fallback .btn{display:inline-block;margin-top:16px;font-family:var(--f-display);font-size:13px;background:var(--rust);color:#fff;padding:11px 22px;border-radius:4px;text-decoration:none;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="nav-inner">
-    <a href="index.html" class="brand">
+    <a href="admin.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部
         <small>AUE TRACK &amp; FIELD</small>
       </span>
@@ -294,7 +305,7 @@
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
-      <a href="records.html">愛教大10傑</a>
+      <a href="records.html" class="records-link">愛教大10傑</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
@@ -313,11 +324,11 @@
 <div id="mobile-nav">
   <a href="index.html"><span class="num">01</span>ホーム</a>
   <a href="blog.html"><span class="num">02</span>ブログ</a>
-  <a href="records.html"><span class="num">03</span>愛教大10傑</a>
-  <a href="links.html"><span class="num">04</span>リンク集</a>
+  <a href="records.html" class="records-link"><span class="num">03</span>愛教大10傑</a>
+  <a href="join.html"><span class="num">04</span>入部案内</a>
   <a href="documents.html"><span class="num">05</span>各種資料</a>
-  <a href="obog.html"><span class="num">06</span>OB・OG会サイト</a>
-  <a href="join.html"><span class="num">07</span>入部案内</a>
+  <a href="links.html"><span class="num">06</span>リンク集</a>
+  <a href="obog.html"><span class="num">07</span>OB・OG会サイト</a>
   <div class="mobile-nav-social">
     <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
     <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
@@ -381,7 +392,7 @@
           <span class="lane-name">ブログ<span class="lane-desc">日々の活動の様子を発信</span></span>
           <span class="lane-arrow">→</span>
         </a>
-        <a class="lane-card" href="records.html" data-reveal>
+        <a class="lane-card records-link" href="records.html" data-reveal>
           <span class="lane-name">愛教大10傑<span class="lane-desc">種目別・歴代トップ10を掲載</span></span>
           <span class="lane-arrow">→</span>
         </a>
@@ -442,7 +453,7 @@
         <h4>SITE</h4>
         <a href="index.html">ホーム</a>
         <a href="blog.html">ブログ</a>
-        <a href="records.html">愛教大10傑</a>
+        <a href="records.html" class="records-link">愛教大10傑</a>
         <a href="links.html">リンク集</a>
       </div>
       <div class="footer-col">
@@ -487,12 +498,37 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  // 最新の活動報告：data/posts.json から最新5件を読み込んで表示
+  // 最新の活動報告：data/posts.json ＋ 編集者画面から追加された記事をマージして最新3件を表示
+  const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
+  const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
+  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
+
+  function loadFromStorage(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  // ホームの写真：編集者画面で差し替えられていればそちらを表示
+  (function applyHeroPhoto() {
+    const hero = loadFromStorage(HERO_STORAGE_KEY, null);
+    if (hero && hero.dataUrl) {
+      const img = document.querySelector('.hero-photo img');
+      if (img) img.src = hero.dataUrl;
+    }
+  })();
+
+
   fetch('data/posts.json')
     .then(res => res.json())
     .then(posts => {
+      const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
+      const merged = posts.concat(dynamicPosts);
       const grid = document.getElementById('newsGrid');
-      const sorted = posts.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
+      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
       grid.innerHTML = sorted.map(p => `
         <a class="news-card" href="blog.html#${p.id}" data-reveal>
           <span class="news-cat">${p.category}</span>

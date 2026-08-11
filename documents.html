@@ -124,6 +124,8 @@
   .doc-info{min-width:0;}
   .doc-name{font-family:var(--f-display);font-size:14px;font-weight:600;color:var(--navy);line-height:1.5;transition:color .2s;}
   .doc-meta{font-family:var(--f-mono);font-size:10px;letter-spacing:0.03em;color:var(--ink-dim);margin-top:4px;}
+  a.doc-card{cursor:pointer;}
+  .doc-empty{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:14px 2px;}
 
   [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
   [data-reveal].in{opacity:1;transform:translateY(0);}
@@ -138,19 +140,30 @@
   .footer-bottom{padding-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--f-mono);font-size:12px;color:var(--paper-dim);}
   @media(max-width:860px){.footer-grid{grid-template-columns:1fr 1fr;}}
   @media(max-width:520px){.footer-grid{grid-template-columns:1fr;}}
+
+  .records-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .records-modal[hidden]{display:none;}
+  .records-modal-backdrop{position:absolute;inset:0;background:rgba(24,28,38,0.72);}
+  .records-modal-box{position:relative;background:#fff;border-radius:6px;max-width:900px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+  .records-modal-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:1px solid var(--cream-line);background:#fff;font-size:18px;line-height:1;cursor:pointer;z-index:2;}
+  .records-modal-body{flex:1;overflow:auto;}
+  .records-modal-body iframe{width:100%;height:80vh;border:0;display:block;}
+  .records-modal-body img{width:100%;display:block;}
+  .records-modal-fallback{padding:50px 30px;text-align:center;font-family:var(--f-mono);font-size:13px;color:var(--ink-dim);}
+  .records-modal-fallback .btn{display:inline-block;margin-top:16px;font-family:var(--f-display);font-size:13px;background:var(--rust);color:#fff;padding:11px 22px;border-radius:4px;text-decoration:none;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="nav-inner">
-    <a href="index.html" class="brand">
+    <a href="admin.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
-      <a href="records.html">愛教大10傑</a>
+      <a href="records.html" class="records-link">愛教大10傑</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html" class="active">各種資料</a>
       <a href="obog.html">OB・OG会</a>
@@ -167,11 +180,11 @@
 <div id="mobile-nav">
   <a href="index.html"><span class="num">01</span>ホーム</a>
   <a href="blog.html"><span class="num">02</span>ブログ</a>
-  <a href="records.html"><span class="num">03</span>愛教大10傑</a>
-  <a href="links.html"><span class="num">04</span>リンク集</a>
+  <a href="records.html" class="records-link"><span class="num">03</span>愛教大10傑</a>
+  <a href="join.html"><span class="num">04</span>入部案内</a>
   <a href="documents.html"><span class="num">05</span>各種資料</a>
-  <a href="obog.html"><span class="num">06</span>OB・OG会サイト</a>
-  <a href="join.html"><span class="num">07</span>入部案内</a>
+  <a href="links.html"><span class="num">06</span>リンク集</a>
+  <a href="obog.html"><span class="num">07</span>OB・OG会サイト</a>
   <div class="mobile-nav-social">
     <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
     <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
@@ -202,116 +215,34 @@
 <main>
   <div class="wrap">
 
-    <div class="notice-banner">
-      <span class="notice-icon">準備中</span>
-      <p>このページの資料ファイルは現在準備中です。ファイルが用意でき次第、下記の各カードにダウンロードリンクを追加していきます。</p>
+    <div class="notice-banner" id="notice-banner">
+      <span class="notice-icon">INFO</span>
+      <p>資料は編集者が随時アップロードします。ファイルが登録され次第、下記の各カードにダウンロードリンクが表示されます。</p>
     </div>
 
     <div class="doc-section" id="kisoku" data-reveal>
       <h2 class="doc-section-title">部則・規約</h2>
-      <div class="doc-grid">
-        <div class="doc-card">
-          <span class="doc-icon">PDF</span>
-          <div class="doc-info">
-            <div class="doc-name">部則</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">PDF</span>
-          <div class="doc-info">
-            <div class="doc-name">活動方針・行動規範</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-      </div>
+      <div class="doc-grid" id="grid-kisoku"></div>
     </div>
 
     <div class="doc-section" id="shinsei" data-reveal>
       <h2 class="doc-section-title">各種申請書</h2>
-      <div class="doc-grid">
-        <div class="doc-card">
-          <span class="doc-icon">DOC</span>
-          <div class="doc-info">
-            <div class="doc-name">用具貸出申請書</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">DOC</span>
-          <div class="doc-info">
-            <div class="doc-name">遠征届</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">DOC</span>
-          <div class="doc-info">
-            <div class="doc-name">競技場利用申請書</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-      </div>
+      <div class="doc-grid" id="grid-shinsei"></div>
     </div>
 
     <div class="doc-section" id="taikai" data-reveal>
       <h2 class="doc-section-title">大会エントリー関連</h2>
-      <div class="doc-grid">
-        <div class="doc-card">
-          <span class="doc-icon">PDF</span>
-          <div class="doc-info">
-            <div class="doc-name">大会エントリー手順</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">XLS</span>
-          <div class="doc-info">
-            <div class="doc-name">エントリー一覧フォーマット</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-      </div>
+      <div class="doc-grid" id="grid-taikai"></div>
     </div>
 
     <div class="doc-section" id="kaikei" data-reveal>
       <h2 class="doc-section-title">会費・会計関連</h2>
-      <div class="doc-grid">
-        <div class="doc-card">
-          <span class="doc-icon">PDF</span>
-          <div class="doc-info">
-            <div class="doc-name">会費納入について</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">XLS</span>
-          <div class="doc-info">
-            <div class="doc-name">立替精算書フォーマット</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-      </div>
+      <div class="doc-grid" id="grid-kaikei"></div>
     </div>
 
     <div class="doc-section" id="menu" data-reveal>
       <h2 class="doc-section-title">練習メニュー・記録フォーマット</h2>
-      <div class="doc-grid">
-        <div class="doc-card">
-          <span class="doc-icon">XLS</span>
-          <div class="doc-info">
-            <div class="doc-name">練習日誌フォーマット</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-        <div class="doc-card">
-          <span class="doc-icon">XLS</span>
-          <div class="doc-info">
-            <div class="doc-name">自己記録管理シート</div>
-            <div class="doc-meta">準備中</div>
-          </div>
-        </div>
-      </div>
+      <div class="doc-grid" id="grid-menu"></div>
     </div>
 
   </div>
@@ -328,7 +259,7 @@
         <h4>SITE</h4>
         <a href="index.html">ホーム</a>
         <a href="blog.html">ブログ</a>
-        <a href="records.html">愛教大10傑</a>
+        <a href="records.html" class="records-link">愛教大10傑</a>
         <a href="links.html">リンク集</a>
       </div>
       <div class="footer-col">
@@ -371,6 +302,64 @@
   } else {
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
+
+  /* ===== 各種資料：編集者画面(admin.html)でアップロードされたファイルを表示 ===== */
+  const DOC_STORAGE_KEY = 'aue_documents_v1';
+  const CATEGORIES = ['kisoku', 'shinsei', 'taikai', 'kaikei', 'menu'];
+
+  function loadDocuments() {
+    try {
+      return JSON.parse(localStorage.getItem(DOC_STORAGE_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function getExtLabel(fileName) {
+    const parts = String(fileName).split('.');
+    if (parts.length < 2) return 'FILE';
+    return parts.pop().slice(0, 4).toUpperCase();
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderDocuments() {
+    const all = loadDocuments();
+    CATEGORIES.forEach((cat) => {
+      const grid = document.getElementById('grid-' + cat);
+      if (!grid) return;
+      const docs = all.filter((d) => d.category === cat);
+      if (docs.length === 0) {
+        grid.innerHTML = '<p class="doc-empty">準備中</p>';
+        return;
+      }
+      grid.innerHTML = docs.map((d) => `
+        <a class="doc-card" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">
+          <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+          <div class="doc-info">
+            <div class="doc-name">${escapeHtml(d.fileName)}</div>
+            <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
+          </div>
+        </a>
+      `).join('');
+    });
+  }
+
+  renderDocuments();
+  window.addEventListener('storage', (e) => {
+    if (e.key === DOC_STORAGE_KEY) renderDocuments();
+  });
+
 </script>
 
 </body>
