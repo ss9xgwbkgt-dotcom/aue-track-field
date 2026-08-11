@@ -110,7 +110,7 @@
   .post-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.06em;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:20px;}
   .post-excerpt{font-size:13px;color:var(--ink-dim);max-width:60ch;line-height:1.85;}
   .post-image{width:100%;max-width:520px;border-radius:6px;display:block;margin-bottom:14px;}
-  .post-attachment{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 14px;margin-bottom:14px;text-decoration:none;transition:border-color .2s;}
+  .post-attachment{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 14px;margin-bottom:14px;text-decoration:none;transition:border-color .2s;background:#fff;font:inherit;cursor:pointer;color:inherit;}
   .post-attachment:hover{border-color:var(--rust);}
   .post-attachment-icon{font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--olive);background:var(--cream);border:1px solid var(--cream-line);border-radius:4px;padding:4px 8px;}
   .post-attachment-name{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);}
@@ -263,6 +263,18 @@
   function isImageDataUrl(dataUrl) {
     return typeof dataUrl === 'string' && dataUrl.startsWith('data:image/');
   }
+  function isPdfDataUrl(dataUrl, fileName) {
+    return (typeof dataUrl === 'string' && dataUrl.startsWith('data:application/pdf')) || /\.pdf$/i.test(fileName || '');
+  }
+  function dataUrlToBlobUrl(dataUrl) {
+    const [header, base64] = dataUrl.split(',');
+    const mimeMatch = header.match(/data:(.*?);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  }
   function getExtLabel(fileName) {
     const parts = String(fileName).split('.');
     if (parts.length < 2) return 'FILE';
@@ -272,6 +284,14 @@
     if (!image || !image.dataUrl) return '';
     if (isImageDataUrl(image.dataUrl)) {
       return `<img class="post-image" src="${image.dataUrl}" alt="${escapeHtml(title)}">`;
+    }
+    if (isPdfDataUrl(image.dataUrl, image.fileName)) {
+      return `
+        <button type="button" class="post-attachment" data-pdf-open>
+          <span class="post-attachment-icon">${escapeHtml(getExtLabel(image.fileName))}</span>
+          <span class="post-attachment-name">${escapeHtml(image.fileName)}</span>
+        </button>
+      `;
     }
     return `
       <a class="post-attachment" href="${image.dataUrl}" download="${escapeHtml(image.fileName)}">
@@ -323,6 +343,19 @@
           const open = card.classList.toggle('open');
           btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
+      });
+
+      listEl.querySelectorAll('.post-card').forEach((cardEl, i) => {
+        const pdfBtn = cardEl.querySelector('[data-pdf-open]');
+        if (pdfBtn) {
+          pdfBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const post = sorted[i];
+            if (post && post.image && post.image.dataUrl) {
+              window.open(dataUrlToBlobUrl(post.image.dataUrl), '_blank');
+            }
+          });
+        }
       });
 
       // ページ読み込み時にハッシュ指定があれば該当カードを開く

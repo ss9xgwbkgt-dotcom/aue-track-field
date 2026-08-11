@@ -59,6 +59,7 @@
   .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
   .file-row{
     display:flex;align-items:center;gap:14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
+    will-change:transform;
   }
   .file-icon{
     flex-shrink:0;width:36px;height:36px;border-radius:4px;background:var(--cream);
@@ -102,8 +103,9 @@
 <body>
 
 <header>
-  <div class="wrap">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
     <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD ー 編集者ページ</small></span>
+    <a href="index.html" class="btn" style="text-decoration:none;display:inline-block;">トップページへ戻る</a>
   </div>
 </header>
 
@@ -190,7 +192,16 @@
 
       <div class="cat-section">
         <div class="cat-title">各種資料</div>
-        <p class="lead" style="margin-bottom:14px;">各カテゴリーにファイルをドラッグ＆ドロップすると、「各種資料」ページに自動で反映されます。カード名には元のファイル名がそのまま使われます。</p>
+        <p class="lead" style="margin-bottom:14px;">見出し（カテゴリー）は自由に追加・削除・並べ替えができます。並べた順番のまま「各種資料」ページに反映されます。</p>
+
+        <div id="categoryManager" class="file-list" style="margin-bottom:16px;"></div>
+
+        <div style="display:flex;gap:10px;margin-bottom:26px;flex-wrap:wrap;">
+          <input type="text" id="newCategoryInput" placeholder="新しい見出し名（例：遠征関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+          <button class="btn" id="addCategoryBtn" type="button">見出しを追加</button>
+        </div>
+
+        <p class="lead" style="margin-bottom:14px;">各見出しにファイルをドラッグ＆ドロップすると、「各種資料」ページに自動で反映されます。カード名には元のファイル名がそのまま使われます。</p>
         <div id="categories"></div>
       </div>
     </div>
@@ -206,7 +217,8 @@
   const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
   const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
   const PASSCODE = 'ekiden10'; // 必要に応じて変更してください
-  const CATEGORIES = [
+  const CATEGORY_STORAGE_KEY = 'aue_doc_categories_v1';
+  const DEFAULT_CATEGORIES = [
     { id: 'kisoku', label: '部則・規約' },
     { id: 'shinsei', label: '各種申請書' },
     { id: 'taikai', label: '大会エントリー関連' },
@@ -225,6 +237,8 @@
       sessionStorage.setItem('aue_admin_ok', '1');
       gate.style.display = 'none';
       panel.style.display = 'block';
+      renderCategoryManager();
+      renderCategoryDropzones();
       renderAll();
       renderHero();
       renderBlogList();
@@ -283,21 +297,166 @@
     setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  /* ---- 画面構築 ---- */
-  const categoriesEl = document.getElementById('categories');
-  CATEGORIES.forEach((cat) => {
-    const section = document.createElement('div');
-    section.className = 'cat-section';
-    section.innerHTML = `
-      <div class="cat-title">${cat.label}</div>
-      <label class="dropzone" id="drop-${cat.id}">
-        <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
-        <input type="file" id="input-${cat.id}" multiple>
-      </label>
-      <div class="file-list" id="list-${cat.id}"></div>
-    `;
-    categoriesEl.appendChild(section);
+  /* ---- 見出し（カテゴリー）管理：追加・削除・並べ替え ---- */
+  function loadCategories() {
+    const cats = loadFromStorage(CATEGORY_STORAGE_KEY, null);
+    return (cats && cats.length) ? cats : DEFAULT_CATEGORIES;
+  }
+  function saveCategories(cats) {
+    saveToStorage(CATEGORY_STORAGE_KEY, cats);
+  }
+  function slugifyCategory(label) {
+    return 'cat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  }
+
+  function flipReorder(mutateFn) {
+    const container = document.getElementById('categoryManager');
+    const oldRects = {};
+    container.querySelectorAll('[data-flip-id]').forEach((el) => {
+      oldRects[el.dataset.flipId] = el.getBoundingClientRect();
+    });
+
+    mutateFn();
+    renderCategoryManager();
+    renderCategoryDropzones();
+
+    const newEls = container.querySelectorAll('[data-flip-id]');
+    newEls.forEach((el) => {
+      const oldRect = oldRects[el.dataset.flipId];
+      if (!oldRect) return;
+      const newRect = el.getBoundingClientRect();
+      const dx = oldRect.left - newRect.left;
+      const dy = oldRect.top - newRect.top;
+      if (dx || dy) {
+        el.style.transition = 'none';
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+      }
+    });
+    void container.offsetHeight; // 強制的にリフローさせ、上のtransformを確定させる
+    newEls.forEach((el) => {
+      el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+      el.style.transform = '';
+    });
+  }
+
+  function renderCategoryManager() {
+    const el = document.getElementById('categoryManager');
+    const cats = loadCategories();
+    if (cats.length === 0) {
+      el.innerHTML = '<p class="empty-row">見出しがありません。下から追加してください。</p>';
+      return;
+    }
+    el.innerHTML = cats.map((c, i) => `
+      <div class="file-row" data-flip-id="${c.id}">
+        <span class="file-icon">${String(i + 1).padStart(2, '0')}</span>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(c.label)}</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-move-up="${c.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button class="icon-btn" data-move-down="${c.id}" ${i === cats.length - 1 ? 'disabled' : ''}>↓</button>
+          <button class="icon-btn" data-delete-cat="${c.id}">削除</button>
+        </div>
+      </div>
+    `).join('');
+
+    el.querySelectorAll('[data-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-move-up');
+        flipReorder(() => {
+          const list = loadCategories();
+          const idx = list.findIndex((c) => c.id === id);
+          if (idx > 0) {
+            [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]];
+            saveCategories(list);
+          }
+        });
+      });
+    });
+    el.querySelectorAll('[data-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-move-down');
+        flipReorder(() => {
+          const list = loadCategories();
+          const idx = list.findIndex((c) => c.id === id);
+          if (idx > -1 && idx < list.length - 1) {
+            [list[idx + 1], list[idx]] = [list[idx], list[idx + 1]];
+            saveCategories(list);
+          }
+        });
+      });
+    });
+    el.querySelectorAll('[data-delete-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete-cat');
+        const list = loadCategories();
+        const cat = list.find((c) => c.id === id);
+        const docsInCat = loadDocs().filter((d) => d.category === id);
+        const msg = docsInCat.length > 0
+          ? `「${cat ? cat.label : ''}」を削除すると、登録済みの資料${docsInCat.length}件も削除されます。よろしいですか？`
+          : `「${cat ? cat.label : ''}」を削除しますか？`;
+        if (!confirm(msg)) return;
+        saveCategories(list.filter((c) => c.id !== id));
+        if (docsInCat.length > 0) {
+          saveDocs(loadDocs().filter((d) => d.category !== id));
+        }
+        renderCategoryManager();
+        renderCategoryDropzones();
+        showToast('見出しを削除しました');
+      });
+    });
+  }
+
+  document.getElementById('addCategoryBtn').addEventListener('click', () => {
+    const input = document.getElementById('newCategoryInput');
+    const label = input.value.trim();
+    if (!label) {
+      showToast('見出し名を入力してください');
+      return;
+    }
+    const list = loadCategories();
+    list.push({ id: slugifyCategory(label), label });
+    saveCategories(list);
+    input.value = '';
+    renderCategoryManager();
+    renderCategoryDropzones();
+    showToast('見出しを追加しました');
   });
+  document.getElementById('newCategoryInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('addCategoryBtn').click();
+  });
+
+  /* ---- 各見出しのアップロード欄（動的生成） ---- */
+  const categoriesEl = document.getElementById('categories');
+  function renderCategoryDropzones() {
+    const cats = loadCategories();
+    categoriesEl.innerHTML = '';
+    cats.forEach((cat) => {
+      const section = document.createElement('div');
+      section.className = 'cat-section';
+      section.innerHTML = `
+        <div class="cat-title">${escapeHtml(cat.label)}</div>
+        <label class="dropzone" id="drop-${cat.id}">
+          <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
+          <input type="file" id="input-${cat.id}" multiple>
+        </label>
+        <div class="file-list" id="list-${cat.id}"></div>
+      `;
+      categoriesEl.appendChild(section);
+
+      const drop = section.querySelector(`#drop-${cat.id}`);
+      const input = section.querySelector(`#input-${cat.id}`);
+      input.addEventListener('change', () => handleFiles(cat.id, input.files));
+      drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
+      drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+      drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        drop.classList.remove('drag');
+        handleFiles(cat.id, e.dataTransfer.files);
+      });
+    });
+    renderAll();
+  }
 
   function handleFiles(catId, fileList) {
     const files = Array.from(fileList);
@@ -339,6 +498,7 @@
 
   function renderCategory(catId) {
     const listEl = document.getElementById('list-' + catId);
+    if (!listEl) return;
     const docs = loadDocs().filter((d) => d.category === catId);
     if (docs.length === 0) {
       listEl.innerHTML = '<p class="empty-row">まだファイルがありません</p>';
@@ -363,21 +523,8 @@
   }
 
   function renderAll() {
-    CATEGORIES.forEach((cat) => renderCategory(cat.id));
+    loadCategories().forEach((cat) => renderCategory(cat.id));
   }
-
-  CATEGORIES.forEach((cat) => {
-    const drop = document.getElementById('drop-' + cat.id);
-    const input = document.getElementById('input-' + cat.id);
-    input.addEventListener('change', () => handleFiles(cat.id, input.files));
-    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
-    drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
-    drop.addEventListener('drop', (e) => {
-      e.preventDefault();
-      drop.classList.remove('drag');
-      handleFiles(cat.id, e.dataTransfer.files);
-    });
-  });
 
   /* ---- ホームの写真（単体差し替え） ---- */
   function renderHero() {
@@ -631,6 +778,7 @@
   /* ---- エクスポート／インポート（全データ対象） ---- */
   document.getElementById('exportBtn').addEventListener('click', () => {
     const backup = {
+      categories: loadCategories(),
       documents: loadDocs(),
       heroPhoto: loadFromStorage(HERO_STORAGE_KEY, null),
       blogPosts: loadFromStorage(BLOG_STORAGE_KEY, []),
@@ -659,12 +807,14 @@
           // 旧形式（各種資料のみ）との互換
           saveDocs(imported);
         } else {
+          if (imported.categories) saveCategories(imported.categories);
           if (imported.documents) saveDocs(imported.documents);
           saveToStorage(HERO_STORAGE_KEY, imported.heroPhoto || null);
           saveToStorage(BLOG_STORAGE_KEY, imported.blogPosts || []);
           saveToStorage(RECORDS_STORAGE_KEY, imported.recordsFile || null);
         }
-        renderAll();
+        renderCategoryManager();
+        renderCategoryDropzones();
         renderHero();
         renderBlogList();
         renderRecords();
@@ -677,7 +827,8 @@
   });
 
   if (panel.style.display !== 'none') {
-    renderAll();
+    renderCategoryManager();
+    renderCategoryDropzones();
     renderHero();
     renderBlogList();
     renderRecords();

@@ -125,6 +125,7 @@
   .doc-name{font-family:var(--f-display);font-size:14px;font-weight:600;color:var(--navy);line-height:1.5;transition:color .2s;}
   .doc-meta{font-family:var(--f-mono);font-size:10px;letter-spacing:0.03em;color:var(--ink-dim);margin-top:4px;}
   a.doc-card{cursor:pointer;}
+  button.doc-card{cursor:pointer;width:100%;border:1px solid var(--cream-line);background:#fff;font:inherit;text-align:left;}
   .doc-empty{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:14px 2px;}
 
   [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
@@ -202,13 +203,7 @@
 
 <nav class="jumpnav" aria-label="カテゴリー内リンク">
   <div class="wrap jumpnav-wrap">
-    <div class="jumpnav-inner">
-      <a href="#kisoku">部則・規約</a>
-      <a href="#shinsei">各種申請書</a>
-      <a href="#taikai">大会エントリー関連</a>
-      <a href="#kaikei">会費・会計関連</a>
-      <a href="#menu">練習メニュー・記録フォーマット</a>
-    </div>
+    <div class="jumpnav-inner" id="jumpnavInner"></div>
   </div>
 </nav>
 
@@ -220,30 +215,7 @@
       <p>資料は編集者が随時アップロードします。ファイルが登録され次第、下記の各カードにダウンロードリンクが表示されます。</p>
     </div>
 
-    <div class="doc-section" id="kisoku" data-reveal>
-      <h2 class="doc-section-title">部則・規約</h2>
-      <div class="doc-grid" id="grid-kisoku"></div>
-    </div>
-
-    <div class="doc-section" id="shinsei" data-reveal>
-      <h2 class="doc-section-title">各種申請書</h2>
-      <div class="doc-grid" id="grid-shinsei"></div>
-    </div>
-
-    <div class="doc-section" id="taikai" data-reveal>
-      <h2 class="doc-section-title">大会エントリー関連</h2>
-      <div class="doc-grid" id="grid-taikai"></div>
-    </div>
-
-    <div class="doc-section" id="kaikei" data-reveal>
-      <h2 class="doc-section-title">会費・会計関連</h2>
-      <div class="doc-grid" id="grid-kaikei"></div>
-    </div>
-
-    <div class="doc-section" id="menu" data-reveal>
-      <h2 class="doc-section-title">練習メニュー・記録フォーマット</h2>
-      <div class="doc-grid" id="grid-menu"></div>
-    </div>
+    <div id="docSections"></div>
 
   </div>
 </main>
@@ -294,8 +266,9 @@
     burger.setAttribute('aria-expanded','false');
   }));
 
+  let io = null;
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const io = new IntersectionObserver((entries) => {
+    io = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
     }, { threshold: 0.08 });
     document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
@@ -303,9 +276,25 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== 各種資料：編集者画面(admin.html)でアップロードされたファイルを表示 ===== */
+  /* ===== 各種資料：編集者画面(admin.html)で管理されたカテゴリー・ファイルを表示 ===== */
   const DOC_STORAGE_KEY = 'aue_documents_v1';
-  const CATEGORIES = ['kisoku', 'shinsei', 'taikai', 'kaikei', 'menu'];
+  const CATEGORY_STORAGE_KEY = 'aue_doc_categories_v1';
+  const DEFAULT_CATEGORIES = [
+    { id: 'kisoku', label: '部則・規約' },
+    { id: 'shinsei', label: '各種申請書' },
+    { id: 'taikai', label: '大会エントリー関連' },
+    { id: 'kaikei', label: '会費・会計関連' },
+    { id: 'menu', label: '練習メニュー・記録フォーマット' },
+  ];
+
+  function loadCategories() {
+    try {
+      const raw = localStorage.getItem(CATEGORY_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : DEFAULT_CATEGORIES;
+    } catch (e) {
+      return DEFAULT_CATEGORIES;
+    }
+  }
 
   function loadDocuments() {
     try {
@@ -333,31 +322,87 @@
     return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  function renderDocuments() {
+  function renderPage() {
+    const categories = loadCategories();
     const all = loadDocuments();
-    CATEGORIES.forEach((cat) => {
-      const grid = document.getElementById('grid-' + cat);
+
+    const jumpnavEl = document.getElementById('jumpnavInner');
+    jumpnavEl.innerHTML = categories.map((c) => `<a href="#${escapeHtml(c.id)}">${escapeHtml(c.label)}</a>`).join('');
+
+    const sectionsEl = document.getElementById('docSections');
+    sectionsEl.innerHTML = categories.map((c) => `
+      <div class="doc-section" id="${escapeHtml(c.id)}" data-reveal>
+        <h2 class="doc-section-title">${escapeHtml(c.label)}</h2>
+        <div class="doc-grid" id="grid-${escapeHtml(c.id)}"></div>
+      </div>
+    `).join('');
+
+    categories.forEach((c) => {
+      const grid = document.getElementById('grid-' + c.id);
       if (!grid) return;
-      const docs = all.filter((d) => d.category === cat);
+      const docs = all.filter((d) => d.category === c.id);
       if (docs.length === 0) {
         grid.innerHTML = '<p class="doc-empty">準備中</p>';
         return;
       }
-      grid.innerHTML = docs.map((d) => `
-        <a class="doc-card" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">
-          <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
-          <div class="doc-info">
-            <div class="doc-name">${escapeHtml(d.fileName)}</div>
-            <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
-          </div>
-        </a>
-      `).join('');
+      grid.innerHTML = docs.map((d) => {
+        const isPdf = isPdfDoc(d);
+        if (isPdf) {
+          return `
+            <button type="button" class="doc-card" data-preview="${escapeHtml(d.id)}">
+              <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+              <div class="doc-info">
+                <div class="doc-name">${escapeHtml(d.fileName)}</div>
+                <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
+              </div>
+            </button>
+          `;
+        }
+        return `
+          <a class="doc-card" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">
+            <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+            <div class="doc-info">
+              <div class="doc-name">${escapeHtml(d.fileName)}</div>
+              <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('[data-preview]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const doc = docs.find((d) => d.id === btn.getAttribute('data-preview'));
+          if (doc) openPdfFullScreen(doc);
+        });
+      });
+    });
+
+    sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
+      if (io) io.observe(el); else el.classList.add('in');
     });
   }
 
-  renderDocuments();
+  /* ---- PDFカードは新しいタブで画面いっぱいに開く（data:URLはblob:URLに変換） ---- */
+  function isPdfDoc(d) {
+    return d.dataUrl.startsWith('data:application/pdf') || /\.pdf$/i.test(d.fileName);
+  }
+  function dataUrlToBlobUrl(dataUrl) {
+    const [header, base64] = dataUrl.split(',');
+    const mimeMatch = header.match(/data:(.*?);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  }
+  function openPdfFullScreen(d) {
+    const blobUrl = dataUrlToBlobUrl(d.dataUrl);
+    window.open(blobUrl, '_blank');
+  }
+
+  renderPage();
   window.addEventListener('storage', (e) => {
-    if (e.key === DOC_STORAGE_KEY) renderDocuments();
+    if (e.key === DOC_STORAGE_KEY || e.key === CATEGORY_STORAGE_KEY) renderPage();
   });
 
 </script>
