@@ -310,14 +310,21 @@
   }
   const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
   const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
+  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
+  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
 
 
-  // ブログ一覧：data/posts.json ＋ 編集者画面から追加された記事をマージして見出しカードを生成。クリックで本文を開閉
+  // ブログ一覧：data/posts.json（編集者画面での編集・削除を反映）＋ 追加された記事をマージして見出しカードを生成。クリックで本文を開閉
   fetch('data/posts.json')
     .then(res => res.json())
     .then(posts => {
+      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
+      const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
+      const staticPosts = posts
+        .filter(p => !deleted.includes(p.id))
+        .map(p => Object.assign({}, p, overrides[p.id] || {}));
       const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const merged = posts.concat(dynamicPosts);
+      const merged = staticPosts.concat(dynamicPosts);
       const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date));
       const listEl = document.getElementById('postList');
       listEl.innerHTML = sorted.map(p => `

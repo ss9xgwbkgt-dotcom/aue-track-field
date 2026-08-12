@@ -141,7 +141,7 @@
   <div class="wrap">
     <span class="eyebrow">RECORDS</span>
     <h1 class="page-title">愛教大10傑</h1>
-    <p class="page-sub">種目別の歴代トップ10記録です。このページを開くと、最新の記録表（PDF）がその場で自動的に表示されます。</p>
+    <p class="page-sub">種目別の歴代トップ10記録です。下のカードをクリックすると、最新の記録表（PDF）が新しいタブで開きます。</p>
   </div>
 </section>
 
@@ -150,7 +150,7 @@
     <div class="records-panel" data-reveal>
       <div class="icon-badge">PDF</div>
       <h2 id="recordsPanelTitle">記録表を読み込み中です</h2>
-      <p id="recordsPanelText">少々お待ちください。自動的に表示されない場合は、下のボタンからも開けます。</p>
+      <p id="recordsPanelText">少々お待ちください。</p>
       <button class="records-open-btn" id="recordsOpenBtn">記録表を開く</button>
     </div>
   </div>
@@ -211,7 +211,7 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== 愛教大10傑：編集者画面(admin.html)で登録されたPDFを画面いっぱいに自動表示 ===== */
+  /* ===== 愛教大10傑：編集者画面(admin.html)で登録されたPDFをクリックで新しいタブに開く ===== */
   const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
 
   function loadRecordsFile() {
@@ -235,14 +235,13 @@
 
   if (rec && rec.dataUrl) {
     panelTitle.textContent = rec.fileName;
-    panelText.textContent = '記録表を開いています…自動的に表示されない場合は下のボタンを押してください。';
-    const openFullScreen = () => { location.replace(dataUrlToBlobUrl(rec.dataUrl)); };
-    openBtn.addEventListener('click', openFullScreen);
-    // ページを開いたら自動的にPDFを画面いっぱいに表示
-    openFullScreen();
+    panelText.textContent = 'クリックすると記録表（PDF）が新しいタブで開きます。';
+    openBtn.addEventListener('click', () => {
+      window.open(dataUrlToBlobUrl(rec.dataUrl), '_blank');
+    });
   } else {
-    panelTitle.textContent = '記録表はまだ登録されていません';
-    panelText.textContent = '編集者画面から愛教大10傑のPDFが登録され次第、このページで自動的に表示されます。';
+    panelTitle.textContent = '記録表は現在準備中です。';
+    panelText.textContent = '';
     openBtn.style.display = 'none';
   }
 </script>

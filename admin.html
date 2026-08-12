@@ -47,6 +47,13 @@
 
   .cat-section{margin-bottom:44px;background:#fff;border:1px solid var(--cream-line);border-radius:6px;padding:22px 22px 24px;}
   .cat-title{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
+  .cat-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
+  .cat-title-row .cat-title{margin-bottom:0;padding-bottom:0;border-bottom:0;}
+  .update-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .update-msg{font-family:var(--f-mono);font-size:11px;color:var(--rust-dark);}
+  .update-btn{font-family:var(--f-display);font-size:12px;letter-spacing:0.04em;background:var(--rust);color:#fff;border:0;padding:9px 18px;border-radius:4px;cursor:pointer;transition:filter .2s;flex-shrink:0;}
+  .update-btn:hover{filter:brightness(1.08);}
+  .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
 
   .dropzone{
     border:2px dashed var(--cream-line);border-radius:6px;padding:26px;text-align:center;
@@ -76,6 +83,9 @@
   }
   .icon-btn:hover{border-color:var(--rust);color:var(--rust);}
   .empty-row{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:6px 2px;}
+  .post-detail{border:1px solid var(--cream-line);border-top:0;border-radius:0 0 4px 4px;padding:14px 16px;font-size:13px;color:var(--ink-dim);line-height:1.85;margin-top:-10px;margin-bottom:10px;background:var(--cream);}
+  .post-detail img{max-width:100%;border-radius:4px;margin-top:8px;}
+  .static-badge{font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
 
   .blog-form{display:flex;flex-direction:column;gap:14px;margin-bottom:6px;}
   .form-field{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);letter-spacing:0.03em;}
@@ -135,7 +145,13 @@
       </div>
 
       <div class="cat-section">
-        <div class="cat-title">ホームの写真</div>
+        <div class="cat-title-row">
+          <div class="cat-title">ホームの写真</div>
+          <div class="update-row">
+            <span class="update-msg" id="heroUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
+            <button class="update-btn" id="heroUpdateBtn" type="button">更新</button>
+          </div>
+        </div>
         <p class="lead" style="margin-bottom:14px;">トップページ上部の集合写真を差し替えます（1枚のみ）。</p>
         <label class="dropzone" id="drop-hero">
           <div><strong>クリックして選択</strong> または ここに画像をドラッグ＆ドロップ</div>
@@ -149,6 +165,7 @@
         <p class="lead" style="margin-bottom:14px;">タイトル・カテゴリ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。</p>
 
         <div class="blog-form">
+          <p id="blogEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">この記事を編集しています</p>
           <label class="form-field">
             <span>タイトル</span>
             <input type="text" id="blogTitle" placeholder="例：夏季合宿レポート">
@@ -173,15 +190,32 @@
             </label>
             <div class="file-list" id="blogImagePreview"></div>
           </label>
-          <button class="btn" id="blogSubmit" type="button">投稿する</button>
+          <p id="blogFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;"></p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="blogSubmit" type="button">投稿する</button>
+            <button class="icon-btn" id="blogCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+          </div>
+          <div id="blogConfirmBox" style="display:none;margin-top:6px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+            <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に投稿してもよろしいですか？</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" id="blogConfirmYes" type="button">投稿を確定</button>
+              <button class="icon-btn" id="blogConfirmNo" type="button">キャンセル</button>
+            </div>
+          </div>
         </div>
 
-        <div class="file-list" id="list-blog" style="margin-top:22px;"></div>
-        <p style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-top:12px;">※ 開設当初からの記事（data/posts.json）はここには表示されません。編集はファイルを直接開いて行ってください。</p>
+        <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:26px 0 12px;">投稿済みの記事一覧</h4>
+        <div class="file-list" id="list-blog-all"></div>
       </div>
 
       <div class="cat-section">
-        <div class="cat-title">愛教大10傑ファイル</div>
+        <div class="cat-title-row">
+          <div class="cat-title">愛教大10傑ファイル</div>
+          <div class="update-row">
+            <span class="update-msg" id="recordsUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
+            <button class="update-btn" id="recordsUpdateBtn" type="button">更新</button>
+          </div>
+        </div>
         <p class="lead" style="margin-bottom:14px;">記録一覧のPDFを登録します（1つのみ・PDFファイルのみアップロード可能）。「愛教大10傑」ページを開くと、このPDFが自動でその場に表示されます。</p>
         <label class="dropzone" id="drop-records">
           <div><strong>クリックして選択</strong> または ここにPDFをドラッグ＆ドロップ</div>
@@ -191,7 +225,13 @@
       </div>
 
       <div class="cat-section">
-        <div class="cat-title">各種資料</div>
+        <div class="cat-title-row">
+          <div class="cat-title">各種資料</div>
+          <div class="update-row">
+            <span class="update-msg" id="docsUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
+            <button class="update-btn" id="docsUpdateBtn" type="button">更新</button>
+          </div>
+        </div>
         <p class="lead" style="margin-bottom:14px;">見出し（カテゴリー）は自由に追加・削除・並べ替えができます。並べた順番のまま「各種資料」ページに反映されます。</p>
 
         <div id="categoryManager" class="file-list" style="margin-bottom:16px;"></div>
@@ -241,7 +281,7 @@
       renderCategoryDropzones();
       renderAll();
       renderHero();
-      renderBlogList();
+      fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
       renderRecords();
     } else {
       gateErr.style.display = 'block';
@@ -400,8 +440,10 @@
         if (docsInCat.length > 0) {
           saveDocs(loadDocs().filter((d) => d.category !== id));
         }
+        pendingDocs = pendingDocs.filter((d) => d.category !== id);
         renderCategoryManager();
         renderCategoryDropzones();
+        renderDocsUpdateUI();
         showToast('見出しを削除しました');
       });
     });
@@ -458,31 +500,36 @@
     renderAll();
   }
 
+  let pendingDocs = []; // {tempId, category, fileName, sizeLabel, dataUrl, uploadedAt}
+
+  function docsHasPending() {
+    return pendingDocs.length > 0;
+  }
+  function renderDocsUpdateUI() {
+    const msg = document.getElementById('docsUpdateMsg');
+    if (msg) msg.style.display = docsHasPending() ? 'inline' : 'none';
+  }
+
   function handleFiles(catId, fileList) {
     const files = Array.from(fileList);
     if (files.length === 0) return;
-    let remaining = files.length;
     files.forEach((file) => {
       if (file.size > 8 * 1024 * 1024) {
         showToast(`「${file.name}」は8MBを超えるため保存できません`);
-        remaining--;
         return;
       }
       const reader = new FileReader();
       reader.onload = () => {
-        const docs = loadDocs();
-        docs.push({
-          id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+        pendingDocs.push({
+          tempId: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
           category: catId,
           fileName: file.name,
           sizeLabel: formatSize(file.size),
           dataUrl: reader.result,
           uploadedAt: new Date().toISOString(),
         });
-        saveDocs(docs);
         renderCategory(catId);
-        remaining--;
-        if (remaining === 0) showToast('アップロードが完了しました');
+        renderDocsUpdateUI();
       };
       reader.onerror = () => showToast(`「${file.name}」の読み込みに失敗しました`);
       reader.readAsDataURL(file);
@@ -499,26 +546,40 @@
   function renderCategory(catId) {
     const listEl = document.getElementById('list-' + catId);
     if (!listEl) return;
-    const docs = loadDocs().filter((d) => d.category === catId);
-    if (docs.length === 0) {
+    const committed = loadDocs().filter((d) => d.category === catId);
+    const pending = pendingDocs.filter((d) => d.category === catId);
+    const combined = committed.concat(pending);
+    if (combined.length === 0) {
       listEl.innerHTML = '<p class="empty-row">まだファイルがありません</p>';
       return;
     }
-    listEl.innerHTML = docs.map((d) => `
-      <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
-        <div class="file-info">
-          <div class="file-name">${escapeHtml(d.fileName)}</div>
-          <div class="file-meta">${d.sizeLabel}</div>
+    listEl.innerHTML = combined.map((d) => {
+      const isPending = !!d.tempId;
+      return `
+        <div class="file-row">
+          <span class="file-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+          <div class="file-info">
+            <div class="file-name">${escapeHtml(d.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-meta">${d.sizeLabel}</div>
+          </div>
+          <div class="file-actions">
+            ${isPending ? '' : `<a class="icon-btn" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">DL</a>`}
+            <button class="icon-btn" data-remove="${isPending ? d.tempId : d.id}" data-pending="${isPending}">削除</button>
+          </div>
         </div>
-        <div class="file-actions">
-          <a class="icon-btn" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">DL</a>
-          <button class="icon-btn" data-remove="${d.id}">削除</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-      btn.addEventListener('click', () => removeDoc(btn.getAttribute('data-remove')));
+      btn.addEventListener('click', () => {
+        if (btn.getAttribute('data-pending') === 'true') {
+          const tempId = btn.getAttribute('data-remove');
+          pendingDocs = pendingDocs.filter((d) => d.tempId !== tempId);
+          renderCategory(catId);
+          renderDocsUpdateUI();
+        } else {
+          removeDoc(btn.getAttribute('data-remove'));
+        }
+      });
     });
   }
 
@@ -526,20 +587,51 @@
     loadCategories().forEach((cat) => renderCategory(cat.id));
   }
 
-  /* ---- ホームの写真（単体差し替え） ---- */
+  document.getElementById('docsUpdateBtn').addEventListener('click', () => {
+    if (!docsHasPending()) {
+      showToast('変更がありません');
+      return;
+    }
+    const docs = loadDocs();
+    pendingDocs.forEach((p) => {
+      docs.push({
+        id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+        category: p.category,
+        fileName: p.fileName,
+        sizeLabel: p.sizeLabel,
+        dataUrl: p.dataUrl,
+        uploadedAt: p.uploadedAt,
+      });
+    });
+    saveDocs(docs);
+    pendingDocs = [];
+    renderAll();
+    renderDocsUpdateUI();
+    showToast('各種資料を更新しました');
+  });
+
+  /* ---- ホームの写真(単体差し替え・更新ボタンで反映) ---- */
+
+  let pendingHero = null; // {fileName,sizeLabel,dataUrl} | 'DELETE' | null
+
   function renderHero() {
     const listEl = document.getElementById('list-hero');
-    const hero = loadFromStorage(HERO_STORAGE_KEY, null);
-    if (!hero) {
+    const committed = loadFromStorage(HERO_STORAGE_KEY, null);
+    const isPending = pendingHero !== null;
+    document.getElementById('heroUpdateMsg').style.display = isPending ? 'inline' : 'none';
+
+    const display = pendingHero === 'DELETE' ? null : (pendingHero || committed);
+    if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません（既定の集合写真を表示中）</p>';
       return;
     }
+    const showPendingBadge = isPending && pendingHero !== 'DELETE';
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(hero.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(hero.fileName)}</div>
-          <div class="file-meta">${hero.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(display.fileName)}${showPendingBadge ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${display.sizeLabel}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" id="removeHero">削除して既定に戻す</button>
@@ -547,10 +639,8 @@
       </div>
     `;
     document.getElementById('removeHero').addEventListener('click', () => {
-      localStorage.removeItem(HERO_STORAGE_KEY);
-      window.dispatchEvent(new StorageEvent('storage', { key: HERO_STORAGE_KEY }));
+      pendingHero = 'DELETE';
       renderHero();
-      showToast('既定の写真に戻しました');
     });
   }
   function handleHeroFile(fileList) {
@@ -562,14 +652,13 @@
     }
     const reader = new FileReader();
     reader.onload = () => {
-      saveToStorage(HERO_STORAGE_KEY, {
+      pendingHero = {
         fileName: file.name,
         sizeLabel: formatSize(file.size),
         dataUrl: reader.result,
         uploadedAt: new Date().toISOString(),
-      });
+      };
       renderHero();
-      showToast('ホームの写真を更新しました');
     };
     reader.onerror = () => showToast('画像の読み込みに失敗しました');
     reader.readAsDataURL(file);
@@ -584,40 +673,149 @@
     dropHero.classList.remove('drag');
     handleHeroFile(e.dataTransfer.files);
   });
+  document.getElementById('heroUpdateBtn').addEventListener('click', () => {
+    if (pendingHero === null) {
+      showToast('変更がありません');
+      return;
+    }
+    if (pendingHero === 'DELETE') {
+      localStorage.removeItem(HERO_STORAGE_KEY);
+      window.dispatchEvent(new StorageEvent('storage', { key: HERO_STORAGE_KEY }));
+    } else {
+      saveToStorage(HERO_STORAGE_KEY, pendingHero);
+    }
+    pendingHero = null;
+    renderHero();
+    showToast('ホームの写真を更新しました');
+  });
 
-  /* ---- ブログ記事（フォーム入力＋任意の添付写真） ---- */
+  /* ---- ブログ記事（フォーム入力＋任意の添付写真／既存記事の閲覧・編集・削除） ---- */
+  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
+  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
+  let staticPostsCache = [];
+  let editingPostId = null;   // 編集中の記事id（null=新規投稿モード）
+  let editingIsStatic = false;
+
   function slugify() {
     return 'post-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
   }
+
+  function fetchStaticPosts() {
+    return fetch('data/posts.json').then((res) => res.json()).catch(() => []);
+  }
+
+  function getAllPostsForAdmin() {
+    const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
+    const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
+    const staticList = staticPostsCache
+      .filter((p) => !deleted.includes(p.id))
+      .map((p) => Object.assign({}, p, overrides[p.id] || {}, { isStatic: true }));
+    const dynamicList = loadFromStorage(BLOG_STORAGE_KEY, []).map((p) => Object.assign({}, p, { isStatic: false }));
+    return staticList.concat(dynamicList).sort((a, b) => b.date.localeCompare(a.date));
+  }
+
   function renderBlogList() {
-    const listEl = document.getElementById('list-blog');
-    const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
+    const listEl = document.getElementById('list-blog-all');
+    const posts = getAllPostsForAdmin();
     if (posts.length === 0) {
-      listEl.innerHTML = '<p class="empty-row">投稿した記事はまだありません</p>';
+      listEl.innerHTML = '<p class="empty-row">投稿された記事はまだありません</p>';
       return;
     }
-    listEl.innerHTML = posts.slice().reverse().map((p) => `
-      <div class="file-row">
-        <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
-        <div class="file-info">
-          <div class="file-name">${escapeHtml(p.title)}</div>
-          <div class="file-meta">${escapeHtml(p.category)} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
+    listEl.innerHTML = posts.map((p) => `
+      <div>
+        <div class="file-row">
+          <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
+          <div class="file-info">
+            <div class="file-name">${escapeHtml(p.title)}${p.isStatic ? '<span class="static-badge">初期記事</span>' : ''}</div>
+            <div class="file-meta">${escapeHtml(p.category)} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
+          </div>
+          <div class="file-actions">
+            <button class="icon-btn" data-view-post="${escapeHtml(p.id)}">閲覧</button>
+            <button class="icon-btn" data-edit-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">編集</button>
+            <button class="icon-btn" data-remove-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">削除</button>
+          </div>
         </div>
-        <div class="file-actions">
-          <button class="icon-btn" data-remove-post="${p.id}">削除</button>
-        </div>
+        <div class="post-detail" id="detail-${escapeHtml(p.id)}" style="display:none;"></div>
       </div>
     `).join('');
+
+    listEl.querySelectorAll('[data-view-post]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-view-post');
+        const detailEl = document.getElementById('detail-' + id);
+        const isOpen = detailEl.style.display !== 'none';
+        // 他の詳細表示は閉じる
+        listEl.querySelectorAll('.post-detail').forEach((d) => { d.style.display = 'none'; });
+        if (isOpen) return;
+        const post = posts.find((p) => p.id === id);
+        if (!post) return;
+        detailEl.innerHTML = `
+          ${post.body ? escapeHtml(post.body).replace(/\n/g, '<br>') : '（本文なし）'}
+          ${post.image && post.image.dataUrl ? (post.image.dataUrl.startsWith('data:image/') ? `<img src="${post.image.dataUrl}" alt="">` : `<p style="margin-top:8px;">添付ファイル：${escapeHtml(post.image.fileName)}</p>`) : ''}
+        `;
+        detailEl.style.display = 'block';
+      });
+    });
+
+    listEl.querySelectorAll('[data-edit-post]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit-post');
+        const isStatic = btn.getAttribute('data-static') === 'true';
+        const post = posts.find((p) => p.id === id);
+        if (!post) return;
+        editingPostId = id;
+        editingIsStatic = isStatic;
+        document.getElementById('blogTitle').value = post.title || '';
+        document.getElementById('blogCategory').value = post.category || 'お知らせ';
+        document.getElementById('blogDate').value = post.date || '';
+        document.getElementById('blogBody').value = post.body || '';
+        pendingBlogImage = post.image || null;
+        renderBlogImagePreview();
+        document.getElementById('blogSubmit').textContent = '変更を保存';
+        document.getElementById('blogEditingNote').style.display = 'block';
+        document.getElementById('blogCancelEdit').style.display = 'inline-block';
+        document.querySelector('.blog-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
     listEl.querySelectorAll('[data-remove-post]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-remove-post');
-        const remaining = loadFromStorage(BLOG_STORAGE_KEY, []).filter((p) => p.id !== id);
-        saveToStorage(BLOG_STORAGE_KEY, remaining);
+        const isStatic = btn.getAttribute('data-static') === 'true';
+        if (!confirm('この記事を削除しますか？')) return;
+        if (isStatic) {
+          const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
+          if (!deleted.includes(id)) deleted.push(id);
+          saveToStorage(STATIC_DELETED_KEY, deleted);
+        } else {
+          const remaining = loadFromStorage(BLOG_STORAGE_KEY, []).filter((p) => p.id !== id);
+          saveToStorage(BLOG_STORAGE_KEY, remaining);
+        }
+        if (editingPostId === id) resetBlogForm();
         renderBlogList();
         showToast('記事を削除しました');
       });
     });
   }
+
+  function resetBlogForm() {
+    editingPostId = null;
+    editingIsStatic = false;
+    document.getElementById('blogTitle').value = '';
+    document.getElementById('blogCategory').value = 'お知らせ';
+    document.getElementById('blogDate').value = '';
+    document.getElementById('blogBody').value = '';
+    pendingBlogImage = null;
+    document.getElementById('input-blog-image').value = '';
+    renderBlogImagePreview();
+    document.getElementById('blogSubmit').textContent = '投稿する';
+    document.getElementById('blogEditingNote').style.display = 'none';
+    document.getElementById('blogCancelEdit').style.display = 'none';
+    document.getElementById('blogConfirmBox').style.display = 'none';
+    document.getElementById('blogFormError').style.display = 'none';
+  }
+
+  document.getElementById('blogCancelEdit').addEventListener('click', resetBlogForm);
 
   let pendingBlogImage = null; // { fileName, sizeLabel, dataUrl }
 
@@ -677,65 +875,120 @@
     handleBlogImageFile(e.dataTransfer.files);
   });
 
-  document.getElementById('blogSubmit').addEventListener('click', () => {
+  function commitBlogPost() {
     const title = document.getElementById('blogTitle').value.trim();
     const category = document.getElementById('blogCategory').value.trim() || 'お知らせ';
     const date = document.getElementById('blogDate').value || new Date().toISOString().slice(0, 10);
     const body = document.getElementById('blogBody').value.trim();
 
-    if (!title) {
-      showToast('タイトルを入力してください');
-      return;
+    if (editingPostId && editingIsStatic) {
+      // 初期記事（data/posts.json由来）の変更は上書き情報として保存
+      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
+      overrides[editingPostId] = { title, category, date, body, image: pendingBlogImage };
+      saveToStorage(STATIC_OVERRIDE_KEY, overrides);
+      showToast('記事を更新しました');
+    } else if (editingPostId && !editingIsStatic) {
+      // 通常の投稿記事を更新
+      const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
+      const idx = posts.findIndex((p) => p.id === editingPostId);
+      if (idx > -1) {
+        posts[idx] = Object.assign({}, posts[idx], { title, category, date, body, image: pendingBlogImage });
+        saveToStorage(BLOG_STORAGE_KEY, posts);
+      }
+      showToast('記事を更新しました');
+    } else {
+      // 新規投稿
+      const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
+      posts.push({
+        id: slugify(),
+        title,
+        category,
+        date,
+        body,
+        image: pendingBlogImage,
+      });
+      saveToStorage(BLOG_STORAGE_KEY, posts);
+      showToast('記事を投稿しました');
     }
 
-    const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
-    posts.push({
-      id: slugify(),
-      title,
-      category,
-      date,
-      body,
-      image: pendingBlogImage,
-    });
-    saveToStorage(BLOG_STORAGE_KEY, posts);
+    resetBlogForm();
     renderBlogList();
-    showToast('記事を投稿しました');
+  }
 
-    document.getElementById('blogTitle').value = '';
-    document.getElementById('blogCategory').value = 'お知らせ';
-    document.getElementById('blogDate').value = '';
-    document.getElementById('blogBody').value = '';
-    pendingBlogImage = null;
-    inputBlogImage.value = '';
-    renderBlogImagePreview();
+  document.getElementById('blogSubmit').addEventListener('click', () => {
+    const title = document.getElementById('blogTitle').value.trim();
+    const category = document.getElementById('blogCategory').value.trim();
+    const date = document.getElementById('blogDate').value;
+    const body = document.getElementById('blogBody').value.trim();
+    const errorEl = document.getElementById('blogFormError');
+    const confirmBox = document.getElementById('blogConfirmBox');
+
+    const missing = [];
+    if (!title) missing.push('タイトル');
+    if (!category) missing.push('カテゴリ');
+    if (!date) missing.push('日付');
+    if (!body) missing.push('本文');
+
+    if (missing.length > 0) {
+      errorEl.textContent = missing.join('・') + 'が入力されていません';
+      errorEl.style.display = 'block';
+      confirmBox.style.display = 'none';
+      return;
+    }
+    errorEl.style.display = 'none';
+
+    const isEditing = !!editingPostId;
+    document.getElementById('blogConfirmYes').textContent = isEditing ? '変更を確定' : '投稿を確定';
+    confirmBox.style.display = 'block';
+    confirmBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
-  /* ---- 愛教大10傑ファイル（単体差し替え） ---- */
+  ['blogTitle', 'blogCategory', 'blogDate', 'blogBody'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', () => {
+      document.getElementById('blogFormError').style.display = 'none';
+    });
+  });
+
+  document.getElementById('blogConfirmYes').addEventListener('click', () => {
+    document.getElementById('blogConfirmBox').style.display = 'none';
+    commitBlogPost();
+  });
+
+  document.getElementById('blogConfirmNo').addEventListener('click', () => {
+    document.getElementById('blogConfirmBox').style.display = 'none';
+  });
+
+  /* ---- 愛教大10傑ファイル（単体差し替え・更新ボタンで反映） ---- */
+  let pendingRecords = null; // {fileName,sizeLabel,dataUrl} | 'DELETE' | null
+
   function renderRecords() {
     const listEl = document.getElementById('list-records');
-    const rec = loadFromStorage(RECORDS_STORAGE_KEY, null);
-    if (!rec) {
+    const committed = loadFromStorage(RECORDS_STORAGE_KEY, null);
+    const isPending = pendingRecords !== null;
+    document.getElementById('recordsUpdateMsg').style.display = isPending ? 'inline' : 'none';
+
+    const display = pendingRecords === 'DELETE' ? null : (pendingRecords || committed);
+    if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだファイルが登録されていません</p>';
       return;
     }
+    const showPendingBadge = isPending && pendingRecords !== 'DELETE';
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(rec.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(rec.fileName)}</div>
-          <div class="file-meta">${rec.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(display.fileName)}${showPendingBadge ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${display.sizeLabel}</div>
         </div>
         <div class="file-actions">
-          <a class="icon-btn" href="${rec.dataUrl}" download="${escapeHtml(rec.fileName)}">DL</a>
+          <a class="icon-btn" href="${display.dataUrl}" download="${escapeHtml(display.fileName)}">DL</a>
           <button class="icon-btn" id="removeRecords">削除</button>
         </div>
       </div>
     `;
     document.getElementById('removeRecords').addEventListener('click', () => {
-      localStorage.removeItem(RECORDS_STORAGE_KEY);
-      window.dispatchEvent(new StorageEvent('storage', { key: RECORDS_STORAGE_KEY }));
+      pendingRecords = 'DELETE';
       renderRecords();
-      showToast('削除しました');
     });
   }
   function handleRecordsFile(fileList) {
@@ -752,14 +1005,13 @@
     }
     const reader = new FileReader();
     reader.onload = () => {
-      saveToStorage(RECORDS_STORAGE_KEY, {
+      pendingRecords = {
         fileName: file.name,
         sizeLabel: formatSize(file.size),
         dataUrl: reader.result,
         uploadedAt: new Date().toISOString(),
-      });
+      };
       renderRecords();
-      showToast('愛教大10傑ファイルを更新しました');
     };
     reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
     reader.readAsDataURL(file);
@@ -774,6 +1026,21 @@
     dropRecords.classList.remove('drag');
     handleRecordsFile(e.dataTransfer.files);
   });
+  document.getElementById('recordsUpdateBtn').addEventListener('click', () => {
+    if (pendingRecords === null) {
+      showToast('変更がありません');
+      return;
+    }
+    if (pendingRecords === 'DELETE') {
+      localStorage.removeItem(RECORDS_STORAGE_KEY);
+      window.dispatchEvent(new StorageEvent('storage', { key: RECORDS_STORAGE_KEY }));
+    } else {
+      saveToStorage(RECORDS_STORAGE_KEY, pendingRecords);
+    }
+    pendingRecords = null;
+    renderRecords();
+    showToast('愛教大10傑ファイルを更新しました');
+  });
 
   /* ---- エクスポート／インポート（全データ対象） ---- */
   document.getElementById('exportBtn').addEventListener('click', () => {
@@ -782,6 +1049,8 @@
       documents: loadDocs(),
       heroPhoto: loadFromStorage(HERO_STORAGE_KEY, null),
       blogPosts: loadFromStorage(BLOG_STORAGE_KEY, []),
+      blogStaticOverrides: loadFromStorage(STATIC_OVERRIDE_KEY, {}),
+      blogStaticDeleted: loadFromStorage(STATIC_DELETED_KEY, []),
       recordsFile: loadFromStorage(RECORDS_STORAGE_KEY, null),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -811,12 +1080,14 @@
           if (imported.documents) saveDocs(imported.documents);
           saveToStorage(HERO_STORAGE_KEY, imported.heroPhoto || null);
           saveToStorage(BLOG_STORAGE_KEY, imported.blogPosts || []);
+          saveToStorage(STATIC_OVERRIDE_KEY, imported.blogStaticOverrides || {});
+          saveToStorage(STATIC_DELETED_KEY, imported.blogStaticDeleted || []);
           saveToStorage(RECORDS_STORAGE_KEY, imported.recordsFile || null);
         }
         renderCategoryManager();
         renderCategoryDropzones();
         renderHero();
-        renderBlogList();
+        fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
         renderRecords();
         showToast('インポートが完了しました');
       } catch (err) {
@@ -830,7 +1101,7 @@
     renderCategoryManager();
     renderCategoryDropzones();
     renderHero();
-    renderBlogList();
+    fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
     renderRecords();
   }
 </script>

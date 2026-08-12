@@ -146,6 +146,11 @@
     aspect-ratio:4/3;
   }
   .hero-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .hero-photo-placeholder{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    background:var(--rust-dark);color:var(--gold);
+    font-family:var(--f-mono);font-size:13px;letter-spacing:0.08em;
+  }
   @media(max-width:900px){
     .hero-top{flex-direction:column;gap:24px;padding-top:8px;}
     .hero-photo{width:100%;aspect-ratio:3/2;order:-1;}
@@ -255,14 +260,22 @@
   .news .section-tag{color:var(--gold);}
   .news h2.section-title{color:#f5f1e8;}
   .news .section-note{color:var(--paper-dim);}
-  .news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-on-dark);border:1px solid var(--line-on-dark);margin-top:52px;}
-  .news-card{background:var(--navy);padding:30px 26px;display:flex;flex-direction:column;gap:14px;transition:background .2s;min-height:180px;}
+  .news-grid{
+    display:flex;gap:1px;background:var(--line-on-dark);border:1px solid var(--line-on-dark);margin-top:52px;
+    overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;scrollbar-color:var(--gold) var(--navy-soft);
+  }
+  .news-grid::-webkit-scrollbar{height:6px;}
+  .news-grid::-webkit-scrollbar-track{background:var(--navy-soft);}
+  .news-grid::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:3px;}
+  .news-card{flex:0 0 calc((100% - 2px) / 3);scroll-snap-align:start;background:var(--navy);padding:30px 26px;display:flex;flex-direction:column;gap:14px;transition:background .2s;min-height:180px;}
+  @media(max-width:860px){.news-card{flex-basis:calc((100% - 1px) / 2);}}
+  @media(max-width:560px){.news-card{flex-basis:88%;}}
   .news-card:hover{background:#252a37;}
   .news-date{font-family:var(--f-mono);font-size:12px;color:var(--gold);}
   .news-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.08em;color:var(--gold);border:1px solid var(--gold-soft);padding:3px 9px;border-radius:20px;width:fit-content;}
   .news-title{font-family:var(--f-display);font-size:18px;line-height:1.5;}
   .news-more{margin-top:auto;font-family:var(--f-mono);font-size:12px;color:var(--paper-dim);}
-  @media(max-width:860px){.news-grid{grid-template-columns:1fr;}}
 
   /* ---------- footer ---------- */
   footer{padding:70px 0 40px;background:var(--navy-soft);color:#f5f1e8;}
@@ -352,8 +365,8 @@
           <a href="blog.html" class="btn btn-outline">活動ブログへ</a>
         </div>
       </div>
-      <div class="hero-photo">
-        <img src="images/team-photo.jpg" alt="愛知教育大学陸上競技部 部員集合写真">
+      <div class="hero-photo" id="heroPhotoContainer">
+        <img src="images/team-photo.jpg" alt="愛知教育大学陸上競技部 部員集合写真" id="heroPhotoImg">
       </div>
     </div>
   </section>
@@ -431,6 +444,7 @@
         <div>
           <span class="section-tag">LATEST NEWS</span>
           <h2 class="section-title">最新の活動報告</h2>
+          <p style="margin-top:10px;font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);">← 横にスクロールすると過去の記事もご覧いただけます →</p>
         </div>
         <a href="blog.html" class="btn btn-outline">ブログ一覧へ →</a>
       </div>
@@ -502,6 +516,8 @@
   const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
   const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
   const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
+  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
+  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
 
   function loadFromStorage(key, fallback) {
     try {
@@ -512,12 +528,19 @@
     }
   }
 
-  // ホームの写真：編集者画面で差し替えられていればそちらを表示
+  // ホームの写真：編集者画面で差し替えられていればそちらを表示。未登録の場合は「準備中」を表示
   (function applyHeroPhoto() {
     const hero = loadFromStorage(HERO_STORAGE_KEY, null);
+    const container = document.getElementById('heroPhotoContainer');
+    const img = document.getElementById('heroPhotoImg');
     if (hero && hero.dataUrl) {
-      const img = document.querySelector('.hero-photo img');
       if (img) img.src = hero.dataUrl;
+    } else if (container && img) {
+      img.remove();
+      const placeholder = document.createElement('div');
+      placeholder.className = 'hero-photo-placeholder';
+      placeholder.textContent = '写真は現在準備中です。';
+      container.appendChild(placeholder);
     }
   })();
 
@@ -525,10 +548,15 @@
   fetch('data/posts.json')
     .then(res => res.json())
     .then(posts => {
+      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
+      const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
+      const staticPosts = posts
+        .filter(p => !deleted.includes(p.id))
+        .map(p => Object.assign({}, p, overrides[p.id] || {}));
       const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const merged = posts.concat(dynamicPosts);
+      const merged = staticPosts.concat(dynamicPosts);
       const grid = document.getElementById('newsGrid');
-      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
+      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date));
       grid.innerHTML = sorted.map(p => `
         <a class="news-card" href="blog.html#${p.id}" data-reveal>
           <span class="news-cat">${p.category}</span>
