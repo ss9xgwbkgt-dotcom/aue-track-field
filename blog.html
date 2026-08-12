@@ -316,7 +316,8 @@
 
   // ブログ一覧：data/posts.json（編集者画面での編集・削除を反映）＋ 追加された記事をマージして見出しカードを生成。クリックで本文を開閉
   fetch('data/posts.json')
-    .then(res => res.json())
+    .then(res => res.ok ? res.json() : [])
+    .catch(() => [])
     .then(posts => {
       const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
       const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
@@ -359,7 +360,8 @@
             e.stopPropagation();
             const post = sorted[i];
             if (post && post.image && post.image.dataUrl) {
-              window.open(dataUrlToBlobUrl(post.image.dataUrl), '_blank');
+              // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
+              location.href = dataUrlToBlobUrl(post.image.dataUrl);
             }
           });
         }

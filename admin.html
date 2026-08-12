@@ -56,8 +56,9 @@
   .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
 
   .dropzone{
-    border:2px dashed var(--cream-line);border-radius:6px;padding:26px;text-align:center;
+    border:2px dashed var(--cream-line);border-radius:8px;padding:38px 20px;text-align:center;
     font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);cursor:pointer;transition:border-color .2s,background .2s;
+    display:flex;align-items:center;justify-content:center;background:var(--cream);
   }
   .dropzone.drag{border-color:var(--rust);background:rgba(184,64,43,0.05);}
   .dropzone input{display:none;}
@@ -94,6 +95,10 @@
     border-radius:4px;padding:10px 12px;resize:vertical;
   }
   .form-field input:focus, .form-field textarea:focus{outline:2px solid var(--gold);outline-offset:-1px;}
+  .link-entry-row{display:flex;gap:8px;align-items:center;}
+  .link-entry-row input{font-family:var(--f-body);font-size:13px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:9px 10px;}
+  .link-entry-row .link-entry-label{flex:0 0 34%;min-width:0;}
+  .link-entry-row .link-entry-url{flex:1;min-width:0;}
 
   .toolbar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:30px;flex-wrap:wrap;}
   .toolbar button{
@@ -244,6 +249,52 @@
         <p class="lead" style="margin-bottom:14px;">各見出しにファイルをドラッグ＆ドロップすると、「各種資料」ページに自動で反映されます。カード名には元のファイル名がそのまま使われます。</p>
         <div id="categories"></div>
       </div>
+
+      <div class="cat-section">
+        <div class="cat-title">リンク集</div>
+        <p class="lead" style="margin-bottom:14px;">カード名・カテゴリー・リンク（ラベルとURL）を入力して追加します。リンクは複数追加できます（例：ホームページ／Instagram／X）。</p>
+
+        <div class="blog-form">
+          <p id="linkEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">このカードを編集しています</p>
+          <label class="form-field">
+            <span>カード名</span>
+            <input type="text" id="linkName" placeholder="例：〇〇大学">
+          </label>
+          <label class="form-field">
+            <span>カテゴリー</span>
+            <select id="linkCategory" style="font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;"></select>
+            <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+              <input type="text" id="newLinkCategoryInput" placeholder="新しいカテゴリー名（例：他大学サークル）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:13px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
+              <button class="icon-btn" id="addLinkCategoryBtn" type="button">カテゴリーを追加</button>
+            </div>
+            <div id="linkCategoryManager" class="file-list" style="margin-top:10px;"></div>
+          </label>
+          <label class="form-field">
+            <span>リンク</span>
+            <div id="linkEntries" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <button class="icon-btn" id="linkAddEntry" type="button" style="align-self:flex-start;">＋ リンクを追加</button>
+          </label>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="linkSubmit" type="button">カードを追加</button>
+            <button class="icon-btn" id="linkCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+          </div>
+          <div id="linkConfirmBox" style="display:none;margin-top:6px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+            <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に保存してもよろしいですか？</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" id="linkConfirmYes" type="button">保存を確定</button>
+              <button class="icon-btn" id="linkConfirmNo" type="button">キャンセル</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 12px;">
+          <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">登録済みのカード一覧（<span id="linkListCount">0</span>件）</h4>
+          <select id="linkListFilter" style="font-family:var(--f-mono);font-size:12px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;">
+            <option value="">すべてのカテゴリー</option>
+          </select>
+        </div>
+        <div class="file-list" id="list-links-all"></div>
+      </div>
     </div>
 
   </div>
@@ -283,6 +334,7 @@
       renderHero();
       fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
       renderRecords();
+      initLinksAdmin();
     } else {
       gateErr.style.display = 'block';
     }
@@ -609,6 +661,364 @@
     renderDocsUpdateUI();
     showToast('各種資料を更新しました');
   });
+
+  /* ---- リンク集（カードの追加・編集・削除・閲覧） ---- */
+  const LINK_CARDS_KEY = 'aue_link_cards_v1';
+  const LINK_OVERRIDE_KEY = 'aue_link_static_overrides_v1';
+  const LINK_DELETED_KEY = 'aue_link_static_deleted_v1';
+  const LINK_CATEGORY_ADDED_KEY = 'aue_link_categories_added_v1';
+  let staticLinkCategoriesCache = [];
+  let editingLinkId = null;
+  let editingLinkIsStatic = false;
+  let linkDataLoadFailed = false;
+
+  function fetchLinkData() {
+    return fetch('data/links.json')
+      .then((res) => {
+        if (!res.ok) { linkDataLoadFailed = true; return { categories: [], cards: [] }; }
+        linkDataLoadFailed = false;
+        return res.json();
+      })
+      .catch(() => {
+        linkDataLoadFailed = true;
+        return { categories: [], cards: [] };
+      });
+  }
+
+  function getAllLinkCardsForAdmin() {
+    const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
+    const deleted = loadFromStorage(LINK_DELETED_KEY, []);
+    const staticCards = linkCardsCache
+      .filter((c) => !deleted.includes(c.id))
+      .map((c) => Object.assign({}, c, overrides[c.id] || {}, { isStatic: true }));
+    const dynamicCards = loadFromStorage(LINK_CARDS_KEY, []).map((c) => Object.assign({}, c, { isStatic: false }));
+    return staticCards.concat(dynamicCards);
+  }
+  let linkCardsCache = [];
+
+  function getAllLinkCategories() {
+    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
+    return staticLinkCategoriesCache.concat(added);
+  }
+
+  function categoryLabel(catId) {
+    const c = getAllLinkCategories().find((x) => x.id === catId);
+    return c ? c.label : catId;
+  }
+
+  function populateLinkCategorySelect() {
+    const sel = document.getElementById('linkCategory');
+    const prev = sel.value;
+    sel.innerHTML = getAllLinkCategories().map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('');
+    if (prev && getAllLinkCategories().some((c) => c.id === prev)) sel.value = prev;
+
+    const filterSel = document.getElementById('linkListFilter');
+    const prevFilter = filterSel.value;
+    filterSel.innerHTML = '<option value="">すべてのカテゴリー</option>' +
+      getAllLinkCategories().map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('');
+    if (prevFilter && getAllLinkCategories().some((c) => c.id === prevFilter)) filterSel.value = prevFilter;
+  }
+  document.getElementById('linkListFilter').addEventListener('change', renderLinkList);
+
+  function slugifyLinkCategory() {
+    return 'linkcat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  }
+
+  function renderLinkCategoryManager() {
+    const el = document.getElementById('linkCategoryManager');
+    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
+    if (added.length === 0) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = added.map((c) => `
+      <div class="file-row">
+        <span class="file-icon">＋</span>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(c.label)}</div>
+          <div class="file-meta">追加したカテゴリー</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-remove-link-cat="${escapeHtml(c.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+    el.querySelectorAll('[data-remove-link-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-remove-link-cat');
+        const cardsInCat = getAllLinkCardsForAdmin().filter((c) => c.category === id);
+        const msg = cardsInCat.length > 0
+          ? `このカテゴリーを削除すると、登録済みのカード${cardsInCat.length}件も表示されなくなります。よろしいですか？`
+          : 'このカテゴリーを削除しますか？';
+        if (!confirm(msg)) return;
+        const remaining = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []).filter((c) => c.id !== id);
+        saveToStorage(LINK_CATEGORY_ADDED_KEY, remaining);
+        renderLinkCategoryManager();
+        populateLinkCategorySelect();
+        renderLinkList();
+        showToast('カテゴリーを削除しました');
+      });
+    });
+  }
+
+  document.getElementById('addLinkCategoryBtn').addEventListener('click', () => {
+    const input = document.getElementById('newLinkCategoryInput');
+    const label = input.value.trim();
+    if (!label) {
+      showToast('カテゴリー名を入力してください');
+      return;
+    }
+    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
+    const newCat = { id: slugifyLinkCategory(), label };
+    added.push(newCat);
+    saveToStorage(LINK_CATEGORY_ADDED_KEY, added);
+    input.value = '';
+    renderLinkCategoryManager();
+    populateLinkCategorySelect();
+    document.getElementById('linkCategory').value = newCat.id;
+    showToast('カテゴリーを追加しました');
+  });
+  document.getElementById('newLinkCategoryInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('addLinkCategoryBtn').click();
+  });
+
+  function slugifyLink() {
+    return 'link-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  }
+
+  function renderLinkEntries(links) {
+    const el = document.getElementById('linkEntries');
+    const items = links && links.length ? links : [{ label: '', url: '' }];
+    el.innerHTML = items.map((l, i) => `
+      <div class="link-entry-row" data-index="${i}">
+        <input type="text" class="link-entry-label" placeholder="ラベル（例：ホームページ）" value="${escapeHtml(l.label || '')}">
+        <input type="text" class="link-entry-url" placeholder="https://..." value="${escapeHtml(l.url || '')}">
+        <button class="icon-btn" data-remove-entry="${i}" type="button">削除</button>
+      </div>
+    `).join('');
+    el.querySelectorAll('[data-remove-entry]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.getAttribute('data-remove-entry'));
+        const current = collectLinkEntries();
+        current.splice(idx, 1);
+        renderLinkEntries(current.length ? current : [{ label: '', url: '' }]);
+      });
+    });
+  }
+
+  function collectLinkEntries() {
+    return Array.from(document.querySelectorAll('#linkEntries .link-entry-row')).map((row) => ({
+      label: row.querySelector('.link-entry-label').value.trim(),
+      url: row.querySelector('.link-entry-url').value.trim(),
+    }));
+  }
+
+  document.getElementById('linkAddEntry').addEventListener('click', () => {
+    const current = collectLinkEntries();
+    current.push({ label: '', url: '' });
+    renderLinkEntries(current);
+  });
+
+  function renderLinkList() {
+    const listEl = document.getElementById('list-links-all');
+    const countEl = document.getElementById('linkListCount');
+    const filterVal = document.getElementById('linkListFilter').value;
+    const cards = getAllLinkCardsForAdmin();
+    countEl.textContent = String(cards.length);
+
+    if (linkDataLoadFailed) {
+      listEl.innerHTML = '<p class="empty-row">data/links.json を読み込めませんでした。サーバー上（GitHub Pagesなど）で開いているか、data フォルダが正しく配置されているかご確認ください。</p>';
+      return;
+    }
+    if (cards.length === 0) {
+      listEl.innerHTML = '<p class="empty-row">登録されたカードはまだありません</p>';
+      return;
+    }
+
+    const filtered = filterVal ? cards.filter((c) => c.category === filterVal) : cards;
+    const cats = getAllLinkCategories();
+    const groups = filterVal ? cats.filter((c) => c.id === filterVal) : cats;
+
+    let html = '';
+    groups.forEach((cat) => {
+      const inCat = filtered.filter((c) => c.category === cat.id);
+      if (inCat.length === 0) return;
+      html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">${escapeHtml(cat.label)}（${inCat.length}件）</p>`;
+      html += inCat.map((c) => `
+        <div>
+          <div class="file-row">
+            <span class="file-icon">${(c.links || []).length}</span>
+            <div class="file-info">
+              <div class="file-name">${escapeHtml(c.name)}${c.isStatic ? '<span class="static-badge">初期データ</span>' : ''}</div>
+              <div class="file-meta">${escapeHtml(categoryLabel(c.category))} ・ リンク${(c.links || []).length}件</div>
+            </div>
+            <div class="file-actions">
+              <button class="icon-btn" data-view-link="${escapeHtml(c.id)}">閲覧</button>
+              <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-static="${c.isStatic}">編集</button>
+              <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-static="${c.isStatic}">削除</button>
+            </div>
+          </div>
+          <div class="post-detail" id="link-detail-${escapeHtml(c.id)}" style="display:none;"></div>
+        </div>
+      `).join('');
+    });
+    // カテゴリーが未設定・不明なカードも念のため表示
+    const uncategorized = filtered.filter((c) => !cats.some((cat) => cat.id === c.category));
+    if (uncategorized.length > 0) {
+      html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">未分類（${uncategorized.length}件）</p>`;
+      html += uncategorized.map((c) => `
+        <div>
+          <div class="file-row">
+            <span class="file-icon">${(c.links || []).length}</span>
+            <div class="file-info">
+              <div class="file-name">${escapeHtml(c.name)}${c.isStatic ? '<span class="static-badge">初期データ</span>' : ''}</div>
+              <div class="file-meta">未分類 ・ リンク${(c.links || []).length}件</div>
+            </div>
+            <div class="file-actions">
+              <button class="icon-btn" data-view-link="${escapeHtml(c.id)}">閲覧</button>
+              <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-static="${c.isStatic}">編集</button>
+              <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-static="${c.isStatic}">削除</button>
+            </div>
+          </div>
+          <div class="post-detail" id="link-detail-${escapeHtml(c.id)}" style="display:none;"></div>
+        </div>
+      `).join('');
+    }
+
+    listEl.innerHTML = html || '<p class="empty-row">該当するカードがありません</p>';
+
+    listEl.querySelectorAll('[data-view-link]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-view-link');
+        const detailEl = document.getElementById('link-detail-' + id);
+        const isOpen = detailEl.style.display !== 'none';
+        listEl.querySelectorAll('.post-detail').forEach((d) => { d.style.display = 'none'; });
+        if (isOpen) return;
+        const card = cards.find((c) => c.id === id);
+        if (!card) return;
+        detailEl.innerHTML = (card.links || []).map((l) =>
+          `<div>${escapeHtml(l.label || 'リンク')}：<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></div>`
+        ).join('') || '（リンク未設定）';
+        detailEl.style.display = 'block';
+      });
+    });
+
+    listEl.querySelectorAll('[data-edit-link]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit-link');
+        const isStatic = btn.getAttribute('data-static') === 'true';
+        const card = cards.find((c) => c.id === id);
+        if (!card) return;
+        editingLinkId = id;
+        editingLinkIsStatic = isStatic;
+        document.getElementById('linkName').value = card.name || '';
+        document.getElementById('linkCategory').value = card.category || '';
+        renderLinkEntries(card.links || []);
+        document.getElementById('linkSubmit').textContent = '変更を保存';
+        document.getElementById('linkEditingNote').style.display = 'block';
+        document.getElementById('linkCancelEdit').style.display = 'inline-block';
+        document.querySelector('#linkName').closest('.blog-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    listEl.querySelectorAll('[data-remove-link]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-remove-link');
+        const isStatic = btn.getAttribute('data-static') === 'true';
+        if (!confirm('このカードを削除しますか？')) return;
+        if (isStatic) {
+          const deleted = loadFromStorage(LINK_DELETED_KEY, []);
+          if (!deleted.includes(id)) deleted.push(id);
+          saveToStorage(LINK_DELETED_KEY, deleted);
+        } else {
+          const remaining = loadFromStorage(LINK_CARDS_KEY, []).filter((c) => c.id !== id);
+          saveToStorage(LINK_CARDS_KEY, remaining);
+        }
+        if (editingLinkId === id) resetLinkForm();
+        renderLinkList();
+        showToast('カードを削除しました');
+      });
+    });
+  }
+
+  function resetLinkForm() {
+    editingLinkId = null;
+    editingLinkIsStatic = false;
+    document.getElementById('linkName').value = '';
+    if (getAllLinkCategories().length) document.getElementById('linkCategory').value = getAllLinkCategories()[0].id;
+    renderLinkEntries([{ label: '', url: '' }]);
+    document.getElementById('linkSubmit').textContent = 'カードを追加';
+    document.getElementById('linkEditingNote').style.display = 'none';
+    document.getElementById('linkCancelEdit').style.display = 'none';
+    document.getElementById('linkConfirmBox').style.display = 'none';
+  }
+
+  document.getElementById('linkCancelEdit').addEventListener('click', resetLinkForm);
+
+  function commitLinkCard() {
+    const name = document.getElementById('linkName').value.trim();
+    const category = document.getElementById('linkCategory').value;
+    const links = collectLinkEntries().filter((l) => l.label && l.url);
+
+    if (editingLinkId && editingLinkIsStatic) {
+      const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
+      overrides[editingLinkId] = { name, category, links };
+      saveToStorage(LINK_OVERRIDE_KEY, overrides);
+      showToast('カードを更新しました');
+    } else if (editingLinkId && !editingLinkIsStatic) {
+      const list = loadFromStorage(LINK_CARDS_KEY, []);
+      const idx = list.findIndex((c) => c.id === editingLinkId);
+      if (idx > -1) {
+        list[idx] = Object.assign({}, list[idx], { name, category, links });
+        saveToStorage(LINK_CARDS_KEY, list);
+      }
+      showToast('カードを更新しました');
+    } else {
+      const list = loadFromStorage(LINK_CARDS_KEY, []);
+      list.push({ id: slugifyLink(), name, category, links });
+      saveToStorage(LINK_CARDS_KEY, list);
+      showToast('カードを追加しました');
+    }
+
+    resetLinkForm();
+    renderLinkList();
+  }
+
+  document.getElementById('linkSubmit').addEventListener('click', () => {
+    const name = document.getElementById('linkName').value.trim();
+    const links = collectLinkEntries().filter((l) => l.label && l.url);
+    if (!name) {
+      showToast('カード名を入力してください');
+      return;
+    }
+    if (links.length === 0) {
+      showToast('リンクを1件以上入力してください');
+      return;
+    }
+    const isEditing = !!editingLinkId;
+    document.getElementById('linkConfirmYes').textContent = isEditing ? '変更を確定' : '保存を確定';
+    document.getElementById('linkConfirmBox').style.display = 'block';
+    document.getElementById('linkConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  document.getElementById('linkConfirmYes').addEventListener('click', () => {
+    document.getElementById('linkConfirmBox').style.display = 'none';
+    commitLinkCard();
+  });
+  document.getElementById('linkConfirmNo').addEventListener('click', () => {
+    document.getElementById('linkConfirmBox').style.display = 'none';
+  });
+
+  function initLinksAdmin() {
+    fetchLinkData().then((data) => {
+      staticLinkCategoriesCache = data.categories || [];
+      linkCardsCache = data.cards || [];
+      populateLinkCategorySelect();
+      renderLinkCategoryManager();
+      renderLinkEntries([{ label: '', url: '' }]);
+      renderLinkList();
+    });
+  }
 
   /* ---- ホームの写真(単体差し替え・更新ボタンで反映) ---- */
 
@@ -1052,6 +1462,10 @@
       blogStaticOverrides: loadFromStorage(STATIC_OVERRIDE_KEY, {}),
       blogStaticDeleted: loadFromStorage(STATIC_DELETED_KEY, []),
       recordsFile: loadFromStorage(RECORDS_STORAGE_KEY, null),
+      linkCards: loadFromStorage(LINK_CARDS_KEY, []),
+      linkStaticOverrides: loadFromStorage(LINK_OVERRIDE_KEY, {}),
+      linkStaticDeleted: loadFromStorage(LINK_DELETED_KEY, []),
+      linkCategoriesAdded: loadFromStorage(LINK_CATEGORY_ADDED_KEY, []),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1083,12 +1497,17 @@
           saveToStorage(STATIC_OVERRIDE_KEY, imported.blogStaticOverrides || {});
           saveToStorage(STATIC_DELETED_KEY, imported.blogStaticDeleted || []);
           saveToStorage(RECORDS_STORAGE_KEY, imported.recordsFile || null);
+          saveToStorage(LINK_CARDS_KEY, imported.linkCards || []);
+          saveToStorage(LINK_OVERRIDE_KEY, imported.linkStaticOverrides || {});
+          saveToStorage(LINK_DELETED_KEY, imported.linkStaticDeleted || []);
+          saveToStorage(LINK_CATEGORY_ADDED_KEY, imported.linkCategoriesAdded || []);
         }
         renderCategoryManager();
         renderCategoryDropzones();
         renderHero();
         fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
         renderRecords();
+        initLinksAdmin();
         showToast('インポートが完了しました');
       } catch (err) {
         showToast('JSONの読み込みに失敗しました');
@@ -1103,6 +1522,7 @@
     renderHero();
     fetchStaticPosts().then((posts) => { staticPostsCache = posts; renderBlogList(); });
     renderRecords();
+    initLinksAdmin();
   }
 </script>
 

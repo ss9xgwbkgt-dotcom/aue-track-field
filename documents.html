@@ -87,9 +87,31 @@
     background:linear-gradient(to right, rgba(24,28,38,0), var(--navy) 75%);
     pointer-events:none;
   }
+  /* 左右にスクロール可能であることを示す矢印（スマホのみ・三角形） */
+  .jumpnav-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:0;height:0;
+    pointer-events:none;z-index:2;
+  }
+  .jumpnav-arrow-left{
+    left:8px;
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+    border-right:10px solid rgba(245,241,232,0.55);
+  }
+  .jumpnav-arrow-right{
+    right:8px;
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+    border-left:10px solid rgba(245,241,232,0.55);
+  }
+  /* タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示 */
+  .jumpnav-wrap.no-scroll .jumpnav-arrow{display:none;}
+  .jumpnav-wrap.no-scroll::after{display:none;}
   @media(min-width:860px){
     .jumpnav-inner{flex-wrap:wrap;overflow-x:visible;justify-content:center;padding:14px 28px;}
     .jumpnav-wrap::after{display:none;}
+    .jumpnav-arrow{display:none;}
   }
 
   main{padding:64px 0 100px;}
@@ -203,7 +225,9 @@
 
 <nav class="jumpnav" aria-label="カテゴリー内リンク">
   <div class="wrap jumpnav-wrap">
+    <span class="jumpnav-arrow jumpnav-arrow-left" aria-hidden="true"></span>
     <div class="jumpnav-inner" id="jumpnavInner"></div>
+    <span class="jumpnav-arrow jumpnav-arrow-right" aria-hidden="true"></span>
   </div>
 </nav>
 
@@ -380,7 +404,20 @@
     sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
       if (io) io.observe(el); else el.classList.add('in');
     });
+
+    updateJumpnavScrollHint();
   }
+
+  // タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示にする
+  function updateJumpnavScrollHint() {
+    const wrap = document.querySelector('.jumpnav-wrap');
+    const inner = document.getElementById('jumpnavInner');
+    if (!wrap || !inner) return;
+    const needsScroll = inner.scrollWidth > inner.clientWidth + 1;
+    wrap.classList.toggle('no-scroll', !needsScroll);
+  }
+  window.addEventListener('resize', updateJumpnavScrollHint);
+  window.addEventListener('load', updateJumpnavScrollHint);
 
   /* ---- PDFカードは新しいタブで画面いっぱいに開く（data:URLはblob:URLに変換） ---- */
   function isPdfDoc(d) {
@@ -397,7 +434,8 @@
   }
   function openPdfFullScreen(d) {
     const blobUrl = dataUrlToBlobUrl(d.dataUrl);
-    window.open(blobUrl, '_blank');
+    // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
+    location.href = blobUrl;
   }
 
   renderPage();

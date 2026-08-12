@@ -141,7 +141,7 @@
   <div class="wrap">
     <span class="eyebrow">RECORDS</span>
     <h1 class="page-title">愛教大10傑</h1>
-    <p class="page-sub">種目別の歴代トップ10記録です。下のカードをクリックすると、最新の記録表（PDF）が新しいタブで開きます。</p>
+    <p class="page-sub">種目別の歴代トップ10記録です。下のカードをクリックすると、最新の記録表（PDF）が開きます。</p>
   </div>
 </section>
 
@@ -235,9 +235,10 @@
 
   if (rec && rec.dataUrl) {
     panelTitle.textContent = rec.fileName;
-    panelText.textContent = 'クリックすると記録表（PDF）が新しいタブで開きます。';
+    panelText.textContent = 'クリックすると記録表（PDF）が開きます。';
     openBtn.addEventListener('click', () => {
-      window.open(dataUrlToBlobUrl(rec.dataUrl), '_blank');
+      // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
+      location.href = dataUrlToBlobUrl(rec.dataUrl);
     });
   } else {
     panelTitle.textContent = '記録表は現在準備中です。';

@@ -546,7 +546,8 @@
 
 
   fetch('data/posts.json')
-    .then(res => res.json())
+    .then(res => res.ok ? res.json() : [])
+    .catch(() => [])
     .then(posts => {
       const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
       const deleted = loadFromStorage(STATIC_DELETED_KEY, []);

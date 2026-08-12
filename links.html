@@ -88,9 +88,31 @@
     background:linear-gradient(to right, rgba(24,28,38,0), var(--navy) 75%);
     pointer-events:none;
   }
+  /* 左右にスクロール可能であることを示す矢印（スマホのみ・三角形） */
+  .jumpnav-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:0;height:0;
+    pointer-events:none;z-index:2;
+  }
+  .jumpnav-arrow-left{
+    left:8px;
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+    border-right:10px solid rgba(245,241,232,0.55);
+  }
+  .jumpnav-arrow-right{
+    right:8px;
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+    border-left:10px solid rgba(245,241,232,0.55);
+  }
+  /* タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示 */
+  .jumpnav-wrap.no-scroll .jumpnav-arrow{display:none;}
+  .jumpnav-wrap.no-scroll::after{display:none;}
   @media(min-width:860px){
     .jumpnav-inner{flex-wrap:wrap;overflow-x:visible;justify-content:center;padding:14px 28px;}
     .jumpnav-wrap::after{display:none;}
+    .jumpnav-arrow{display:none;}
   }
 
   main{padding:64px 0 100px;}
@@ -217,288 +239,15 @@
 
 <nav class="jumpnav" aria-label="カテゴリー内リンク">
   <div class="wrap jumpnav-wrap">
-    <div class="jumpnav-inner">
-      <a href="#aue">愛知教育大学関連</a>
-      <a href="#zenkyousen">全教戦参加校</a>
-      <a href="#tokokutai">東国体参加校</a>
-      <a href="#tokaigakuren">その他東海学連所属大学</a>
-      <a href="#renmei">陸上競技連盟</a>
-      <a href="#todofuken">都道府県陸協</a>
-      <a href="#taikai">大会サイト</a>
-      <a href="#sonota">その他</a>
-    </div>
+    <span class="jumpnav-arrow jumpnav-arrow-left" aria-hidden="true"></span>
+    <div class="jumpnav-inner" id="jumpnavInner"></div>
+    <span class="jumpnav-arrow jumpnav-arrow-right" aria-hidden="true"></span>
   </div>
 </nav>
 
 <main>
   <div class="wrap">
-    <div class="link-section" id="aue" data-reveal>
-      <h2 class="link-section-title">愛知教育大学関連</h2>
-      <div class="link-card-grid">
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知教育大学</summary>
-          <div class="link-card-btns"><a href="https://www.aichi-edu.ac.jp/?utm_source=chatgpt.com" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知教育大学陸上競技部</summary>
-          <div class="link-card-btns"><a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-      </div>
-    </div>
-
-    <div class="link-section" id="zenkyousen" data-reveal>
-      <h2 class="link-section-title">全教戦参加校</h2>
-      <div class="link-card-grid">
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">北海道教育大学</summary>
-          <div class="link-card-btns"><a href="https://www.instagram.com/hues_tf__390m?igsh=MTB4ZjRyZmRmMHR5YQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（札幌校）</a><a href="https://www.instagram.com/huea_tf?igsh=cWZ4bXI2OTZqMDZz" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（旭川校）</a><a href="https://www.instagram.com/hue.k_tf?igsh=MWxhdmdza3Qwd3Q5OA==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（釧路校）</a><a href="https://www.instagram.com/kannkyo_tf?igsh=MWxyZXZ4ajIzZ3lwaQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（函館校）</a><a href="https://www.instagram.com/gankyo_no_yan?igsh=cDVjajZ5YTZ1aDly" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（岩見校）</a><a href="https://x.com/tf_390m?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（札幌校）</a><a href="https://x.com/huea_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（旭川校）</a><a href="https://x.com/huek_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（釧路校）</a><a href="https://x.com/hue_hakodate_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（函館校）</a><a href="https://x.com/huei_tf_club?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（岩見校）</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">東京学芸大学</summary>
-          <div class="link-card-btns"><a href="https://gakugeiuniv-tf.com/?utm_source=chatgpt.com" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/tgu_tandf?igsh=MWx1d2Y3YWN6aDllag==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/tgu_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">上越教育大学</summary>
-          <div class="link-card-btns"><a href="https://jokyo-rikujou.jimdofree.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/juen_tandf?igsh=OGRhdDc5emJ2YTA0" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/juen_taf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">京都教育大学</summary>
-          <div class="link-card-btns"><a href="https://kyokyotf.wixsite.com/kyokyotf-hp" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/kyokyotf?igsh=Zng4MXJ4MHducWgz" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/kue_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">大阪教育大学</summary>
-          <div class="link-card-btns"><a href="https://osaka-kyoiku.ac.jp/university/kouhou/closeupdaikyo/athletes_view/50_2_2.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/oue_t_f?igsh=OXdqazc2eDJ2dHc=" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/oue_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">奈良教育大学</summary>
-          <div class="link-card-btns"><a href="https://www.nara-edu.ac.jp/campus_life/extracurricular/extracurricular_education/gymnastics/track_field.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/nakyo_rikujo?igsh=ejVqYzkwM25hbnF6" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">兵庫教育大学</summary>
-          <div class="link-card-btns"><a href="https://hute-tandf.jimdofree.com/%E6%B4%BB%E5%8B%95%E7%B4%B9%E4%BB%8B/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/hutex_t_f?igsh=MWliam9kMnZxenpvbg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/hute_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">鳴門教育大学</summary>
-          <div class="link-card-btns"><a href="https://naruto-u.2025.giving-campaign.jp/groups?category=sports&amp;search=%E9%99%B8%E4%B8%8A" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/run_nue?igsh=ODQzdzMxbGdxaHdz" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/nue_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">福岡教育大学</summary>
-          <div class="link-card-btns"><a href="https://fukuoka-edu-tf.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/hutex_t_f?igsh=MWliam9kMnZxenpvbg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/hute_tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-      </div>
-    </div>
-
-    <div class="link-section" id="tokokutai" data-reveal>
-      <h2 class="link-section-title">東国体参加校</h2>
-      <div class="link-card-grid">
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">岐阜大学</summary>
-          <div class="link-card-btns"><a href="https://gifu-u-riku.cocona.jp/gifu-u-riku-w/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/gifuunivtf?igsh=eGVxOWo2bW1lMTk0" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/teamgutf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">静岡大学</summary>
-          <div class="link-card-btns"><a href="https://shizudai-tf.h-p.jp/#google_vignette" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/shizuoka_shizuoka_tf?igsh=bGxyY3NqdHZybWQ3" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（静岡キャンパス）</a><a href="https://www.instagram.com/shizuoka_hamamatsu_tf?igsh=cnNpenpvd3JlcHM1" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（浜松キャンパス）</a><a href="https://x.com/shizuoka_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋大学</summary>
-          <div class="link-card-btns"><a href="https://www.nutfc.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/nagoyau_tf?igsh=b3Rtb3dtc2YzcmI4" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/nu_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋工業大学</summary>
-          <div class="link-card-btns"><a href="https://www.nitech.ac.jp/campus/student/club/rikujo.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/nit_track_field?igsh=bWdhc2FubGYxMWJm" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/nitech_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">浜松医科大学</summary>
-          <div class="link-card-btns"><a href="https://hama-med-tf.jimdofree.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/hamamed.t_f?igsh=MTRtYXV5ZWxvcjk1cg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/hamamedtf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">三重大学</summary>
-          <div class="link-card-btns"><a href="https://tfmie2023.wixsite.com/mieu-tandf" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/mieu.tandf?igsh=Zmx0bzlsZWRuNmFr" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/mie_rikubu?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-      </div>
-    </div>
-
-    <div class="link-section" id="tokaigakuren" data-reveal>
-      <h2 class="link-section-title">その他東海学連所属大学</h2>
-      <div class="link-card-grid">
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知大学</summary>
-          <div class="link-card-btns"><a href="https://www.aichi-u.ac.jp/life/nagoya/com0000034" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ（名古屋キャンパス）</a><a href="https://www.aichi-u.ac.jp/life/toyohashi/com3000035" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ（豊橋キャンパス）</a><a href="https://www.instagram.com/taf_aich_u?igsh=MTBjb2U4aXFyaDBveQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（名古屋キャンパス）</a><a href="https://www.instagram.com/rikujo_aidai?igsh=emdqbnR1aGZ6eHNn" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（豊橋キャンパス）</a><a href="https://x.com/taf_aichi_u?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知学院大学</summary>
-          <div class="link-card-btns"><a href="http://aichigakuintf.g1.xrea.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/agu_tfclub?igsh=ZnN3NXlkNDJueHdl" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/agutfclub?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知工業大学</summary>
-          <div class="link-card-btns"><a href="https://ait-athletics.github.io/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/ait_runners?igsh=MWdnNWpybWk1YWNldg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/iko_dai_ld?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">愛知淑徳大学</summary>
-          <div class="link-card-btns"><a href="https://www.aasa.ac.jp/life/club/s_nagakute/track_and_field.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/asu_t_f?igsh=MTcxcTVrd29oenlpaQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/asu_t_f?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋学芸大学</summary>
-          <div class="link-card-btns"><a href="https://www.instagram.com/nuast_f?igsh=MWJuZXQzd2RpcGpieQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">岐阜協立大学</summary>
-          <div class="link-card-btns"><a href="https://www.gku-rikujyou.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/gifukyoritsu.tf?igsh=MWQzNDl0MDBuYWc5Mw==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/gifukyoritsutf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">岐阜聖徳学園大学</summary>
-          <div class="link-card-btns"><a href="https://www.shotoku.ac.jp/student-life/circle/hashima-sports.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/gifu.shotoku.tandf?igsh=aHhvbjBnOHp5eW8w" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/shotoku_t_f?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">皇學館大學</summary>
-          <div class="link-card-btns"><a href="https://kogakkan-ekiden.my.canva.site/home" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/kogakkan.rikubu?igsh=Y3dqbGI1azdrd3Vt" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/ekiden_mg?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">至学館大学</summary>
-          <div class="link-card-btns"><a href="https://www.sgk.ac.jp/campus-life/rikujo.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/sgk_tfteam?igsh=MTRweDVuNzFrb2VvYg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">椙山女学園大学</summary>
-          <div class="link-card-btns"><a href="https://www.sugiyama-u.ac.jp/univ/campus/club/sports-club.html#hdgLg33" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/sugiyama_tf?igsh=MTZobms0MmpjOGlqdQ==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/sugirikuz2?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">鈴鹿大学</summary>
-          <div class="link-card-btns"><a href="https://www.suzuka.ac.jp/campuslife/club/athletics/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/suzuka_tf?igsh=a2ViM29lYTEyb2xo" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">中京大学</summary>
-          <div class="link-card-btns"><a href="https://club.chukyo-u.ac.jp/tf/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/chukyo_t.f?igsh=OWg1ejhlOGVqMnpy" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/chukyot_f?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">中部大学</summary>
-          <div class="link-card-btns"><a href="https://www.chubu.ac.jp/student-life/club/introduction/track-and-field/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/chubu_track_and_field?igsh=ancxZm00cDFtczMz" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">中部学院大学</summary>
-          <div class="link-card-btns"><a href="https://www.chubu-gu.ac.jp/club/rikujo/rikujo.html" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/cgu_rikujo?igsh=ZmNqNTg2Z25tZzJk" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">東海学園大学</summary>
-          <div class="link-card-btns"><a href="https://www.tokaigakuen-u.ac.jp/club/track/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/tokaigakuentrack?igsh=Mnp2aTRkMXlydTQ3" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/tokaigakuentf13?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">常葉大学</summary>
-          <div class="link-card-btns"><a href="http://www.hm.tokoha-u.ac.jp/~taf/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/tokoha_rikujou?igsh=MWVndWQ1Z2E5c3E0dg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（浜松キャンパス）</a><a href="https://www.instagram.com/tokoha.s_tf?igsh=dmJicDcyeW5rcXRi" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（草薙・瀬名・水落キャンパス）</a><a href="https://x.com/tokoharikujou?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X（浜松キャンパス）</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋外国語大学</summary>
-          <div class="link-card-btns"><a href="https://www.instagram.com/tufs.tf?igsh=MXYxenlwZG4zYW02Zw==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋学院大学</summary>
-          <div class="link-card-btns"><a href="https://www.ngu.jp/campuslife/club/physical/field-track/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/ngu.tf.nagoya?igsh=MW5yYmt3MjQ2dG9ycA==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（名古屋キャンパス）</a><a href="https://www.instagram.com/ngu_tandf?igsh=MWc0dzA3N3hqMjZvcw==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram（瀬戸キャンパス）</a><a href="https://x.com/ngutandf1964?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名古屋市立大学</summary>
-          <div class="link-card-btns"><a href="https://ncutf.jimdofree.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/ncu_tf_official?igsh=MWRqaDU0MGJrNXQ3ag==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/ncu758tandf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">南山大学</summary>
-          <div class="link-card-btns"><a href="http://nanzantfc.web.fc2.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/nanzan_u_tf?igsh=ZW8xYm80YjdqaXp3" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/nanzan_u_tf?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">日本福祉大学</summary>
-          <div class="link-card-btns"><a href="https://nfu-trackfield.jimdoweb.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/nfu_track.field?igsh=MWc2OHYxZDExczJvMw==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/nfu_tft?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名城大学</summary>
-          <div class="link-card-btns"><a href="http://meijounivtf.web.fc2.com/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://www.instagram.com/meijorikujo?igsh=MTVkYnJxMW02NDAzbg==" target="_blank" rel="noopener" class="link-btn link-btn--instagram">Instagram</a><a href="https://x.com/meijorikujo?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-        <details class="link-card link-card--choice">
-          <summary class="link-card-name">名城大学女子駅伝</summary>
-          <div class="link-card-btns"><a href="https://www.meijo-u.ac.jp/mag/diamond/" target="_blank" rel="noopener" class="link-btn link-btn--hp">ホームページ</a><a href="https://x.com/meijo_ekiden?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" class="link-btn link-btn--x">X(旧Twitter)</a></div>
-        </details>
-      </div>
-    </div>
-
-    <div class="link-section" id="renmei" data-reveal>
-      <h2 class="link-section-title">陸上競技連盟</h2>
-      <div class="link-card-grid">
-        <a class="link-card link-card--single" href="http://gold.jaic.org/jaic/tgrr/index.htm" target="_blank" rel="noopener">
-          <div class="link-card-name">東海学生陸上競技連盟</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.iuau.jp/" target="_blank" rel="noopener">
-          <div class="link-card-name">日本学生陸上競技連合</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.jaaf.or.jp/fan/" target="_blank" rel="noopener">
-          <div class="link-card-name">日本陸上競技連盟</div>
-        </a>
-        <a class="link-card link-card--single" href="https://www.worldathletics.org/" target="_blank" rel="noopener">
-          <div class="link-card-name">Word Athletics（世界陸連）</div>
-        </a>
-      </div>
-    </div>
-
-    <div class="link-section" id="todofuken" data-reveal>
-      <h2 class="link-section-title">都道府県陸協</h2>
-      <div class="link-card-grid">
-        <a class="link-card link-card--single" href="http://www.aichi-rk.jp/" target="_blank" rel="noopener">
-          <div class="link-card-name">愛知陸上競技協会</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.gifu-riku.com/" target="_blank" rel="noopener">
-          <div class="link-card-name">岐阜陸上競技協会</div>
-        </a>
-        <a class="link-card link-card--single" href="http://mierk.jp/menu/" target="_blank" rel="noopener">
-          <div class="link-card-name">三重陸上競技協会</div>
-        </a>
-        <a class="link-card link-card--single" href="https://shizuoka-jaaf.com/" target="_blank" rel="noopener">
-          <div class="link-card-name">静岡陸上競技協会</div>
-        </a>
-      </div>
-    </div>
-
-    <div class="link-section" id="taikai" data-reveal>
-      <h2 class="link-section-title">大会サイト</h2>
-      <div class="link-card-grid">
-        <a class="link-card link-card--single" href="http://daigaku-ekiden.com/" target="_blank" rel="noopener">
-          <div class="link-card-name">全日本大学駅伝</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.ntv.co.jp/morinomiyako/" target="_blank" rel="noopener">
-          <div class="link-card-name">全日本大学女子駅伝</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.izumo-ekiden.jp/" target="_blank" rel="noopener">
-          <div class="link-card-name">出雲全日本大学駅伝</div>
-        </a>
-        <a class="link-card link-card--single" href="http://www.fujisan-joshiekiden.jp/" target="_blank" rel="noopener">
-          <div class="link-card-name">全日本大学女子選抜駅伝</div>
-        </a>
-        <a class="link-card link-card--single" href="http://games.nssu-athletic.com/ld.html" target="_blank" rel="noopener">
-          <div class="link-card-name">日体大長距離記録会</div>
-        </a>
-        <a class="link-card link-card--single" href="https://www.go-tokai-ekiden.com/tokai_competition/" target="_blank" rel="noopener">
-          <div class="link-card-name">東海大長距離記録会</div>
-        </a>
-        <a class="link-card link-card--single" href="https://club.chukyo-u.ac.jp/tf/taikai01.html" target="_blank" rel="noopener">
-          <div class="link-card-name">中京土曜記録会</div>
-        </a>
-        <a class="link-card link-card--single" href="https://nfu-trackfield.jimdoweb.com" target="_blank" rel="noopener">
-          <div class="link-card-name">日本福祉大学記録会</div>
-        </a>
-        <a class="link-card link-card--single" href="https://www.gku-rikujyou.com/games/" target="_blank" rel="noopener">
-          <div class="link-card-name">GKU記録会</div>
-        </a>
-      </div>
-    </div>
-
-    <div class="link-section" id="sonota" data-reveal>
-      <h2 class="link-section-title">その他</h2>
-      <div class="link-card-grid">
-        <a class="link-card link-card--single" href="https://www.rikujyokyogi.co.jp/" target="_blank" rel="noopener">
-          <div class="link-card-name">月陸</div>
-        </a>
-        <a class="link-card link-card--single" href="https://sports.yahoo.co.jp/athletic/" target="_blank" rel="noopener">
-          <div class="link-card-name">スポーツナビ</div>
-        </a>
-        <a class="link-card link-card--single" href="https://x.com/rikujouterada?s=21&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">
-          <div class="link-card-name">寺田的陸上競技</div>
-        </a>
-      </div>
-    </div>
+    <div id="linkSections"></div>
   </div>
 </main>
 
@@ -548,14 +297,124 @@
     burger.setAttribute('aria-expanded','false');
   }));
 
+  let revealObserver = null;
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const io = new IntersectionObserver((entries) => {
+    revealObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
     }, { threshold: 0.08 });
-    document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+    document.querySelectorAll('[data-reveal]').forEach(el => revealObserver.observe(el));
   } else {
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
+
+  // タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示にする
+  function updateJumpnavScrollHint() {
+    const wrap = document.querySelector('.jumpnav-wrap');
+    const inner = document.querySelector('.jumpnav-inner');
+    if (!wrap || !inner) return;
+    const needsScroll = inner.scrollWidth > inner.clientWidth + 1;
+    wrap.classList.toggle('no-scroll', !needsScroll);
+  }
+  updateJumpnavScrollHint();
+  window.addEventListener('resize', updateJumpnavScrollHint);
+  window.addEventListener('load', updateJumpnavScrollHint);
+
+  /* ===== リンク集：data/links.json ＋ 編集者画面での追加・編集・削除を反映 ===== */
+  const LINK_CARDS_KEY = 'aue_link_cards_v1';
+  const LINK_OVERRIDE_KEY = 'aue_link_static_overrides_v1';
+  const LINK_DELETED_KEY = 'aue_link_static_deleted_v1';
+
+  function loadFromStorage(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+  function inferLinkType(label) {
+    const l = String(label);
+    if (l.toLowerCase().includes('instagram')) return 'instagram';
+    if (l.toUpperCase().startsWith('X') || l.toLowerCase().includes('twitter')) return 'x';
+    if (l.includes('ホームページ') || l.toLowerCase().includes('hp')) return 'hp';
+    return '';
+  }
+  function renderLinkCard(c) {
+    const links = (c.links || []).filter((l) => l && l.url);
+    if (links.length === 0) {
+      return `<div class="link-card"><div class="link-card-name">${escapeHtml(c.name)}</div><p class="link-card-none">リンク未設定</p></div>`;
+    }
+    if (links.length === 1) {
+      return `<a class="link-card link-card--single" href="${escapeHtml(links[0].url)}" target="_blank" rel="noopener"><div class="link-card-name">${escapeHtml(c.name)}</div></a>`;
+    }
+    const btns = links.map((l) => {
+      const type = inferLinkType(l.label);
+      return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="link-btn${type ? ' link-btn--' + type : ''}">${escapeHtml(l.label)}</a>`;
+    }).join('');
+    return `
+      <details class="link-card link-card--choice">
+        <summary class="link-card-name">${escapeHtml(c.name)}</summary>
+        <div class="link-card-btns">${btns}</div>
+      </details>
+    `;
+  }
+
+  const LINK_CATEGORY_ADDED_KEY = 'aue_link_categories_added_v1';
+
+  fetch('data/links.json')
+    .then((res) => (res.ok ? res.json() : { categories: [], cards: [] }))
+    .catch(() => ({ categories: [], cards: [] }))
+    .then((data) => {
+      const addedCategories = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
+      const categories = (data.categories || []).concat(addedCategories);
+
+      const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
+      const deleted = loadFromStorage(LINK_DELETED_KEY, []);
+      const staticCards = (data.cards || [])
+        .filter((c) => !deleted.includes(c.id))
+        .map((c) => Object.assign({}, c, overrides[c.id] || {}));
+      const dynamicCards = loadFromStorage(LINK_CARDS_KEY, []);
+      const allCards = staticCards.concat(dynamicCards);
+
+      // ジャンプナビを生成
+      const jumpnavEl = document.getElementById('jumpnavInner');
+      jumpnavEl.innerHTML = categories.map((cat) => `<a href="#${escapeHtml(cat.id)}">${escapeHtml(cat.label)}</a>`).join('');
+
+      // セクションを生成
+      const sectionsEl = document.getElementById('linkSections');
+      sectionsEl.innerHTML = categories.map((cat) => `
+        <div class="link-section" id="${escapeHtml(cat.id)}" data-reveal>
+          <h2 class="link-section-title">${escapeHtml(cat.label)}</h2>
+          <div class="link-card-grid" id="grid-${escapeHtml(cat.id)}"></div>
+        </div>
+      `).join('');
+
+      categories.forEach((cat) => {
+        const grid = document.getElementById('grid-' + cat.id);
+        if (!grid) return;
+        const cardsInCat = allCards.filter((c) => c.category === cat.id);
+        if (cardsInCat.length === 0) {
+          grid.innerHTML = '<p class="link-card-none">まだリンクがありません</p>';
+          return;
+        }
+        grid.innerHTML = cardsInCat.map(renderLinkCard).join('');
+      });
+
+      // アニメーション対象・ジャンプナビの矢印判定を、動的生成後の要素に対して再実行
+      sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          revealObserver.observe(el);
+        } else {
+          el.classList.add('in');
+        }
+      });
+      updateJumpnavScrollHint();
+    });
 
 </script>
 
