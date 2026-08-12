@@ -366,7 +366,7 @@
         </div>
       </div>
       <div class="hero-photo" id="heroPhotoContainer">
-        <img src="images/team-photo.jpg" alt="愛知教育大学陸上競技部 部員集合写真" id="heroPhotoImg">
+        <img alt="愛知教育大学陸上競技部 部員集合写真" id="heroPhotoImg" style="display:none;">
       </div>
     </div>
   </section>
@@ -534,12 +534,15 @@
     const container = document.getElementById('heroPhotoContainer');
     const img = document.getElementById('heroPhotoImg');
     if (hero && hero.dataUrl) {
-      if (img) img.src = hero.dataUrl;
+      if (img) {
+        img.src = hero.dataUrl;
+        img.style.display = 'block';
+      }
     } else if (container && img) {
       img.remove();
       const placeholder = document.createElement('div');
       placeholder.className = 'hero-photo-placeholder';
-      placeholder.textContent = '写真は現在準備中です。';
+      placeholder.textContent = '写真は準備中です。';
       container.appendChild(placeholder);
     }
   })();

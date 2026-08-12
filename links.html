@@ -349,9 +349,6 @@
     if (links.length === 0) {
       return `<div class="link-card"><div class="link-card-name">${escapeHtml(c.name)}</div><p class="link-card-none">リンク未設定</p></div>`;
     }
-    if (links.length === 1) {
-      return `<a class="link-card link-card--single" href="${escapeHtml(links[0].url)}" target="_blank" rel="noopener"><div class="link-card-name">${escapeHtml(c.name)}</div></a>`;
-    }
     const btns = links.map((l) => {
       const type = inferLinkType(l.label);
       return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="link-btn${type ? ' link-btn--' + type : ''}">${escapeHtml(l.label)}</a>`;
