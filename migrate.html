@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初期データ移行ツール（一度だけ使用）</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{font-family:sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.8;color:#181c26;}
+  h1{font-size:20px;margin-bottom:8px;}
+  .warn{background:#fff3e0;border:1px solid #f0c36d;padding:14px 16px;border-radius:6px;margin-bottom:24px;font-size:13px;}
+  label{display:block;margin-top:14px;font-size:13px;font-weight:bold;}
+  input{width:100%;padding:10px;margin-top:4px;border:1px solid #ccc;border-radius:4px;font-size:14px;box-sizing:border-box;}
+  button{margin-top:20px;padding:12px 24px;background:#b8402b;color:#fff;border:0;border-radius:4px;cursor:pointer;font-size:14px;}
+  button:disabled{background:#aaa;cursor:not-allowed;}
+  #log{margin-top:24px;background:#181c26;color:#f5f1e8;padding:16px;border-radius:6px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:400px;overflow-y:auto;}
+</style>
+</head>
+<body>
+
+<h1>初期データ移行ツール</h1>
+<div class="warn">
+  これは <b>data/posts.json</b> と <b>data/links.json</b> の内容をSupabaseへ一度だけ登録するための管理者専用ツールです。<br>
+  ・このファイルは、posts.json / links.json と同じ場所（サイトのルート、data/フォルダの隣）に置いて開いてください。<br>
+  ・実行は<b>1回だけ</b>にしてください。複数回実行すると同じデータが重複して登録されます。<br>
+  ・作業が終わったら、このファイルはサーバーから削除して問題ありません。
+</div>
+
+<label>Supabase Project URL</label>
+<input type="text" id="supabaseUrl" value="https://wafgojuwqwfnjkbjttfx.supabase.co">
+
+<label>Supabase Publishable key</label>
+<input type="text" id="supabaseKey" placeholder="ここに Publishable key を貼り付け">
+
+<label>管理者メールアドレス</label>
+<input type="email" id="email" placeholder="admin@example.com">
+
+<label>パスワード</label>
+<input type="password" id="password">
+
+<button id="runBtn">ログインして移行を実行</button>
+
+<div id="log"></div>
+
+<script>
+  const logEl = document.getElementById('log');
+  function log(msg) {
+    logEl.textContent += msg + '\n';
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', async () => {
+    const runBtn = document.getElementById('runBtn');
+    runBtn.disabled = true;
+    logEl.textContent = '';
+
+    const url = document.getElementById('supabaseUrl').value.trim();
+    const key = document.getElementById('supabaseKey').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!url || !key || !email || !password) {
+      log('URL・Publishable key・メールアドレス・パスワードをすべて入力してください。');
+      runBtn.disabled = false;
+      return;
+    }
+
+    const supabase = window.supabase.createClient(url, key);
+
+    log('ログインしています…');
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      log('ログインに失敗しました： ' + signInError.message);
+      runBtn.disabled = false;
+      return;
+    }
+    log('ログイン成功： ' + signInData.user.email);
+
+    // ---- 既存データの重複チェック ----
+    const { count: postCount } = await supabase.from('blog_posts').select('*', { count: 'exact', head: true });
+    const { count: cardCount } = await supabase.from('link_cards').select('*', { count: 'exact', head: true });
+    if ((postCount && postCount > 0) || (cardCount && cardCount > 0)) {
+      const proceed = confirm(
+        `すでに blog_posts に${postCount}件、link_cards に${cardCount}件のデータがあります。\n` +
+        'このまま実行すると重複して登録される可能性があります。それでも続けますか？'
+      );
+      if (!proceed) {
+        log('中止しました。');
+        runBtn.disabled = false;
+        return;
+      }
+    }
+
+    try {
+      // ---- posts.json の読み込み・登録 ----
+      log('\ndata/posts.json を読み込んでいます…');
+      const postsRes = await fetch('data/posts.json');
+      if (!postsRes.ok) throw new Error('data/posts.json が見つかりません（このファイルの置き場所を確認してください）');
+      const posts = await postsRes.json();
+      log(`${posts.length}件の記事が見つかりました。登録します…`);
+
+      for (const p of posts) {
+        const { error } = await supabase.from('blog_posts').insert({
+          title: p.title,
+          tag: p.category,
+          post_date: p.date,
+          body: p.body || '',
+        });
+        if (error) {
+          log(`  ✗ 「${p.title}」の登録に失敗： ${error.message}`);
+        } else {
+          log(`  ✓ 「${p.title}」を登録しました`);
+        }
+      }
+
+      // ---- links.json の読み込み・登録 ----
+      log('\ndata/links.json を読み込んでいます…');
+      const linksRes = await fetch('data/links.json');
+      if (!linksRes.ok) throw new Error('data/links.json が見つかりません（このファイルの置き場所を確認してください）');
+      const linksData = await linksRes.json();
+      log(`${linksData.categories.length}件のカテゴリー、${linksData.cards.length}件のカードが見つかりました。登録します…`);
+
+      // カテゴリーを登録し、旧ID→新IDの対応表を作る
+      const categoryIdMap = {};
+      for (let i = 0; i < linksData.categories.length; i++) {
+        const cat = linksData.categories[i];
+        const { data, error } = await supabase.from('link_categories')
+          .insert({ label: cat.label, sort_order: i })
+          .select('id')
+          .single();
+        if (error) {
+          log(`  ✗ カテゴリー「${cat.label}」の登録に失敗： ${error.message}`);
+          continue;
+        }
+        categoryIdMap[cat.id] = data.id;
+        log(`  ✓ カテゴリー「${cat.label}」を登録しました`);
+      }
+
+      // カードとリンクを登録
+      for (const card of linksData.cards) {
+        const newCategoryId = categoryIdMap[card.category] || null;
+        const { data: cardData, error: cardError } = await supabase.from('link_cards')
+          .insert({ name: card.name, category_id: newCategoryId })
+          .select('id')
+          .single();
+        if (cardError) {
+          log(`  ✗ カード「${card.name}」の登録に失敗： ${cardError.message}`);
+          continue;
+        }
+        const urlRows = (card.links || []).map((l, i) => ({
+          card_id: cardData.id,
+          label: l.label,
+          url: l.url,
+          sort_order: i,
+        }));
+        if (urlRows.length > 0) {
+          const { error: urlError } = await supabase.from('link_card_urls').insert(urlRows);
+          if (urlError) {
+            log(`  ✗ 「${card.name}」のリンク登録に失敗： ${urlError.message}`);
+            continue;
+          }
+        }
+        log(`  ✓ カード「${card.name}」を登録しました（リンク${urlRows.length}件）`);
+      }
+
+      log('\n=== 移行が完了しました ===');
+      log('Supabaseダッシュボードの Table Editor で、blog_posts / link_categories / link_cards / link_card_urls の中身を確認してください。');
+    } catch (err) {
+      log('\nエラーが発生しました： ' + err.message);
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
