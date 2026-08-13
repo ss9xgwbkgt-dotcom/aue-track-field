@@ -171,7 +171,7 @@
   <div class="wrap">
     <span class="eyebrow">DOCUMENTS</span>
     <h1 class="page-title">各種資料</h1>
-    <p class="page-sub">各種資料をまとめています。</p>
+    <p class="page-sub">各種資料を掲載しています。</p>
   </div>
 </section>
 
@@ -309,34 +309,20 @@
         grid.innerHTML = '<p class="doc-empty">準備中</p>';
         return;
       }
-      grid.innerHTML = docs.map((d) => {
-        const isPdf = isPdfDoc(d);
-        if (isPdf) {
-          return `
-            <button type="button" class="doc-card" data-preview="${escapeHtml(d.id)}">
-              <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
-              <div class="doc-info">
-                <div class="doc-name">${escapeHtml(d.fileName)}</div>
-                <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
-              </div>
-            </button>
-          `;
-        }
-        return `
-          <a class="doc-card" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">
-            <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
-            <div class="doc-info">
-              <div class="doc-name">${escapeHtml(d.fileName)}</div>
-              <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
-            </div>
-          </a>
-        `;
-      }).join('');
+      grid.innerHTML = docs.map((d) => `
+        <button type="button" class="doc-card" data-open="${escapeHtml(d.id)}">
+          <span class="doc-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+          <div class="doc-info">
+            <div class="doc-name">${escapeHtml(d.fileName)}</div>
+            <div class="doc-meta">${d.sizeLabel || ''}${d.uploadedAt ? ' ・ ' + formatDate(d.uploadedAt) : ''}</div>
+          </div>
+        </button>
+      `).join('');
 
-      grid.querySelectorAll('[data-preview]').forEach((btn) => {
+      grid.querySelectorAll('[data-open]').forEach((btn) => {
         btn.addEventListener('click', () => {
-          const doc = docs.find((d) => d.id === btn.getAttribute('data-preview'));
-          if (doc) openPdfFullScreen(doc);
+          const doc = docs.find((d) => d.id === btn.getAttribute('data-open'));
+          if (doc) openFileFullScreen(doc);
         });
       });
     });
@@ -346,22 +332,20 @@
     });
   }
 
-  /* ---- PDFカードは新しいタブで画面いっぱいに開く（data:URLはblob:URLに変換） ---- */
-  function isPdfDoc(d) {
-    return d.dataUrl.startsWith('data:application/pdf') || /\.pdf$/i.test(d.fileName);
-  }
+  /* ---- ファイルは同じタブで直接開く（data:URLはblob:URLに変換） ---- */
   function dataUrlToBlobUrl(dataUrl) {
     const [header, base64] = dataUrl.split(',');
     const mimeMatch = header.match(/data:(.*?);base64/);
-    const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
     const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     return URL.createObjectURL(new Blob([bytes], { type: mime }));
   }
-  function openPdfFullScreen(d) {
+  function openFileFullScreen(d) {
     const blobUrl = dataUrlToBlobUrl(d.dataUrl);
-    // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
+    // iOS Safariはdownload属性やwindow.open（新しいタブ）でのblob:URLを正しく扱えないことがあるため、
+    // 同じタブでそのまま開く（Safari標準のビューアに任せる）
     location.href = blobUrl;
   }
 

@@ -284,19 +284,11 @@
     if (isImageDataUrl(image.dataUrl)) {
       return `<img class="post-image" src="${image.dataUrl}" alt="${escapeHtml(title)}">`;
     }
-    if (isPdfDataUrl(image.dataUrl, image.fileName)) {
-      return `
-        <button type="button" class="post-attachment" data-pdf-open>
-          <span class="post-attachment-icon">${escapeHtml(getExtLabel(image.fileName))}</span>
-          <span class="post-attachment-name">${escapeHtml(image.fileName)}</span>
-        </button>
-      `;
-    }
     return `
-      <a class="post-attachment" href="${image.dataUrl}" download="${escapeHtml(image.fileName)}">
+      <button type="button" class="post-attachment" data-file-open>
         <span class="post-attachment-icon">${escapeHtml(getExtLabel(image.fileName))}</span>
         <span class="post-attachment-name">${escapeHtml(image.fileName)}</span>
-      </a>
+      </button>
     `;
   }
   function loadFromStorage(key, fallback) {
@@ -353,13 +345,14 @@
       });
 
       listEl.querySelectorAll('.post-card').forEach((cardEl, i) => {
-        const pdfBtn = cardEl.querySelector('[data-pdf-open]');
-        if (pdfBtn) {
-          pdfBtn.addEventListener('click', (e) => {
+        const fileBtn = cardEl.querySelector('[data-file-open]');
+        if (fileBtn) {
+          fileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             const post = sorted[i];
             if (post && post.image && post.image.dataUrl) {
-              // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
+              // iOS Safariはdownload属性やwindow.open（新しいタブ）でのblob:URLを正しく扱えないことがあるため、
+              // 同じタブでそのまま開く
               location.href = dataUrlToBlobUrl(post.image.dataUrl);
             }
           });

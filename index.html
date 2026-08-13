@@ -221,17 +221,19 @@
   .about-list{margin-top:30px;display:flex;flex-direction:column;border-top:1px solid var(--cream-line);}
   .about-list li{padding:16px 0;border-bottom:1px solid var(--cream-line);display:flex;gap:18px;font-size:13px;color:var(--ink-dim);}
   .about-list li b{font-family:var(--f-mono);color:var(--olive);min-width:5.5em;}
-  .about-visual{
+  .about-visual{display:flex;flex-direction:column;gap:20px;}
+  .about-visual .quote-card{
     background:var(--navy);color:#f5f1e8;border-radius:4px;
     padding:34px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;
   }
-  .about-visual::before{
+  .about-visual .quote-card::before{
     content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;
     border:2px solid var(--gold);border-radius:50%;opacity:.5;
   }
   .about-visual .quote{font-family:var(--f-display);font-size:21px;line-height:1.55;position:relative;z-index:1;}
   .about-visual .quote-by{margin-top:18px;font-family:var(--f-mono);font-size:12px;color:var(--gold);position:relative;z-index:1;}
   @media(max-width:860px){.about-grid{grid-template-columns:1fr;}}
+  @media(max-width:520px){.about-visual .quote-card{padding:26px;}.about-visual .quote{font-size:19px;}}
 
   /* ---------- 8 lanes navigation (signature, cream / "WHERE TO GO") ---------- */
   .lanes{background:var(--cream);border-bottom:1px solid var(--cream-line);}
@@ -378,7 +380,7 @@
         <span class="section-tag">ABOUT US</span>
         <h2 class="section-title">自分史上、<br>最高へ。</h2>
         <p class="about-lead" style="margin-top:28px;">
-          愛知教育大学陸上競技部では、<strong style="color:var(--rust);">仲間と競い、支え合い</strong>ながら、日々の練習に励んでいます。競技経験の有無を問わず、それぞれの目標に向かって<strong style="color:var(--rust);">「本気」</strong>で挑戦し、仲間とともに成長できる環境がここにあります。
+          愛知教育大学陸上競技部では、<strong style="color:var(--rust);">仲間と競い、支え合い</strong>ながら、日々の練習に励んでいます。それぞれの目標やチーム全体の目標に向かって<strong style="color:var(--rust);">「本気」</strong>で挑戦し、仲間とともに成長できる環境がここにあります。
         </p>
         <ul class="about-list">
           <li><b>活動ブロック</b><span>短距離ブロック・中長距離ブロック・フィールドブロック</span></li>
@@ -387,7 +389,12 @@
         </ul>
       </div>
       <div class="about-visual" data-reveal>
-        <p class="quote">「今」を<br>積み重ねるということ。<br><br>仲間と競い、<br>限界に挑む。</p>
+        <div class="quote-card">
+          <p class="quote">「今」を<br>積み重ねるということ。</p>
+        </div>
+        <div class="quote-card">
+          <p class="quote">仲間と競い、<br>限界に挑む。</p>
+        </div>
       </div>
     </div>
   </section>

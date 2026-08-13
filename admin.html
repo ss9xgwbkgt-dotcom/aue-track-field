@@ -55,6 +55,20 @@
   .update-btn:hover{filter:brightness(1.08);}
   .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
 
+  .global-pending-banner{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:var(--rust);color:#fff;
+    padding:16px 20px;text-align:center;
+    font-family:var(--f-display);font-size:14px;font-weight:600;letter-spacing:0.02em;
+    box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+    transform:translateY(-120%);
+    transition:transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  .global-pending-banner.show{transform:translateY(0);}
+  .global-pending-icon{font-size:16px;flex-shrink:0;}
+  @media(max-width:640px){.global-pending-banner{font-size:12.5px;padding:14px 16px;}}
+
   .dropzone{
     border:2px dashed var(--cream-line);border-radius:8px;padding:38px 20px;text-align:center;
     font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);cursor:pointer;transition:border-color .2s,background .2s;
@@ -86,6 +100,10 @@
   .empty-row{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:6px 2px;}
   #linkListDetails summary::-webkit-details-marker{display:none;}
   #linkListDetails summary{outline:none;}
+  #blogListDetails summary::-webkit-details-marker{display:none;}
+  #blogListDetails summary{outline:none;}
+  #categoryListDetails summary::-webkit-details-marker{display:none;}
+  #categoryListDetails summary{outline:none;}
   .example-details summary{list-style:none;cursor:pointer;outline:none;font-family:var(--f-mono);font-size:12px;color:var(--rust);display:flex;align-items:center;gap:6px;}
   .example-details summary::-webkit-details-marker{display:none;}
   .example-details summary::before{content:"▶";font-size:9px;transition:transform .2s;}
@@ -122,6 +140,11 @@
 </head>
 <body>
 
+<div id="globalPendingBanner" class="global-pending-banner">
+  <span class="global-pending-icon">⚠</span>
+  <span>まだ更新ボタンが押されていない変更があります。「更新」ボタンを押して確定してください。</span>
+</div>
+
 <header>
   <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
     <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD ー 編集者ページ</small></span>
@@ -143,9 +166,9 @@
       <h1>サイトの管理</h1>
       <p class="lead">各エリアにファイルをドラッグ＆ドロップ（またはクリックして選択）すると、対応するページに自動で反映されます。</p>
 
-      <div style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
-        <p style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px;">この画面で編集できること</p>
-        <div style="display:flex;flex-direction:column;gap:16px;">
+      <details class="example-details" style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
+        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">この画面で編集できること</summary>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">①</span>
             <div>
@@ -184,25 +207,25 @@
             </div>
           </div>
         </div>
-      </div>
+      </details>
 
-      <div style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
-        <p style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px;">更新・削除の操作方法</p>
-        <div style="display:flex;flex-direction:column;gap:16px;">
+      <details class="example-details" style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
+        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">更新・削除の操作方法</summary>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">追加・変更するとき（更新ボタン方式）</div>
             <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">ファイルの追加や内容の変更をしても、その場ではサイトに反映されません。<b style="color:var(--rust-dark);">「更新」ボタン</b>を押す→<b style="color:var(--rust-dark);">確認ダイアログ</b>で「更新を確定」を押す、の2ステップで初めて反映されます。ボタンを押す前にページを離れれば、変更はそのまま取り消されます。</div>
           </div>
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">削除するとき（確認ダイアログ方式）</div>
-            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;"><b style="color:var(--rust-dark);">「削除」ボタン</b>を押すと<b style="color:var(--rust-dark);">確認ダイアログ</b>が出ます。「OK」を押すとその場ですぐに削除されます（更新ボタンは不要です）。</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;"><b style="color:var(--rust-dark);">「削除」ボタン</b>を押すと<b style="color:var(--rust-dark);">確認ダイアログ</b>が出ます。「OK」を押すとその場ですぐに削除されます。更新ボタンは不要です。</div>
           </div>
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">カテゴリー・タグを削除するとき</div>
             <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">カテゴリーやタグを削除しても、それに属していたファイル・カード・記事は消えません。「未分類」「タグなし」として残るので、後から編集して振り分け直せます。</div>
           </div>
         </div>
-      </div>
+      </details>
 
       <div class="warn">
         <span>⚠</span>
@@ -234,7 +257,7 @@
         <p class="lead" style="margin-bottom:14px;">トップページ上部の集合写真を差し替えます。※挿入可能数:1</p>
 
         <details class="example-details" style="margin-bottom:22px;">
-          <summary>使い方の例を見る</summary>
+          <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、トップページの最初の写真が変わります。スマホ表示では文字の上、パソコン表示だと文字の右に表示されます。</p>
 
@@ -276,24 +299,11 @@
       </div>
 
       <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">ブログ記事</div>
-          <div class="update-row">
-            <span class="update-msg" id="blogUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="blogUpdateBtn" type="button">更新</button>
-          </div>
-        </div>
-        <div id="blogConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="blogConfirmYes" type="button">更新を確定</button>
-            <button class="icon-btn" id="blogConfirmNo" type="button">キャンセル</button>
-          </div>
-        </div>
+        <div class="cat-title">ブログ記事</div>
         <p class="lead" style="margin-bottom:14px;">タイトル・タグ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。投稿した記事は、下の一覧からいつでも再編集・削除できます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
-          <summary>使い方の例を見る</summary>
+          <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、このように反映されます。</p>
 
@@ -366,11 +376,25 @@
             <button class="btn" id="blogSubmit" type="button">投稿する</button>
             <button class="icon-btn" id="blogCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
           </div>
+          <div id="blogConfirmBox" style="display:none;margin-top:6px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+            <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に投稿してもよろしいですか？</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" id="blogConfirmYes" type="button">投稿を確定</button>
+              <button class="icon-btn" id="blogConfirmNo" type="button">キャンセル</button>
+            </div>
+          </div>
         </div>
 
-        <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:26px 0 12px;">投稿済みの記事一覧</h4>
-        <p id="blogOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
-        <div class="file-list" id="list-blog-all"></div>
+        <details id="blogListDetails">
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 12px;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">投稿済みの記事一覧（<span id="blogListCount">0</span>件）　<span style="color:var(--rust);">▼ クリックで開閉</span></h4>
+          </summary>
+          <select id="blogListFilter" style="font-family:var(--f-mono);font-size:12px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
+            <option value="">すべてのタグ</option>
+          </select>
+          <p id="blogOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
+          <div class="file-list" id="list-blog-all"></div>
+        </details>
       </div>
 
       <div class="cat-section">
@@ -415,7 +439,7 @@
         <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料を追加・削除・並べ替えができます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
-          <summary>使い方の例を見る</summary>
+          <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">下で追加した見出し・ドロップしたファイルは、実際の「各種資料」ページではこのように表示されます</p>
 
@@ -438,13 +462,20 @@
           </div>
         </details>
 
-        <div id="categoryManager" class="file-list" style="margin-bottom:16px;"></div>
+        <details id="categoryListDetails" style="margin-bottom:20px;">
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">カテゴリーの編集（<span id="categoryListCount">0</span>件）　<span style="color:var(--rust);">▼ クリックで開閉</span></h4>
+          </summary>
 
-        <div style="display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-          <input type="text" id="newCategoryInput" placeholder="新しいカテゴリー名（例：全教戦関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
-          <button class="btn" id="addCategoryBtn" type="button">カテゴリーを追加</button>
-        </div>
-        <p id="newCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:20px;"></p>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" id="newCategoryInput" placeholder="新しいカテゴリー名（例：全教戦関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+            <button class="btn" id="addCategoryBtn" type="button">追加する</button>
+          </div>
+          <p id="newCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
+
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 8px;">↓ 現在のカテゴリー一覧です。↑↓で並べ替え、「削除」で削除できます。</p>
+          <div id="categoryManager" class="file-list"></div>
+        </details>
 
         <div id="uncategorizedDocsBox" style="display:none;margin-bottom:22px;"></div>
 
@@ -469,7 +500,7 @@
         <p class="lead" style="margin-bottom:14px;">カテゴリー・カード名・リンク（ラベルとURL）を入力して追加します。追加したカードは、下の一覧からいつでも再編集・削除できます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
-          <summary>使い方の例を見る</summary>
+          <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存すると、実際のリンク集ページにはこのように表示されます（どの入力欄が画面のどこに出るかの見本です）</p>
 
@@ -575,11 +606,13 @@
       renderCategoryManager();
       renderCategoryDropzones();
       renderAll();
+      renderDocsUpdateUI();
       renderHero();
-      fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); renderBlogUpdateUI(); });
+      fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
       renderRecords();
       initLinksAdmin();
       updateStorageUsage();
+      checkGlobalPending();
     } else {
       gateErr.style.display = 'block';
     }
@@ -629,6 +662,17 @@
     window.dispatchEvent(new StorageEvent('storage', { key }));
     updateStorageUsage();
   }
+
+  function checkGlobalPending() {
+    const hasPending =
+      (typeof pendingHero !== 'undefined' && pendingHero !== null) ||
+      (typeof pendingRecords !== 'undefined' && pendingRecords !== null) ||
+      (typeof docsHasPending === 'function' && docsHasPending()) ||
+      (typeof linkHasPending === 'function' && linkHasPending());
+    const banner = document.getElementById('globalPendingBanner');
+    if (banner) banner.classList.toggle('show', !!hasPending);
+  }
+
   function loadFromStorage(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -658,6 +702,20 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2200);
   }
+  function dataUrlToBlobUrlAdmin(dataUrl) {
+    const [header, base64] = dataUrl.split(',');
+    const mimeMatch = header.match(/data:(.*?);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  }
+  function openFileInNewTabAdmin(dataUrl) {
+    // iOS Safariはdownload属性やdata:URLを正しく扱えないことがあるため、blob:URLに変換してから同じタブで開く
+    location.href = dataUrlToBlobUrlAdmin(dataUrl);
+  }
+  window.openFileInNewTabAdmin = openFileInNewTabAdmin;
 
   /* ---- カテゴリー管理：追加・削除・並べ替え ---- */
   function loadCategories() {
@@ -704,6 +762,8 @@
   function renderCategoryManager() {
     const el = document.getElementById('categoryManager');
     const cats = loadCategories();
+    const countEl = document.getElementById('categoryListCount');
+    if (countEl) countEl.textContent = String(cats.length);
     if (cats.length === 0) {
       el.innerHTML = '<p class="empty-row">見出しがありません。下から追加してください。</p>';
       return;
@@ -857,6 +917,7 @@
   function renderDocsUpdateUI() {
     const msg = document.getElementById('docsUpdateMsg');
     if (msg) msg.style.display = docsHasPending() ? 'inline' : 'none';
+    checkGlobalPending();
   }
 
   function handleFiles(catId, fileList) {
@@ -914,7 +975,7 @@
             <div class="file-meta">${d.sizeLabel}</div>
           </div>
           <div class="file-actions">
-            ${(isPending || isDeleting) ? '' : `<a class="icon-btn" href="${d.dataUrl}" download="${escapeHtml(d.fileName)}">DL</a>`}
+            ${(isPending || isDeleting) ? '' : `<button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>`}
             ${isDeleting
               ? `<button class="icon-btn" data-undo-remove="${escapeHtml(d.id)}">取り消す</button>`
               : `<button class="icon-btn" data-remove="${isPending ? d.tempId : d.id}" data-pending="${isPending}">削除</button>`}
@@ -922,6 +983,13 @@
         </div>
       `;
     }).join('');
+    listEl.querySelectorAll('[data-open-file]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-open-file');
+        const doc = combined.find((d) => d.id === id);
+        if (doc) openFileInNewTabAdmin(doc.dataUrl);
+      });
+    });
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (btn.getAttribute('data-pending') === 'true') {
@@ -1093,6 +1161,7 @@
   function renderLinkUpdateUI() {
     const msg = document.getElementById('linkUpdateMsg');
     if (msg) msg.style.display = linkHasPending() ? 'inline' : 'none';
+    checkGlobalPending();
   }
 
   const LINK_STATIC_CATEGORY_DELETED_KEY = 'aue_link_static_categories_deleted_v1';
@@ -1565,6 +1634,7 @@
     const committed = loadFromStorage(HERO_STORAGE_KEY, null);
     const isPending = pendingHero !== null;
     document.getElementById('heroUpdateMsg').style.display = isPending ? 'inline' : 'none';
+    checkGlobalPending();
 
     const display = pendingHero || committed;
     if (!display) {
@@ -1683,7 +1753,14 @@
     } else {
       sel.value = 'お知らせ';
     }
+
+    const filterSel = document.getElementById('blogListFilter');
+    const prevFilter = filterSel.value;
+    filterSel.innerHTML = '<option value="">すべてのタグ</option>' +
+      getAllBlogCategories().map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if (prevFilter && getAllBlogCategories().includes(prevFilter)) filterSel.value = prevFilter;
   }
+  document.getElementById('blogListFilter').addEventListener('change', renderBlogList);
 
   document.getElementById('showNewBlogCategoryBtn').addEventListener('click', () => {
     const row = document.getElementById('newBlogCategoryRow');
@@ -1786,62 +1863,44 @@
     if (e.key === 'Enter') document.getElementById('addBlogCategoryBtn').click();
   });
 
-  let pendingBlogPosts = []; // 新規投稿でまだ更新されていない記事: {id(tempId), title, category, date, body, image}
-  let pendingBlogEdits = {}; // 既存記事の未反映の編集: {postId: {title, category, date, body, image}}
-  let pendingBlogDeletes = []; // 既存記事のうち削除予定（更新ボタンを押すまで確定しない）のid
-
-  function blogHasPending() {
-    return pendingBlogPosts.length > 0 || Object.keys(pendingBlogEdits).length > 0 || pendingBlogDeletes.length > 0;
-  }
-  function renderBlogUpdateUI() {
-    const msg = document.getElementById('blogUpdateMsg');
-    if (msg) msg.style.display = blogHasPending() ? 'inline' : 'none';
-  }
-
   function getAllPostsForAdmin() {
     const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
     const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
     const staticList = staticPostsCache
       .filter((p) => !deleted.includes(p.id))
-      .map((p) => {
-        const pendingEdit = pendingBlogEdits[p.id];
-        return Object.assign({}, p, overrides[p.id] || {}, pendingEdit || {}, {
-          isStatic: true,
-          isPendingEdit: !!pendingEdit,
-          isPendingDelete: pendingBlogDeletes.includes(p.id),
-        });
-      });
-    const dynamicList = loadFromStorage(BLOG_STORAGE_KEY, []).map((p) => {
-      const pendingEdit = pendingBlogEdits[p.id];
-      return Object.assign({}, p, pendingEdit || {}, {
-        isStatic: false,
-        isPendingEdit: !!pendingEdit,
-        isPendingDelete: pendingBlogDeletes.includes(p.id),
-      });
-    });
-    const pendingNewList = pendingBlogPosts.map((p) => Object.assign({}, p, { isStatic: false, isPendingNew: true }));
-    return staticList.concat(dynamicList, pendingNewList).sort((a, b) => b.date.localeCompare(a.date));
+      .map((p) => Object.assign({}, p, overrides[p.id] || {}, { isStatic: true }));
+    const dynamicList = loadFromStorage(BLOG_STORAGE_KEY, []).map((p) => Object.assign({}, p, { isStatic: false }));
+    return staticList.concat(dynamicList).sort((a, b) => b.date.localeCompare(a.date));
   }
 
   function renderBlogList() {
     const listEl = document.getElementById('list-blog-all');
     const errorEl = document.getElementById('blogOrphanError');
+    const countEl = document.getElementById('blogListCount');
+    const filterVal = document.getElementById('blogListFilter').value;
     const posts = getAllPostsForAdmin();
+    countEl.textContent = String(posts.length);
 
     const allTags = getAllBlogCategories();
     const orphanedPosts = posts.filter((p) => !allTags.includes(p.category));
     if (orphanedPosts.length > 0) {
-      errorEl.textContent = `削除されたタグが付いていた記事が${orphanedPosts.length}件あります。下の一覧から「編集」を開き、どのタグに変えるか決めてください。決めるまでこの案内は表示され続けます（この状態でも投稿・更新はできます。変えるまで、これらの記事のタグは「なし」として扱われます）。`;
+      errorEl.textContent = `削除されたタグが付いていた記事が${orphanedPosts.length}件あります。下の一覧から「編集」を開き、どのタグに変えるか決めてください。決めるまでこの案内は表示され続けます（変えるまで、これらの記事のタグは「なし」として扱われます）。`;
       errorEl.style.display = 'block';
+      const details = document.getElementById('blogListDetails');
+      if (details) details.open = true;
     } else {
       errorEl.style.display = 'none';
     }
 
-    if (posts.length === 0) {
-      listEl.innerHTML = '<p class="empty-row">投稿された記事はまだありません</p>';
+    const filtered = filterVal ? posts.filter((p) => p.category === filterVal) : posts;
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = posts.length === 0
+        ? '<p class="empty-row">投稿された記事はまだありません</p>'
+        : '<p class="empty-row">該当する記事がありません</p>';
       return;
     }
-    listEl.innerHTML = posts.map((p) => renderBlogPostRow(p, allTags)).join('');
+    listEl.innerHTML = filtered.map((p) => renderBlogPostRow(p, allTags)).join('');
 
     listEl.querySelectorAll('[data-view-post]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1865,31 +1924,20 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-edit-post');
         const isStatic = btn.getAttribute('data-static') === 'true';
-        const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
         const post = posts.find((p) => p.id === id);
         if (!post) return;
-        if (isPendingNew) {
-          pendingBlogPosts = pendingBlogPosts.filter((p) => p.id !== id);
-          editingPostId = null;
-          editingIsStatic = false;
-        } else {
-          editingPostId = id;
-          editingIsStatic = isStatic;
-        }
+        editingPostId = id;
+        editingIsStatic = isStatic;
         document.getElementById('blogTitle').value = post.title || '';
         document.getElementById('blogCategory').value = post.category || 'お知らせ';
         document.getElementById('blogDate').value = post.date || '';
         document.getElementById('blogBody').value = post.body || '';
         pendingBlogImage = post.image || null;
         renderBlogImagePreview();
-        document.getElementById('blogSubmit').textContent = isPendingNew ? '投稿する' : '変更を保存';
-        document.getElementById('blogEditingNote').style.display = isPendingNew ? 'none' : 'block';
-        document.getElementById('blogCancelEdit').style.display = isPendingNew ? 'none' : 'inline-block';
+        document.getElementById('blogSubmit').textContent = '変更を保存';
+        document.getElementById('blogEditingNote').style.display = 'block';
+        document.getElementById('blogCancelEdit').style.display = 'inline-block';
         document.querySelector('.blog-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (isPendingNew) {
-          renderBlogList();
-          renderBlogUpdateUI();
-        }
       });
     });
 
@@ -1897,16 +1945,7 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-remove-post');
         const isStatic = btn.getAttribute('data-static') === 'true';
-        const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
-        if (isPendingNew) {
-          pendingBlogPosts = pendingBlogPosts.filter((p) => p.id !== id);
-          renderBlogList();
-          renderBlogUpdateUI();
-          showToast('未反映の記事を取り消しました');
-          return;
-        }
         if (!confirm('この記事を削除しますか？')) return;
-        delete pendingBlogEdits[id];
         if (isStatic) {
           const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
           if (!deleted.includes(id)) deleted.push(id);
@@ -1917,41 +1956,24 @@
         }
         if (editingPostId === id) resetBlogForm();
         renderBlogList();
-        renderBlogUpdateUI();
         showToast('記事を削除しました');
       });
     });
   }
 
   function renderBlogPostRow(p, allTags) {
-    if (p.isPendingDelete) {
-      return `
-        <div>
-          <div class="file-row" style="opacity:0.55;">
-            <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
-            <div class="file-info">
-              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(p.title)}</span><span class="pending-badge">削除予定</span></div>
-              <div class="file-meta">${allTags.includes(p.category) ? escapeHtml(p.category) : 'なし'} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
-            </div>
-            <div class="file-actions">
-              <button class="icon-btn" data-undo-remove-post="${escapeHtml(p.id)}">取り消す</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
     return `
       <div>
         <div class="file-row">
           <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
           <div class="file-info">
-            <div class="file-name">${escapeHtml(p.title)}${(p.isPendingNew || p.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-name">${escapeHtml(p.title)}</div>
             <div class="file-meta">${allTags.includes(p.category) ? escapeHtml(p.category) : 'なし'} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
           </div>
           <div class="file-actions">
             <button class="icon-btn" data-view-post="${escapeHtml(p.id)}">閲覧</button>
-            <button class="icon-btn" data-edit-post="${escapeHtml(p.id)}" data-static="${p.isStatic}" data-pending-new="${!!p.isPendingNew}">編集</button>
-            <button class="icon-btn" data-remove-post="${escapeHtml(p.id)}" data-static="${p.isStatic}" data-pending-new="${!!p.isPendingNew}">削除</button>
+            <button class="icon-btn" data-edit-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">編集</button>
+            <button class="icon-btn" data-remove-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">削除</button>
           </div>
         </div>
         <div class="post-detail" id="detail-${escapeHtml(p.id)}" style="display:none;"></div>
@@ -2036,50 +2058,35 @@
     handleBlogImageFile(e.dataTransfer.files);
   });
 
-  function commitBlogUpdate() {
-    if (pendingBlogPosts.length > 0) {
+  function commitBlogPost() {
+    const title = document.getElementById('blogTitle').value.trim();
+    const category = document.getElementById('blogCategory').value.trim();
+    const date = document.getElementById('blogDate').value;
+    const body = document.getElementById('blogBody').value.trim();
+
+    if (editingPostId && editingIsStatic) {
+      // 初期記事（data/posts.json由来）の変更は上書き情報として保存
+      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
+      overrides[editingPostId] = { title, category, date, body, image: pendingBlogImage };
+      saveToStorage(STATIC_OVERRIDE_KEY, overrides);
+      showToast('記事を更新しました');
+    } else if (editingPostId && !editingIsStatic) {
       const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      pendingBlogPosts.forEach((p) => {
-        posts.push({ id: slugify(), title: p.title, category: p.category, date: p.date, body: p.body, image: p.image });
-      });
-      saveToStorage(BLOG_STORAGE_KEY, posts);
-    }
-    Object.keys(pendingBlogEdits).forEach((postId) => {
-      const edit = pendingBlogEdits[postId];
-      const isStaticPost = staticPostsCache.some((p) => p.id === postId);
-      if (isStaticPost) {
-        const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
-        overrides[postId] = edit;
-        saveToStorage(STATIC_OVERRIDE_KEY, overrides);
-      } else {
-        const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
-        const idx = posts.findIndex((p) => p.id === postId);
-        if (idx > -1) {
-          posts[idx] = Object.assign({}, posts[idx], edit);
-          saveToStorage(BLOG_STORAGE_KEY, posts);
-        }
+      const idx = posts.findIndex((p) => p.id === editingPostId);
+      if (idx > -1) {
+        posts[idx] = Object.assign({}, posts[idx], { title, category, date, body, image: pendingBlogImage });
+        saveToStorage(BLOG_STORAGE_KEY, posts);
       }
-    });
-    if (pendingBlogDeletes.length > 0) {
-      pendingBlogDeletes.forEach((postId) => {
-        const isStaticPost = staticPostsCache.some((p) => p.id === postId);
-        if (isStaticPost) {
-          const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
-          if (!deleted.includes(postId)) deleted.push(postId);
-          saveToStorage(STATIC_DELETED_KEY, deleted);
-        } else {
-          const remaining = loadFromStorage(BLOG_STORAGE_KEY, []).filter((p) => p.id !== postId);
-          saveToStorage(BLOG_STORAGE_KEY, remaining);
-        }
-      });
+      showToast('記事を更新しました');
+    } else {
+      const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
+      posts.push({ id: slugify(), title, category, date, body, image: pendingBlogImage });
+      saveToStorage(BLOG_STORAGE_KEY, posts);
+      showToast('記事を投稿しました');
     }
-    pendingBlogPosts = [];
-    pendingBlogEdits = {};
-    pendingBlogDeletes = [];
+
     resetBlogForm();
     renderBlogList();
-    renderBlogUpdateUI();
-    showToast('ブログ記事を更新しました');
   }
 
   document.getElementById('blogSubmit').addEventListener('click', () => {
@@ -2088,6 +2095,7 @@
     const date = document.getElementById('blogDate').value;
     const body = document.getElementById('blogBody').value.trim();
     const errorEl = document.getElementById('blogFormError');
+    const confirmBox = document.getElementById('blogConfirmBox');
 
     const missing = [];
     if (!title) missing.push('タイトル');
@@ -2098,18 +2106,15 @@
     if (missing.length > 0) {
       errorEl.textContent = missing.join('・') + 'が入力されていません';
       errorEl.style.display = 'block';
+      confirmBox.style.display = 'none';
       return;
     }
     errorEl.style.display = 'none';
 
-    if (editingPostId) {
-      pendingBlogEdits[editingPostId] = { title, category, date, body, image: pendingBlogImage };
-    } else {
-      pendingBlogPosts.push({ id: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), title, category, date, body, image: pendingBlogImage });
-    }
-    resetBlogForm();
-    renderBlogList();
-    renderBlogUpdateUI();
+    const isEditing = !!editingPostId;
+    document.getElementById('blogConfirmYes').textContent = isEditing ? '変更を確定' : '投稿を確定';
+    confirmBox.style.display = 'block';
+    confirmBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
   ['blogTitle', 'blogCategory', 'blogDate', 'blogBody'].forEach((id) => {
@@ -2118,18 +2123,9 @@
     });
   });
 
-  document.getElementById('blogUpdateBtn').addEventListener('click', () => {
-    if (!blogHasPending()) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('blogConfirmBox').style.display = 'block';
-    document.getElementById('blogConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-
   document.getElementById('blogConfirmYes').addEventListener('click', () => {
     document.getElementById('blogConfirmBox').style.display = 'none';
-    commitBlogUpdate();
+    commitBlogPost();
   });
 
   document.getElementById('blogConfirmNo').addEventListener('click', () => {
@@ -2144,6 +2140,7 @@
     const committed = loadFromStorage(RECORDS_STORAGE_KEY, null);
     const isPending = pendingRecords !== null;
     document.getElementById('recordsUpdateMsg').style.display = isPending ? 'inline' : 'none';
+    checkGlobalPending();
 
     const display = pendingRecords || committed;
     if (!display) {
@@ -2158,11 +2155,14 @@
           <div class="file-meta">${display.sizeLabel}</div>
         </div>
         <div class="file-actions">
-          <a class="icon-btn" href="${display.dataUrl}" download="${escapeHtml(display.fileName)}">DL</a>
+          <button class="icon-btn" type="button" id="openRecordsFile">DL</button>
           <button class="icon-btn" id="removeRecords">削除</button>
         </div>
       </div>
     `;
+    document.getElementById('openRecordsFile').addEventListener('click', () => {
+      openFileInNewTabAdmin(display.dataUrl);
+    });
     document.getElementById('removeRecords').addEventListener('click', () => {
       if (!confirm('愛教大10傑ファイルを削除しますか？')) return;
       pendingRecords = null;
@@ -2284,7 +2284,7 @@
         renderCategoryManager();
         renderCategoryDropzones();
         renderHero();
-        fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); renderBlogUpdateUI(); });
+        fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
         renderRecords();
         initLinksAdmin();
         showToast('インポートが完了しました');
@@ -2299,11 +2299,31 @@
     renderCategoryManager();
     renderCategoryDropzones();
     renderHero();
-    fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); renderBlogUpdateUI(); });
+    fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
     renderRecords();
     initLinksAdmin();
     updateStorageUsage();
   }
+
+  // ブラウザの「戻る」でこのページがキャッシュ（bfcache）から復元された場合、
+  // 未反映の変更（更新ボタンをまだ押していない状態）は破棄し、警告バナーも消す
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    pendingHero = null;
+    pendingRecords = null;
+    pendingDocs = [];
+    pendingDeletedDocIds = [];
+    pendingDeletedCategoryIds = [];
+    pendingLinkCards = [];
+    pendingLinkEdits = {};
+    renderHero();
+    renderRecords();
+    renderAll();
+    renderDocsUpdateUI();
+    renderLinkList();
+    renderLinkUpdateUI();
+    checkGlobalPending();
+  });
 </script>
 
 </body>
