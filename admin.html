@@ -86,9 +86,12 @@
   .empty-row{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:6px 2px;}
   #linkListDetails summary::-webkit-details-marker{display:none;}
   #linkListDetails summary{outline:none;}
+  .example-details summary{list-style:none;cursor:pointer;outline:none;font-family:var(--f-mono);font-size:12px;color:var(--rust);display:flex;align-items:center;gap:6px;}
+  .example-details summary::-webkit-details-marker{display:none;}
+  .example-details summary::before{content:"▶";font-size:9px;transition:transform .2s;}
+  .example-details[open] summary::before{transform:rotate(90deg);}
   .post-detail{border:1px solid var(--cream-line);border-top:0;border-radius:0 0 4px 4px;padding:14px 16px;font-size:13px;color:var(--ink-dim);line-height:1.85;margin-top:-10px;margin-bottom:10px;background:var(--cream);}
   .post-detail img{max-width:100%;border-radius:4px;margin-top:8px;}
-  .static-badge{font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
 
   .blog-form{display:flex;flex-direction:column;gap:14px;margin-bottom:6px;}
   .form-field{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);letter-spacing:0.03em;}
@@ -141,27 +144,62 @@
       <p class="lead">各エリアにファイルをドラッグ＆ドロップ（またはクリックして選択）すると、対応するページに自動で反映されます。</p>
 
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
-        <p style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px;">この画面でできること</p>
-        <div style="display:flex;flex-direction:column;gap:14px;">
+        <p style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px;">この画面で編集できること</p>
+        <div style="display:flex;flex-direction:column;gap:16px;">
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">①</span>
-            <div><b style="font-family:var(--f-display);color:var(--navy);">ホームの写真</b><span style="font-size:13px;color:var(--ink-dim);"> — トップページの集合写真を1枚のみ差し替えられます。</span></div>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">ホーム写真</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">トップページの写真を差し替えられます。</div>
+              <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:2px;">※挿入可能数：1</div>
+            </div>
           </div>
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">②</span>
-            <div><b style="font-family:var(--f-display);color:var(--navy);">ブログ記事</b><span style="font-size:13px;color:var(--ink-dim);"> — 新しい記事を投稿できるほか、これまでの記事を後からいつでも編集・削除できます。</span></div>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">ブログ記事</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しい記事を投稿できるほか、これまでの記事を編集・削除できます。</div>
+            </div>
           </div>
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">③</span>
-            <div><b style="font-family:var(--f-display);color:var(--navy);">愛教大10傑ファイル</b><span style="font-size:13px;color:var(--ink-dim);"> — 記録一覧のPDFを1つのみ差し替えられます。</span></div>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">愛教大10傑</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">記録一覧PDFを差し替えられます。</div>
+              <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:2px;">※挿入可能数：1</div>
+            </div>
           </div>
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">④</span>
-            <div><b style="font-family:var(--f-display);color:var(--navy);">各種資料</b><span style="font-size:13px;color:var(--ink-dim);"> — カテゴリーを自由に追加・削除・並べ替えでき、各カテゴリーにファイルを何個でも追加できます。</span></div>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">各種資料</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">カテゴリーを自由に追加・削除・並べ替えでき、各カテゴリーにファイルを何個でも追加できます。</div>
+            </div>
           </div>
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">⑤</span>
-            <div><b style="font-family:var(--f-display);color:var(--navy);">リンク集</b><span style="font-size:13px;color:var(--ink-dim);"> — 新しいリンクカードを追加できるほか、既存のカードを後からいつでも編集・削除できます。</span></div>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">リンク集</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しいリンクカードを追加できるほか、既存のカードを編集・削除できます。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
+        <p style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px;">更新・削除の操作方法</p>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">追加・変更するとき（更新ボタン方式）</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">ファイルの追加や内容の変更をしても、その場ではサイトに反映されません。<b style="color:var(--rust-dark);">「更新」ボタン</b>を押す→<b style="color:var(--rust-dark);">確認ダイアログ</b>で「更新を確定」を押す、の2ステップで初めて反映されます。ボタンを押す前にページを離れれば、変更はそのまま取り消されます。</div>
+          </div>
+          <div>
+            <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">削除するとき（確認ダイアログ方式）</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;"><b style="color:var(--rust-dark);">「削除」ボタン</b>を押すと<b style="color:var(--rust-dark);">確認ダイアログ</b>が出ます。「OK」を押すとその場ですぐに削除されます（更新ボタンは不要です）。</div>
+          </div>
+          <div>
+            <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">カテゴリー・タグを削除するとき</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">カテゴリーやタグを削除しても、それに属していたファイル・カード・記事は消えません。「未分類」「タグなし」として残るので、後から編集して振り分け直せます。</div>
           </div>
         </div>
       </div>
@@ -180,7 +218,7 @@
 
       <div class="cat-section">
         <div class="cat-title-row">
-          <div class="cat-title">ホームの写真</div>
+          <div class="cat-title">トップページの写真</div>
           <div class="update-row">
             <span class="update-msg" id="heroUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
             <button class="update-btn" id="heroUpdateBtn" type="button">更新</button>
@@ -193,23 +231,42 @@
             <button class="icon-btn" id="heroConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
-        <p class="lead" style="margin-bottom:14px;">トップページ上部の集合写真を差し替えます（1枚のみ）。</p>
+        <p class="lead" style="margin-bottom:14px;">トップページ上部の集合写真を差し替えます。※挿入可能数:1</p>
 
-        <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-bottom:22px;background:#fff;">
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、ホーム（トップページ）の一番上にあるこの写真が変わります（スマホ表示では下の例のように、写真が文字の上に表示されます）</p>
-          <div style="position:relative;padding-top:24px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ここが差し替わる</span>
-            <div style="display:flex;flex-direction:column;gap:14px;background:var(--rust);border-radius:6px;padding:20px;max-width:280px;">
-              <div style="width:100%;aspect-ratio:3/2;border-radius:4px;background:var(--rust-dark);display:flex;align-items:center;justify-content:center;">
-                <span style="font-family:var(--f-mono);font-size:10px;color:var(--gold);text-align:center;">この写真枠</span>
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>使い方の例を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、トップページの最初の写真が変わります。スマホ表示では文字の上、パソコン表示だと文字の右に表示されます。</p>
+
+            <p style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-bottom:8px;">スマホ表示の例</p>
+            <div style="position:relative;padding-top:24px;margin-bottom:26px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ここが差し替わる</span>
+              <div style="display:flex;flex-direction:column;gap:14px;background:var(--rust);border-radius:6px;padding:20px;max-width:280px;">
+                <div style="width:100%;aspect-ratio:3/2;border-radius:4px;background:var(--rust-dark);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--gold);text-align:center;">この写真枠</span>
+                </div>
+                <div style="color:#f5f1e8;">
+                  <span style="font-family:var(--f-mono);font-size:9px;letter-spacing:0.12em;color:var(--gold);">AICHI UNIVERSITY OF EDUCATION</span>
+                  <div style="font-family:var(--f-display);font-weight:700;font-size:17px;margin-top:8px;line-height:1.4;">その本気が、<br>自分を変える。</div>
+                </div>
               </div>
-              <div style="color:#f5f1e8;">
-                <span style="font-family:var(--f-mono);font-size:9px;letter-spacing:0.12em;color:var(--gold);">AICHI UNIVERSITY OF EDUCATION</span>
-                <div style="font-family:var(--f-display);font-weight:700;font-size:17px;margin-top:8px;line-height:1.4;">その本気が、<br>自分を変える。</div>
+            </div>
+
+            <p style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-bottom:8px;">パソコン表示の例</p>
+            <div style="position:relative;padding-top:24px;">
+              <span style="position:absolute;top:0;right:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">ここが差し替わる ↓</span>
+              <div style="display:flex;align-items:center;gap:16px;background:var(--rust);border-radius:6px;padding:20px;">
+                <div style="flex:1.1;min-width:0;color:#f5f1e8;">
+                  <span style="font-family:var(--f-mono);font-size:9px;letter-spacing:0.12em;color:var(--gold);">AICHI UNIVERSITY OF EDUCATION</span>
+                  <div style="font-family:var(--f-display);font-weight:700;font-size:16px;margin-top:8px;line-height:1.4;">その本気が、<br>自分を変える。</div>
+                </div>
+                <div style="flex:0.9;min-width:0;aspect-ratio:3/2;border-radius:4px;background:var(--rust-dark);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--gold);text-align:center;">この写真枠</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </details>
 
         <label class="dropzone" id="drop-hero">
           <div><strong>クリックして選択</strong> または ここに画像をドラッグ＆ドロップ</div>
@@ -235,42 +292,45 @@
         </div>
         <p class="lead" style="margin-bottom:14px;">タイトル・タグ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。投稿した記事は、下の一覧からいつでも再編集・削除できます。</p>
 
-        <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-bottom:22px;background:#fff;">
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、ブログページ・ホームの「最新の活動報告」にはこのように反映されます</p>
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>使い方の例を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、このように反映されます。</p>
 
-          <div style="position:relative;padding-top:24px;margin-bottom:20px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルのみが並びます）</span>
-            <div style="font-family:var(--f-display);font-weight:600;font-size:17px;color:var(--navy);border-bottom:1px solid var(--cream-line);padding-bottom:14px;">夏季合宿の日程について</div>
-          </div>
-
-          <div style="position:relative;padding-top:24px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ クリックして開くと、この中身が表示されます</span>
-            <div style="border:1px solid var(--cream-line);border-radius:6px;padding:16px;">
-              <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-                <span style="font-family:var(--f-mono);font-size:11px;color:var(--rust);">2026.08.01</span>
-                <span style="font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:20px;">お知らせ</span>
-              </div>
-              <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
-                <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);text-align:center;padding:0 12px;">写真を添付した場合、ここに表示される</span>
-              </div>
-              <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;">本文がここに表示されます。8月上旬に予定している夏季合宿の日程・集合場所・持ち物リストをまとめました。</p>
+            <div style="position:relative;padding-top:24px;margin-bottom:20px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルのみが並びます）</span>
+              <div style="font-family:var(--f-display);font-weight:600;font-size:17px;color:var(--navy);border-bottom:1px solid var(--cream-line);padding-bottom:14px;">800m愛教大記録更新！！</div>
             </div>
+
+            <div style="position:relative;padding-top:24px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ タイトルクリックして開くと、表示されます</span>
+              <div style="border:1px solid var(--cream-line);border-radius:6px;padding:16px;">
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+                  <span style="font-family:var(--f-mono);font-size:11px;color:var(--rust);">2026.08.01</span>
+                  <span style="font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:20px;">お知らせ</span>
+                </div>
+                <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);text-align:center;padding:0 12px;">写真を添付した場合、ここに表示される</span>
+                </div>
+                <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;">本文がここに表示されます。</p>
+              </div>
+            </div>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.9;">↑「日付」はオレンジ色の文字、「タグ」は丸い形のラベルとして表示されます。写真を添付しなかった場合、その部分は表示されません。</p>
           </div>
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.9;">↑「日付」はオレンジ色の文字、「タグ」は丸い形のラベルとして表示されます。写真を添付しなかった場合、その部分は表示されません。</p>
-        </div>
+        </details>
 
         <div class="blog-form">
           <p id="blogEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">この記事を編集しています</p>
           <label class="form-field">
             <span>タイトル</span>
-            <input type="text" id="blogTitle" placeholder="例：夏季合宿レポート">
+            <input type="text" id="blogTitle" placeholder="">
           </label>
           <label class="form-field">
             <span>タグ</span>
             <select id="blogCategory" style="font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+              <option value="お知らせ" selected>お知らせ</option>
               <option value="大会">大会</option>
               <option value="練習日誌">練習日誌</option>
-              <option value="お知らせ" selected>お知らせ</option>
               <option value="行事">行事</option>
               <option value="その他">その他</option>
             </select>
@@ -328,7 +388,7 @@
             <button class="icon-btn" id="recordsConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
-        <p class="lead" style="margin-bottom:14px;">記録一覧のPDFを登録します（1つのみ・PDFファイルのみアップロード可能）。「愛教大10傑」ページを開くと、このPDFが自動でその場に表示されます。</p>
+        <p class="lead" style="margin-bottom:14px;">記録一覧のファイルを登録できます。PDFのみ挿入可能です。※挿入可能数:1</p>
         <label class="dropzone" id="drop-records">
           <div><strong>クリックして選択</strong> または ここにPDFをドラッグ＆ドロップ</div>
           <input type="file" id="input-records" accept="application/pdf,.pdf">
@@ -352,40 +412,42 @@
           </div>
         </div>
 
-        <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-bottom:22px;background:#fff;">
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">下で追加した見出し・ドロップしたファイルは、実際の「各種資料」ページではこのように表示されます</p>
+        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料を追加・削除・並べ替えができます。</p>
 
-          <div style="position:relative;padding-top:24px;margin-bottom:22px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
-            <div style="font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--navy);border-bottom:2px solid var(--rust);padding-bottom:8px;">各種申請書</div>
-          </div>
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>使い方の例を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">下で追加した見出し・ドロップしたファイルは、実際の「各種資料」ページではこのように表示されます</p>
 
-          <div style="position:relative;padding-top:24px;max-width:280px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ドロップしたファイルはここに表示される</span>
-            <div style="display:flex;align-items:center;gap:12px;border:1px solid var(--cream-line);border-radius:6px;padding:14px;">
-              <span style="flex-shrink:0;width:34px;height:34px;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--rust);border:1px solid var(--cream-line);">PDF</span>
-              <div>
-                <div style="font-family:var(--f-display);font-weight:600;font-size:13px;color:var(--navy);">部則.pdf</div>
-                <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-top:2px;">143.9 KB</div>
+            <div style="position:relative;padding-top:24px;margin-bottom:22px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
+              <div style="font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--navy);border-bottom:2px solid var(--rust);padding-bottom:8px;">各種申請書</div>
+            </div>
+
+            <div style="position:relative;padding-top:24px;max-width:280px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ドロップしたファイルはここに表示される</span>
+              <div style="display:flex;align-items:center;gap:12px;border:1px solid var(--cream-line);border-radius:6px;padding:14px;">
+                <span style="flex-shrink:0;width:34px;height:34px;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--rust);border:1px solid var(--cream-line);">PDF</span>
+                <div>
+                  <div style="font-family:var(--f-display);font-weight:600;font-size:13px;color:var(--navy);">競技場利用申請.pdf</div>
+                  <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-top:2px;">143.9 KB</div>
+                </div>
               </div>
             </div>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:12px;line-height:1.9;">↑ カードのタイトルには、アップロードしたファイルの<b style="color:var(--rust-dark);">元のファイル名</b>がそのまま使われます。（例：「競技場利用申請.pdf」というファイルをドロップすると、カードにも「競技場利用申請.pdf」と表示されます。）</p>
           </div>
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:12px;line-height:1.9;">↑ カードのタイトルには、アップロードしたファイルの<b style="color:var(--rust-dark);">元のファイル名</b>がそのまま使われます（例：「部則.pdf」というファイルをドロップすると、カードにも「部則.pdf」と表示されます）。ファイルがPDFの場合、閲覧者がカードをクリックするとその場でPDFが開きます。</p>
-        </div>
-
-        <p class="lead" style="margin-bottom:14px;">カテゴリーは自由に追加・削除・並べ替えができます。並べた順番のまま「各種資料」ページに反映されます。</p>
+        </details>
 
         <div id="categoryManager" class="file-list" style="margin-bottom:16px;"></div>
 
         <div style="display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-          <input type="text" id="newCategoryInput" placeholder="新しい見出し名（例：遠征関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
-          <button class="btn" id="addCategoryBtn" type="button">見出しを追加</button>
+          <input type="text" id="newCategoryInput" placeholder="新しいカテゴリー名（例：全教戦関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+          <button class="btn" id="addCategoryBtn" type="button">カテゴリーを追加</button>
         </div>
         <p id="newCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:20px;"></p>
 
         <div id="uncategorizedDocsBox" style="display:none;margin-bottom:22px;"></div>
 
-        <p class="lead" style="margin-bottom:14px;">各見出しにファイルをドラッグ＆ドロップすると、「各種資料」ページに自動で反映されます。カード名には元のファイル名がそのまま使われます。</p>
         <div id="categories"></div>
       </div>
 
@@ -406,26 +468,29 @@
         </div>
         <p class="lead" style="margin-bottom:14px;">カテゴリー・カード名・リンク（ラベルとURL）を入力して追加します。追加したカードは、下の一覧からいつでも再編集・削除できます。</p>
 
-        <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-bottom:22px;background:#fff;">
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存すると、実際のリンク集ページにはこのように表示されます（どの入力欄が画面のどこに出るかの見本です）</p>
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>使い方の例を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存すると、実際のリンク集ページにはこのように表示されます（どの入力欄が画面のどこに出るかの見本です）</p>
 
-          <div style="position:relative;padding-top:24px;margin-bottom:22px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
-            <div style="font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--navy);border-bottom:2px solid var(--rust);padding-bottom:8px;">全教戦参加校</div>
-          </div>
+            <div style="position:relative;padding-top:24px;margin-bottom:22px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
+              <div style="font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--navy);border-bottom:2px solid var(--rust);padding-bottom:8px;">全教戦参加校</div>
+            </div>
 
-          <div style="position:relative;padding-top:24px;max-width:280px;">
-            <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カード名」</span>
-            <div style="border:1px solid var(--cream-line);border-radius:6px;padding:14px;">
-              <div style="font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--navy);margin-bottom:10px;">〇〇大学</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <span style="font-family:var(--f-mono);font-size:11px;border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:5px 10px;color:var(--olive);">ホームページ</span>
-                <span style="font-family:var(--f-mono);font-size:11px;border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:5px 10px;color:var(--olive);">Instagram</span>
+            <div style="position:relative;padding-top:24px;max-width:280px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カード名」</span>
+              <div style="border:1px solid var(--cream-line);border-radius:6px;padding:14px;">
+                <div style="font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--navy);margin-bottom:10px;">〇〇大学</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <span style="font-family:var(--f-mono);font-size:11px;border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:5px 10px;color:var(--olive);">ホームページ</span>
+                  <span style="font-family:var(--f-mono);font-size:11px;border:1px solid rgba(62,82,51,0.35);border-radius:20px;padding:5px 10px;color:var(--olive);">Instagram</span>
+                </div>
               </div>
             </div>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:12px;line-height:1.9;">↑ カードの中にある「ホームページ」「Instagram」のようなボタンの文字が<b style="color:var(--rust-dark);">「ラベル」</b>です。そのボタンを押したときに開くWebページの住所（例：https://〜）が<b style="color:var(--rust-dark);">「リンク（URL）」</b>です。</p>
           </div>
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:12px;line-height:1.9;">↑ カードの中にある「ホームページ」「Instagram」のようなボタンの文字が<b style="color:var(--rust-dark);">「ラベル」</b>です。そのボタンを押したときに開くWebページの住所（例：https://〜）が<b style="color:var(--rust-dark);">「リンク（URL）」</b>です。</p>
-        </div>
+        </details>
 
         <div class="blog-form">
           <p id="linkEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">このカードを編集しています</p>
@@ -1030,9 +1095,13 @@
     if (msg) msg.style.display = linkHasPending() ? 'inline' : 'none';
   }
 
+  const LINK_STATIC_CATEGORY_DELETED_KEY = 'aue_link_static_categories_deleted_v1';
+
   function getAllLinkCategories() {
     const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-    return staticLinkCategoriesCache.concat(added);
+    const deletedStatic = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
+    const statics = staticLinkCategoriesCache.filter((c) => !deletedStatic.includes(c.id));
+    return statics.concat(added);
   }
 
   function categoryLabel(catId) {
@@ -1061,11 +1130,25 @@
   function renderLinkCategoryManager() {
     const el = document.getElementById('linkCategoryManager');
     const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-    if (added.length === 0) {
-      el.innerHTML = '<p class="empty-row">追加したカテゴリーはまだありません</p>';
+    const deletedStatic = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
+    const statics = staticLinkCategoriesCache.filter((c) => !deletedStatic.includes(c.id));
+    if (statics.length === 0 && added.length === 0) {
+      el.innerHTML = '<p class="empty-row">カテゴリーがありません</p>';
       return;
     }
-    el.innerHTML = added.map((c) => `
+    const staticRows = statics.map((c) => `
+      <div class="file-row">
+        <span class="file-icon">初期</span>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(c.label)}</div>
+          <div class="file-meta">初期設定のカテゴリー</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-remove-link-static-cat="${escapeHtml(c.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+    const addedRows = added.map((c) => `
       <div class="file-row">
         <span class="file-icon">＋</span>
         <div class="file-info">
@@ -1077,6 +1160,24 @@
         </div>
       </div>
     `).join('');
+    el.innerHTML = staticRows + addedRows;
+    el.querySelectorAll('[data-remove-link-static-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-remove-link-static-cat');
+        const cardsInCat = getAllLinkCardsForAdmin().filter((c) => c.category === id);
+        const msg = cardsInCat.length > 0
+          ? `「${categoryLabel(id)}」を削除しますか？登録済みのカード${cardsInCat.length}件は削除されず、「未分類」として残ります。`
+          : 'このカテゴリーを削除しますか？';
+        if (!confirm(msg)) return;
+        const deleted = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
+        if (!deleted.includes(id)) deleted.push(id);
+        saveToStorage(LINK_STATIC_CATEGORY_DELETED_KEY, deleted);
+        renderLinkCategoryManager();
+        populateLinkCategorySelect();
+        renderLinkList();
+        showToast('カテゴリーを削除しました');
+      });
+    });
     el.querySelectorAll('[data-remove-link-cat]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-remove-link-cat');
@@ -1181,7 +1282,7 @@
           <div class="file-row" style="opacity:0.55;">
             <span class="file-icon">${(c.links || []).length}</span>
             <div class="file-info">
-              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(c.name)}</span>${c.isStatic ? '<span class="static-badge">初期データ</span>' : ''}<span class="pending-badge">削除予定</span></div>
+              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(c.name)}</span><span class="pending-badge">削除予定</span></div>
               <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
             </div>
             <div class="file-actions">
@@ -1196,7 +1297,7 @@
         <div class="file-row">
           <span class="file-icon">${(c.links || []).length}</span>
           <div class="file-info">
-            <div class="file-name">${escapeHtml(c.name)}${c.isStatic ? '<span class="static-badge">初期データ</span>' : ''}${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-name">${escapeHtml(c.name)}${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
             <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
           </div>
           <div class="file-actions">
@@ -1467,7 +1568,7 @@
 
     const display = pendingHero || committed;
     if (!display) {
-      listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません（既定の集合写真を表示中）</p>';
+      listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません。</p>';
       return;
     }
     listEl.innerHTML = `
@@ -1483,7 +1584,7 @@
       </div>
     `;
     document.getElementById('removeHero').addEventListener('click', () => {
-      if (!confirm('ホームの写真を削除して既定の写真に戻しますか？')) return;
+      if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
       pendingHero = null;
       localStorage.removeItem(HERO_STORAGE_KEY);
       window.dispatchEvent(new StorageEvent('storage', { key: HERO_STORAGE_KEY }));
@@ -1529,7 +1630,7 @@
     saveToStorage(HERO_STORAGE_KEY, pendingHero);
     pendingHero = null;
     renderHero();
-    showToast('ホームの写真を更新しました');
+    showToast('トップページの写真を更新しました');
   }
   document.getElementById('heroUpdateBtn').addEventListener('click', () => {
     if (pendingHero === null) {
@@ -1551,7 +1652,7 @@
   const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
   const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
   const BLOG_CATEGORY_ADDED_KEY = 'aue_blog_categories_added_v1';
-  const BLOG_DEFAULT_CATEGORIES = ['大会', '練習日誌', 'お知らせ', '行事', 'その他'];
+  const BLOG_DEFAULT_CATEGORIES = ['お知らせ', '大会', '練習日誌', '行事', 'その他'];
   let staticPostsCache = [];
   let editingPostId = null;   // 編集中の記事id（null=新規投稿モード）
   let editingIsStatic = false;
@@ -1564,9 +1665,13 @@
     return fetch('data/posts.json').then((res) => res.json()).catch(() => []);
   }
 
+  const BLOG_DEFAULT_DELETED_KEY = 'aue_blog_default_deleted_v1';
+
   function getAllBlogCategories() {
     const added = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []);
-    return BLOG_DEFAULT_CATEGORIES.concat(added.filter((c) => !BLOG_DEFAULT_CATEGORIES.includes(c)));
+    const deletedDefaults = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
+    const defaults = BLOG_DEFAULT_CATEGORIES.filter((c) => !deletedDefaults.includes(c));
+    return defaults.concat(added.filter((c) => !BLOG_DEFAULT_CATEGORIES.includes(c)));
   }
 
   function populateBlogCategorySelect() {
@@ -1590,11 +1695,25 @@
   function renderBlogCategoryManager() {
     const el = document.getElementById('blogCategoryManager');
     const added = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []);
-    if (added.length === 0) {
-      el.innerHTML = '<p class="empty-row">追加したタグはまだありません</p>';
+    const deletedDefaults = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
+    const defaults = BLOG_DEFAULT_CATEGORIES.filter((c) => !deletedDefaults.includes(c));
+    if (defaults.length === 0 && added.length === 0) {
+      el.innerHTML = '<p class="empty-row">タグがありません</p>';
       return;
     }
-    el.innerHTML = added.map((label) => `
+    const defaultRows = defaults.map((label) => `
+      <div class="file-row">
+        <span class="file-icon">初期</span>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(label)}</div>
+          <div class="file-meta">初期設定のタグ</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-remove-blog-default-cat="${escapeHtml(label)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+    const addedRows = added.map((label) => `
       <div class="file-row">
         <span class="file-icon">＋</span>
         <div class="file-info">
@@ -1606,6 +1725,19 @@
         </div>
       </div>
     `).join('');
+    el.innerHTML = defaultRows + addedRows;
+    el.querySelectorAll('[data-remove-blog-default-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const label = btn.getAttribute('data-remove-blog-default-cat');
+        if (!confirm(`「${label}」タグを削除しますか？`)) return;
+        const deleted = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
+        if (!deleted.includes(label)) deleted.push(label);
+        saveToStorage(BLOG_DEFAULT_DELETED_KEY, deleted);
+        renderBlogCategoryManager();
+        populateBlogCategorySelect();
+        showToast('タグを削除しました');
+      });
+    });
     el.querySelectorAll('[data-remove-blog-cat]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const label = btn.getAttribute('data-remove-blog-cat');
@@ -1798,7 +1930,7 @@
           <div class="file-row" style="opacity:0.55;">
             <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
             <div class="file-info">
-              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(p.title)}</span>${p.isStatic ? '<span class="static-badge">初期記事</span>' : ''}<span class="pending-badge">削除予定</span></div>
+              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(p.title)}</span><span class="pending-badge">削除予定</span></div>
               <div class="file-meta">${allTags.includes(p.category) ? escapeHtml(p.category) : 'なし'} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
             </div>
             <div class="file-actions">
@@ -1813,7 +1945,7 @@
         <div class="file-row">
           <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
           <div class="file-info">
-            <div class="file-name">${escapeHtml(p.title)}${p.isStatic ? '<span class="static-badge">初期記事</span>' : ''}${(p.isPendingNew || p.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-name">${escapeHtml(p.title)}${(p.isPendingNew || p.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
             <div class="file-meta">${allTags.includes(p.category) ? escapeHtml(p.category) : 'なし'} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
           </div>
           <div class="file-actions">
