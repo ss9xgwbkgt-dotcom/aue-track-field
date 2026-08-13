@@ -221,19 +221,20 @@
   .about-list{margin-top:30px;display:flex;flex-direction:column;border-top:1px solid var(--cream-line);}
   .about-list li{padding:16px 0;border-bottom:1px solid var(--cream-line);display:flex;gap:18px;font-size:13px;color:var(--ink-dim);}
   .about-list li b{font-family:var(--f-mono);color:var(--olive);min-width:5.5em;}
-  .about-visual{display:flex;flex-direction:column;gap:20px;}
-  .about-visual .quote-card{
+  .about-visual{
     background:var(--navy);color:#f5f1e8;border-radius:4px;
-    padding:34px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;
+    padding:40px 34px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;
+    min-height:280px;
   }
-  .about-visual .quote-card::before{
+  .about-visual::before{
     content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;
     border:2px solid var(--gold);border-radius:50%;opacity:.5;
   }
-  .about-visual .quote{font-family:var(--f-display);font-size:21px;line-height:1.55;position:relative;z-index:1;}
+  .about-visual .quote{font-family:var(--f-display);font-size:22px;line-height:1.6;position:relative;z-index:1;}
+  .about-visual .quote .quote-gap{display:block;height:0.55em;}
   .about-visual .quote-by{margin-top:18px;font-family:var(--f-mono);font-size:12px;color:var(--gold);position:relative;z-index:1;}
   @media(max-width:860px){.about-grid{grid-template-columns:1fr;}}
-  @media(max-width:520px){.about-visual .quote-card{padding:26px;}.about-visual .quote{font-size:19px;}}
+  @media(max-width:520px){.about-visual{padding:32px 26px;min-height:0;}.about-visual .quote{font-size:19px;}}
 
   /* ---------- 8 lanes navigation (signature, cream / "WHERE TO GO") ---------- */
   .lanes{background:var(--cream);border-bottom:1px solid var(--cream-line);}
@@ -389,12 +390,7 @@
         </ul>
       </div>
       <div class="about-visual" data-reveal>
-        <div class="quote-card">
-          <p class="quote">「今」を<br>積み重ねるということ。</p>
-        </div>
-        <div class="quote-card">
-          <p class="quote">仲間と競い、<br>限界に挑む。</p>
-        </div>
+        <p class="quote">「今」を<br>積み重ねるということ。<span class="quote-gap"></span>仲間と競い、<br>限界に挑む。</p>
       </div>
     </div>
   </section>
