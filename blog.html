@@ -6,6 +6,7 @@
 <title>ブログ｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;
@@ -279,58 +280,59 @@
     if (parts.length < 2) return 'FILE';
     return parts.pop().slice(0, 4).toUpperCase();
   }
-  function renderAttachment(image, title) {
-    if (!image || !image.dataUrl) return '';
-    if (isImageDataUrl(image.dataUrl)) {
-      return `<img class="post-image" src="${image.dataUrl}" alt="${escapeHtml(title)}">`;
+
+  /* ---- Supabase クライアント ---- */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+  function isImageFile(fileName) {
+    return /\.(jpe?g|png|gif|webp|svg)$/i.test(fileName || '');
+  }
+  function renderAttachment(post) {
+    if (!post.image_path) return '';
+    const url = getPublicUrl(post.image_path);
+    if (isImageFile(post.image_name)) {
+      return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
     }
     return `
-      <button type="button" class="post-attachment" data-file-open>
-        <span class="post-attachment-icon">${escapeHtml(getExtLabel(image.fileName))}</span>
-        <span class="post-attachment-name">${escapeHtml(image.fileName)}</span>
-      </button>
+      <a class="post-attachment" href="${url}" target="_blank" rel="noopener">
+        <span class="post-attachment-icon">${escapeHtml(getExtLabel(post.image_name))}</span>
+        <span class="post-attachment-name">${escapeHtml(post.image_name)}</span>
+      </a>
     `;
   }
-  function loadFromStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
-  const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
-  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
-  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
-  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
 
-
-  // ブログ一覧：data/posts.json（編集者画面での編集・削除を反映）＋ 追加された記事をマージして見出しカードを生成。クリックで本文を開閉
-  fetch('data/posts.json')
-    .then(res => res.ok ? res.json() : [])
-    .catch(() => [])
-    .then(posts => {
-      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
-      const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
-      const staticPosts = posts
-        .filter(p => !deleted.includes(p.id))
-        .map(p => Object.assign({}, p, overrides[p.id] || {}));
-      const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const merged = staticPosts.concat(dynamicPosts);
-      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date));
+  // ブログ一覧：Supabaseの blog_posts テーブルから取得して見出しカードを生成。クリックで本文を開閉
+  let sortedPosts = [];
+  sb.from('blog_posts').select('*').order('post_date', { ascending: false })
+    .then(({ data, error }) => {
+      if (error) throw error;
+      sortedPosts = data || [];
       const listEl = document.getElementById('postList');
-      listEl.innerHTML = sorted.map(p => `
-        <div class="post-card" id="${escapeHtml(p.id)}" data-category="${escapeHtml(p.category)}">
+
+      if (sortedPosts.length === 0) {
+        listEl.innerHTML = '<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">まだ記事がありません。</p>';
+        return;
+      }
+
+      listEl.innerHTML = sortedPosts.map(p => `
+        <div class="post-card" id="${escapeHtml(p.id)}" data-category="${escapeHtml(p.tag)}">
           <button class="post-toggle" aria-expanded="false">
             <h2 class="post-title">${escapeHtml(p.title)}</h2>
             <span class="post-arrow">→</span>
           </button>
           <div class="post-body">
             <div class="post-meta">
-              <span class="post-date">${formatDate(p.date)}</span>
-              <span class="post-cat">${escapeHtml(p.category)}</span>
+              <span class="post-date">${formatDate(p.post_date)}</span>
+              <span class="post-cat">${escapeHtml(p.tag)}</span>
             </div>
-            ${renderAttachment(p.image, p.title)}
+            ${renderAttachment(p)}
             <p class="post-excerpt">${escapeHtml(p.body || '')}</p>
           </div>
         </div>
@@ -342,21 +344,6 @@
           const open = card.classList.toggle('open');
           btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
-      });
-
-      listEl.querySelectorAll('.post-card').forEach((cardEl, i) => {
-        const fileBtn = cardEl.querySelector('[data-file-open]');
-        if (fileBtn) {
-          fileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const post = sorted[i];
-            if (post && post.image && post.image.dataUrl) {
-              // iOS Safariはdownload属性やwindow.open（新しいタブ）でのblob:URLを正しく扱えないことがあるため、
-              // 同じタブでそのまま開く
-              location.href = dataUrlToBlobUrl(post.image.dataUrl);
-            }
-          });
-        }
       });
 
       // ページ読み込み時にハッシュ指定があれば該当カードを開く
@@ -371,7 +358,7 @@
     })
     .catch(() => {
       document.getElementById('postList').innerHTML =
-        '<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">記事を読み込めませんでした。サーバー上で開いているかご確認ください。</p>';
+        '<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">記事を読み込めませんでした。しばらくしてから再度お試しください。</p>';
     });
 
   // カテゴリフィルター（カードは動的生成のためクリック時に都度取得）

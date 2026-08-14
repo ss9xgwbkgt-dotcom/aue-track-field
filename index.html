@@ -6,6 +6,7 @@
 <title>愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;
@@ -514,12 +515,8 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  // 最新の活動報告：data/posts.json ＋ 編集者画面から追加された記事をマージして最新3件を表示
-  const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
+  // 最新の活動報告：Supabaseの blog_posts テーブルから最新3件を取得
   const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
-  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
-  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
-  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
 
   function loadFromStorage(key, fallback) {
     try {
@@ -549,24 +546,24 @@
     }
   })();
 
+  /* ---- Supabase クライアント ---- */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  fetch('data/posts.json')
-    .then(res => res.ok ? res.json() : [])
-    .catch(() => [])
-    .then(posts => {
-      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
-      const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
-      const staticPosts = posts
-        .filter(p => !deleted.includes(p.id))
-        .map(p => Object.assign({}, p, overrides[p.id] || {}));
-      const dynamicPosts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const merged = staticPosts.concat(dynamicPosts);
+  sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(3)
+    .then(({ data, error }) => {
+      if (error) throw error;
+      const posts = data || [];
       const grid = document.getElementById('newsGrid');
-      const sorted = merged.slice().sort((a, b) => b.date.localeCompare(a.date));
-      grid.innerHTML = sorted.map(p => `
+      if (posts.length === 0) {
+        grid.innerHTML = '<p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">まだ記事がありません。</p>';
+        return;
+      }
+      grid.innerHTML = posts.map(p => `
         <a class="news-card" href="blog.html#${p.id}" data-reveal>
-          <span class="news-cat">${p.category}</span>
-          <span class="news-date">${p.date.replace(/-/g, '.')}</span>
+          <span class="news-cat">${p.tag}</span>
+          <span class="news-date">${p.post_date.replace(/-/g, '.')}</span>
           <h3 class="news-title">${p.title}</h3>
           <span class="news-more">続きを読む →</span>
         </a>
@@ -577,7 +574,7 @@
     })
     .catch(() => {
       document.getElementById('newsGrid').innerHTML =
-        '<p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">記事を読み込めませんでした。サーバー上で開いているかご確認ください。</p>';
+        '<p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">記事を読み込めませんでした。しばらくしてから再度お試しください。</p>';
     });
 </script>
 

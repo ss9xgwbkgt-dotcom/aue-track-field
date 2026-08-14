@@ -6,6 +6,7 @@
 <title>資料管理（編集者専用）｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
@@ -156,13 +157,17 @@
   <div class="wrap">
 
     <div id="gate" class="gate">
-      <h2>編集者</h2>
-      <input type="password" id="passInput" placeholder="パスコードを入力">
-      <p class="err" id="gateErr">パスコードが違います。</p>
+      <h2>編集者ログイン</h2>
+      <input type="email" id="loginEmail" placeholder="メールアドレス" autocomplete="username">
+      <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password" style="margin-top:10px;">
+      <p class="err" id="gateErr" style="display:none;">ログインに失敗しました。メールアドレスとパスワードをご確認ください。</p>
       <button class="btn" id="gateBtn">ログイン</button>
     </div>
 
     <div id="panel" style="display:none;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="icon-btn" id="logoutBtn" type="button">ログアウト</button>
+      </div>
       <h1>サイトの管理</h1>
       <p class="lead">各エリアにファイルをドラッグ＆ドロップ（またはクリックして選択）すると、対応するページに自動で反映されます。</p>
 
@@ -620,7 +625,6 @@
   const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
   const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
   const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
-  const PASSCODE = 'ekiden10'; // 必要に応じて変更してください
   const CATEGORY_STORAGE_KEY = 'aue_doc_categories_v1';
   const DEFAULT_CATEGORIES = [
     { id: 'kisoku', label: '部則・規約' },
@@ -630,39 +634,83 @@
     { id: 'menu', label: '練習メニュー・記録フォーマット' },
   ];
 
-  /* ---- ゲート（簡易パスコード） ---- */
+  /* ---- Supabase クライアント ---- */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+  async function uploadToBucket(folder, file) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+    const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file);
+    if (error) throw error;
+    return path;
+  }
+  async function removeFromBucket(path) {
+    if (!path) return;
+    await sb.storage.from(STORAGE_BUCKET).remove([path]);
+  }
+
+  /* ---- ログイン（Supabase Auth） ---- */
   const gate = document.getElementById('gate');
   const panel = document.getElementById('panel');
-  const passInput = document.getElementById('passInput');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
   const gateErr = document.getElementById('gateErr');
 
-  function tryEnter() {
-    if (passInput.value === PASSCODE) {
-      sessionStorage.setItem('aue_admin_ok', '1');
-      gate.style.display = 'none';
-      panel.style.display = 'block';
-      renderCategoryManager();
-      renderCategoryDropzones();
-      renderAll();
-      renderDocsUpdateUI();
-      renderHero();
-      fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
-      renderRecords();
-      initLinksAdmin();
-      renderBlocksPanels();
-      renderJoinPhotosPanels();
-      updateStorageUsage();
-      checkGlobalPending();
-    } else {
+  async function tryEnter() {
+    gateErr.style.display = 'none';
+    const { error } = await sb.auth.signInWithPassword({
+      email: loginEmail.value.trim(),
+      password: loginPassword.value,
+    });
+    if (error) {
+      gateErr.textContent = 'ログインに失敗しました。メールアドレスとパスワードをご確認ください。';
       gateErr.style.display = 'block';
+      return;
     }
+    await enterPanel();
   }
-  document.getElementById('gateBtn').addEventListener('click', tryEnter);
-  passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
-  if (sessionStorage.getItem('aue_admin_ok') === '1') {
+
+  async function enterPanel() {
     gate.style.display = 'none';
     panel.style.display = 'block';
+    renderCategoryManager();
+    renderCategoryDropzones();
+    renderAll();
+    renderDocsUpdateUI();
+    renderHero();
+    await initBlogAdmin();
+    renderRecords();
+    initLinksAdmin();
+    renderBlocksPanels();
+    renderJoinPhotosPanels();
+    updateStorageUsage();
+    checkGlobalPending();
   }
+
+  document.getElementById('gateBtn').addEventListener('click', tryEnter);
+  loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
+  loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    panel.style.display = 'none';
+    gate.style.display = 'block';
+    loginEmail.value = '';
+    loginPassword.value = '';
+  });
+
+  // ページ読み込み時、すでにログイン中であればそのままパネルを表示
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      enterPanel();
+    }
+  });
 
   /* ---- データ操作 ---- */
   function loadDocs() {
@@ -2054,30 +2102,31 @@
     document.getElementById('heroConfirmBox').style.display = 'none';
   });
 
-  /* ---- ブログ記事（フォーム入力＋任意の添付写真／既存記事の閲覧・編集・削除） ---- */
-  const STATIC_OVERRIDE_KEY = 'aue_blog_static_overrides_v1';
-  const STATIC_DELETED_KEY = 'aue_blog_static_deleted_v1';
-  const BLOG_CATEGORY_ADDED_KEY = 'aue_blog_categories_added_v1';
-  const BLOG_DEFAULT_CATEGORIES = ['お知らせ', '大会', '練習日誌', '行事', 'その他'];
-  let staticPostsCache = [];
+  /* ---- ブログ記事（Supabase: blog_tags / blog_posts テーブル） ---- */
+  let blogTagsCache = [];     // [{id,label,sort_order}]
+  let blogPostsCache = [];    // [{id,title,tag,post_date,body,image_path,image_name}]
   let editingPostId = null;   // 編集中の記事id（null=新規投稿モード）
-  let editingIsStatic = false;
 
-  function slugify() {
-    return 'post-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  async function initBlogAdmin() {
+    await refreshBlogTags();
+    await refreshBlogPosts();
+    populateBlogCategorySelect();
+    renderBlogList();
   }
 
-  function fetchStaticPosts() {
-    return fetch('data/posts.json').then((res) => res.json()).catch(() => []);
+  async function refreshBlogTags() {
+    const { data, error } = await sb.from('blog_tags').select('*').order('sort_order', { ascending: true });
+    if (error) { showToast('タグの取得に失敗しました'); return; }
+    blogTagsCache = data || [];
   }
-
-  const BLOG_DEFAULT_DELETED_KEY = 'aue_blog_default_deleted_v1';
+  async function refreshBlogPosts() {
+    const { data, error } = await sb.from('blog_posts').select('*').order('post_date', { ascending: false });
+    if (error) { showToast('記事の取得に失敗しました'); return; }
+    blogPostsCache = data || [];
+  }
 
   function getAllBlogCategories() {
-    const added = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []);
-    const deletedDefaults = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
-    const defaults = BLOG_DEFAULT_CATEGORIES.filter((c) => !deletedDefaults.includes(c));
-    return defaults.concat(added.filter((c) => !BLOG_DEFAULT_CATEGORIES.includes(c)));
+    return blogTagsCache.map((t) => t.label);
   }
 
   function populateBlogCategorySelect() {
@@ -2086,7 +2135,7 @@
     sel.innerHTML = getAllBlogCategories().map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     if (prev && getAllBlogCategories().includes(prev)) {
       sel.value = prev;
-    } else {
+    } else if (getAllBlogCategories().includes('お知らせ')) {
       sel.value = 'お知らせ';
     }
 
@@ -2107,58 +2156,33 @@
 
   function renderBlogCategoryManager() {
     const el = document.getElementById('blogCategoryManager');
-    const added = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []);
-    const deletedDefaults = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
-    const defaults = BLOG_DEFAULT_CATEGORIES.filter((c) => !deletedDefaults.includes(c));
-    if (defaults.length === 0 && added.length === 0) {
+    if (blogTagsCache.length === 0) {
       el.innerHTML = '<p class="empty-row">タグがありません</p>';
       return;
     }
-    const defaultRows = defaults.map((label) => `
+    el.innerHTML = blogTagsCache.map((t) => `
       <div class="file-row">
-        <span class="file-icon">初期</span>
+        <span class="file-icon">タグ</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(label)}</div>
-          <div class="file-meta">初期設定のタグ</div>
+          <div class="file-name">${escapeHtml(t.label)}</div>
         </div>
         <div class="file-actions">
-          <button class="icon-btn" data-remove-blog-default-cat="${escapeHtml(label)}">削除</button>
+          <button class="icon-btn" data-remove-blog-tag="${escapeHtml(t.id)}">削除</button>
         </div>
       </div>
     `).join('');
-    const addedRows = added.map((label) => `
-      <div class="file-row">
-        <span class="file-icon">＋</span>
-        <div class="file-info">
-          <div class="file-name">${escapeHtml(label)}</div>
-          <div class="file-meta">追加したタグ</div>
-        </div>
-        <div class="file-actions">
-          <button class="icon-btn" data-remove-blog-cat="${escapeHtml(label)}">削除</button>
-        </div>
-      </div>
-    `).join('');
-    el.innerHTML = defaultRows + addedRows;
-    el.querySelectorAll('[data-remove-blog-default-cat]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const label = btn.getAttribute('data-remove-blog-default-cat');
-        if (!confirm(`「${label}」タグを削除しますか？`)) return;
-        const deleted = loadFromStorage(BLOG_DEFAULT_DELETED_KEY, []);
-        if (!deleted.includes(label)) deleted.push(label);
-        saveToStorage(BLOG_DEFAULT_DELETED_KEY, deleted);
+    el.querySelectorAll('[data-remove-blog-tag]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-remove-blog-tag');
+        const tag = blogTagsCache.find((t) => t.id === id);
+        if (!tag) return;
+        if (!confirm(`「${tag.label}」タグを削除しますか？`)) return;
+        const { error } = await sb.from('blog_tags').delete().eq('id', id);
+        if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+        await refreshBlogTags();
         renderBlogCategoryManager();
         populateBlogCategorySelect();
-        showToast('タグを削除しました');
-      });
-    });
-    el.querySelectorAll('[data-remove-blog-cat]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const label = btn.getAttribute('data-remove-blog-cat');
-        if (!confirm(`「${label}」タグを削除しますか？`)) return;
-        const remaining = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []).filter((c) => c !== label);
-        saveToStorage(BLOG_CATEGORY_ADDED_KEY, remaining);
-        renderBlogCategoryManager();
-        populateBlogCategorySelect();
+        renderBlogList();
         showToast('タグを削除しました');
       });
     });
@@ -2171,7 +2195,7 @@
     if (isHidden) renderBlogCategoryManager();
   });
 
-  document.getElementById('addBlogCategoryBtn').addEventListener('click', () => {
+  document.getElementById('addBlogCategoryBtn').addEventListener('click', async () => {
     const input = document.getElementById('newBlogCategoryInput');
     const errorEl = document.getElementById('newBlogCategoryError');
     const label = input.value.trim();
@@ -2182,14 +2206,16 @@
     }
     errorEl.style.display = 'none';
     if (!getAllBlogCategories().includes(label)) {
-      const added = loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []);
-      added.push(label);
-      saveToStorage(BLOG_CATEGORY_ADDED_KEY, added);
+      const nextOrder = blogTagsCache.length;
+      const { error } = await sb.from('blog_tags').insert({ label, sort_order: nextOrder });
+      if (error) { showToast('追加に失敗しました： ' + error.message); return; }
+      await refreshBlogTags();
     }
     input.value = '';
     document.getElementById('newBlogCategoryRow').style.display = 'none';
     populateBlogCategorySelect();
     document.getElementById('blogCategory').value = label;
+    renderBlogCategoryManager();
     showToast('タグを追加しました');
   });
   document.getElementById('newBlogCategoryInput').addEventListener('input', () => {
@@ -2199,26 +2225,16 @@
     if (e.key === 'Enter') document.getElementById('addBlogCategoryBtn').click();
   });
 
-  function getAllPostsForAdmin() {
-    const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
-    const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
-    const staticList = staticPostsCache
-      .filter((p) => !deleted.includes(p.id))
-      .map((p) => Object.assign({}, p, overrides[p.id] || {}, { isStatic: true }));
-    const dynamicList = loadFromStorage(BLOG_STORAGE_KEY, []).map((p) => Object.assign({}, p, { isStatic: false }));
-    return staticList.concat(dynamicList).sort((a, b) => b.date.localeCompare(a.date));
-  }
-
   function renderBlogList() {
     const listEl = document.getElementById('list-blog-all');
     const errorEl = document.getElementById('blogOrphanError');
     const countEl = document.getElementById('blogListCount');
     const filterVal = document.getElementById('blogListFilter').value;
-    const posts = getAllPostsForAdmin();
+    const posts = blogPostsCache;
     countEl.textContent = String(posts.length);
 
     const allTags = getAllBlogCategories();
-    const orphanedPosts = posts.filter((p) => !allTags.includes(p.category));
+    const orphanedPosts = posts.filter((p) => !allTags.includes(p.tag));
     if (orphanedPosts.length > 0) {
       errorEl.textContent = `削除されたタグが付いていた記事が${orphanedPosts.length}件あります。下の一覧から「編集」を開き、どのタグに変えるか決めてください。決めるまでこの案内は表示され続けます（変えるまで、これらの記事のタグは「なし」として扱われます）。`;
       errorEl.style.display = 'block';
@@ -2228,7 +2244,7 @@
       errorEl.style.display = 'none';
     }
 
-    const filtered = filterVal ? posts.filter((p) => p.category === filterVal) : posts;
+    const filtered = filterVal ? posts.filter((p) => p.tag === filterVal) : posts;
 
     if (filtered.length === 0) {
       listEl.innerHTML = posts.length === 0
@@ -2243,14 +2259,13 @@
         const id = btn.getAttribute('data-view-post');
         const detailEl = document.getElementById('detail-' + id);
         const isOpen = detailEl.style.display !== 'none';
-        // 他の詳細表示は閉じる
         listEl.querySelectorAll('.post-detail').forEach((d) => { d.style.display = 'none'; });
         if (isOpen) return;
         const post = posts.find((p) => p.id === id);
         if (!post) return;
         detailEl.innerHTML = `
           ${post.body ? escapeHtml(post.body).replace(/\n/g, '<br>') : '（本文なし）'}
-          ${post.image && post.image.dataUrl ? (post.image.dataUrl.startsWith('data:image/') ? `<img src="${post.image.dataUrl}" alt="">` : `<p style="margin-top:8px;">添付ファイル：${escapeHtml(post.image.fileName)}</p>`) : ''}
+          ${post.image_path ? `<img src="${getPublicUrl(post.image_path)}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">` : ''}
         `;
         detailEl.style.display = 'block';
       });
@@ -2259,16 +2274,14 @@
     listEl.querySelectorAll('[data-edit-post]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-edit-post');
-        const isStatic = btn.getAttribute('data-static') === 'true';
         const post = posts.find((p) => p.id === id);
         if (!post) return;
         editingPostId = id;
-        editingIsStatic = isStatic;
         document.getElementById('blogTitle').value = post.title || '';
-        document.getElementById('blogCategory').value = post.category || 'お知らせ';
-        document.getElementById('blogDate').value = post.date || '';
+        document.getElementById('blogCategory').value = post.tag || 'お知らせ';
+        document.getElementById('blogDate').value = post.post_date || '';
         document.getElementById('blogBody').value = post.body || '';
-        pendingBlogImage = post.image || null;
+        pendingBlogImage = post.image_path ? { fileName: post.image_name, existingPath: post.image_path } : null;
         renderBlogImagePreview();
         document.getElementById('blogSubmit').textContent = '変更を保存';
         document.getElementById('blogEditingNote').style.display = 'block';
@@ -2278,19 +2291,15 @@
     });
 
     listEl.querySelectorAll('[data-remove-post]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-remove-post');
-        const isStatic = btn.getAttribute('data-static') === 'true';
         if (!confirm('この記事を削除しますか？')) return;
-        if (isStatic) {
-          const deleted = loadFromStorage(STATIC_DELETED_KEY, []);
-          if (!deleted.includes(id)) deleted.push(id);
-          saveToStorage(STATIC_DELETED_KEY, deleted);
-        } else {
-          const remaining = loadFromStorage(BLOG_STORAGE_KEY, []).filter((p) => p.id !== id);
-          saveToStorage(BLOG_STORAGE_KEY, remaining);
-        }
+        const post = posts.find((p) => p.id === id);
+        const { error } = await sb.from('blog_posts').delete().eq('id', id);
+        if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+        if (post && post.image_path) await removeFromBucket(post.image_path);
         if (editingPostId === id) resetBlogForm();
+        await refreshBlogPosts();
         renderBlogList();
         showToast('記事を削除しました');
       });
@@ -2301,15 +2310,15 @@
     return `
       <div>
         <div class="file-row">
-          <span class="file-icon">${p.image ? escapeHtml(getExtLabel(p.image.fileName)) : 'TXT'}</span>
+          <span class="file-icon">${p.image_path ? escapeHtml(getExtLabel(p.image_name || '')) : 'TXT'}</span>
           <div class="file-info">
             <div class="file-name">${escapeHtml(p.title)}</div>
-            <div class="file-meta">${allTags.includes(p.category) ? escapeHtml(p.category) : 'なし'} ・ ${p.date}${p.image ? ' ・ 添付あり' : ''}</div>
+            <div class="file-meta">${allTags.includes(p.tag) ? escapeHtml(p.tag) : 'なし'} ・ ${p.post_date}${p.image_path ? ' ・ 添付あり' : ''}</div>
           </div>
           <div class="file-actions">
             <button class="icon-btn" data-view-post="${escapeHtml(p.id)}">閲覧</button>
-            <button class="icon-btn" data-edit-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">編集</button>
-            <button class="icon-btn" data-remove-post="${escapeHtml(p.id)}" data-static="${p.isStatic}">削除</button>
+            <button class="icon-btn" data-edit-post="${escapeHtml(p.id)}">編集</button>
+            <button class="icon-btn" data-remove-post="${escapeHtml(p.id)}">削除</button>
           </div>
         </div>
         <div class="post-detail" id="detail-${escapeHtml(p.id)}" style="display:none;"></div>
@@ -2319,7 +2328,6 @@
 
   function resetBlogForm() {
     editingPostId = null;
-    editingIsStatic = false;
     document.getElementById('blogTitle').value = '';
     document.getElementById('blogCategory').value = 'お知らせ';
     document.getElementById('blogDate').value = '';
@@ -2336,7 +2344,7 @@
 
   document.getElementById('blogCancelEdit').addEventListener('click', resetBlogForm);
 
-  let pendingBlogImage = null; // { fileName, sizeLabel, dataUrl }
+  let pendingBlogImage = null; // 新規: { fileName, sizeLabel, file } ／ 既存編集時: { fileName, existingPath }
 
   function renderBlogImagePreview() {
     const el = document.getElementById('blogImagePreview');
@@ -2349,7 +2357,7 @@
         <span class="file-icon">${escapeHtml(getExtLabel(pendingBlogImage.fileName))}</span>
         <div class="file-info">
           <div class="file-name">${escapeHtml(pendingBlogImage.fileName)}</div>
-          <div class="file-meta">${pendingBlogImage.sizeLabel}</div>
+          <div class="file-meta">${pendingBlogImage.sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" id="clearBlogImage">削除</button>
@@ -2370,17 +2378,12 @@
       showToast('ファイルは8MB以下にしてください');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingBlogImage = {
-        fileName: file.name,
-        sizeLabel: formatSize(file.size),
-        dataUrl: reader.result,
-      };
-      renderBlogImagePreview();
+    pendingBlogImage = {
+      fileName: file.name,
+      sizeLabel: formatSize(file.size),
+      file: file,
     };
-    reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
-    reader.readAsDataURL(file);
+    renderBlogImagePreview();
   }
 
   const dropBlogImage = document.getElementById('drop-blog-image');
@@ -2394,34 +2397,56 @@
     handleBlogImageFile(e.dataTransfer.files);
   });
 
-  function commitBlogPost() {
+  async function commitBlogPost() {
     const title = document.getElementById('blogTitle').value.trim();
-    const category = document.getElementById('blogCategory').value.trim();
-    const date = document.getElementById('blogDate').value;
+    const tag = document.getElementById('blogCategory').value.trim();
+    const post_date = document.getElementById('blogDate').value;
     const body = document.getElementById('blogBody').value.trim();
 
-    if (editingPostId && editingIsStatic) {
-      // 初期記事（data/posts.json由来）の変更は上書き情報として保存
-      const overrides = loadFromStorage(STATIC_OVERRIDE_KEY, {});
-      overrides[editingPostId] = { title, category, date, body, image: pendingBlogImage };
-      saveToStorage(STATIC_OVERRIDE_KEY, overrides);
-      showToast('記事を更新しました');
-    } else if (editingPostId && !editingIsStatic) {
-      const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      const idx = posts.findIndex((p) => p.id === editingPostId);
-      if (idx > -1) {
-        posts[idx] = Object.assign({}, posts[idx], { title, category, date, body, image: pendingBlogImage });
-        saveToStorage(BLOG_STORAGE_KEY, posts);
+    let image_path;
+    let image_name;
+    try {
+      if (pendingBlogImage && pendingBlogImage.file) {
+        // 新しい画像がアップロードされた
+        image_path = await uploadToBucket('blog', pendingBlogImage.file);
+        image_name = pendingBlogImage.fileName;
+        // 編集時、以前の画像を消していたら古いファイルを削除
+        if (editingPostId) {
+          const prev = blogPostsCache.find((p) => p.id === editingPostId);
+          if (prev && prev.image_path && prev.image_path !== image_path) await removeFromBucket(prev.image_path);
+        }
+      } else if (pendingBlogImage && pendingBlogImage.existingPath) {
+        // 編集中で画像はそのまま
+        image_path = pendingBlogImage.existingPath;
+        image_name = pendingBlogImage.fileName;
+      } else {
+        // 画像なし。編集時に既存画像を削除した場合は消す
+        image_path = null;
+        image_name = null;
+        if (editingPostId) {
+          const prev = blogPostsCache.find((p) => p.id === editingPostId);
+          if (prev && prev.image_path) await removeFromBucket(prev.image_path);
+        }
       }
+    } catch (err) {
+      showToast('画像のアップロードに失敗しました： ' + err.message);
+      return;
+    }
+
+    if (editingPostId) {
+      const { error } = await sb.from('blog_posts').update({
+        title, tag, post_date, body, image_path, image_name, updated_at: new Date().toISOString(),
+      }).eq('id', editingPostId);
+      if (error) { showToast('更新に失敗しました： ' + error.message); return; }
       showToast('記事を更新しました');
     } else {
-      const posts = loadFromStorage(BLOG_STORAGE_KEY, []);
-      posts.push({ id: slugify(), title, category, date, body, image: pendingBlogImage });
-      saveToStorage(BLOG_STORAGE_KEY, posts);
+      const { error } = await sb.from('blog_posts').insert({ title, tag, post_date, body, image_path, image_name });
+      if (error) { showToast('投稿に失敗しました： ' + error.message); return; }
       showToast('記事を投稿しました');
     }
 
     resetBlogForm();
+    await refreshBlogPosts();
     renderBlogList();
   }
 
@@ -2571,10 +2596,6 @@
       categories: loadCategories(),
       documents: loadDocs(),
       heroPhoto: loadFromStorage(HERO_STORAGE_KEY, null),
-      blogPosts: loadFromStorage(BLOG_STORAGE_KEY, []),
-      blogStaticOverrides: loadFromStorage(STATIC_OVERRIDE_KEY, {}),
-      blogStaticDeleted: loadFromStorage(STATIC_DELETED_KEY, []),
-      blogCategoriesAdded: loadFromStorage(BLOG_CATEGORY_ADDED_KEY, []),
       recordsFile: loadFromStorage(RECORDS_STORAGE_KEY, null),
       linkCards: loadFromStorage(LINK_CARDS_KEY, []),
       linkStaticOverrides: loadFromStorage(LINK_OVERRIDE_KEY, {}),
@@ -2599,7 +2620,7 @@
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const imported = JSON.parse(reader.result);
         if (Array.isArray(imported)) {
@@ -2609,10 +2630,6 @@
           if (imported.categories) saveCategories(imported.categories);
           if (imported.documents) saveDocs(imported.documents);
           saveToStorage(HERO_STORAGE_KEY, imported.heroPhoto || null);
-          saveToStorage(BLOG_STORAGE_KEY, imported.blogPosts || []);
-          saveToStorage(STATIC_OVERRIDE_KEY, imported.blogStaticOverrides || {});
-          saveToStorage(STATIC_DELETED_KEY, imported.blogStaticDeleted || []);
-          saveToStorage(BLOG_CATEGORY_ADDED_KEY, imported.blogCategoriesAdded || []);
           saveToStorage(RECORDS_STORAGE_KEY, imported.recordsFile || null);
           saveToStorage(LINK_CARDS_KEY, imported.linkCards || []);
           saveToStorage(LINK_OVERRIDE_KEY, imported.linkStaticOverrides || {});
@@ -2624,7 +2641,7 @@
         renderCategoryManager();
         renderCategoryDropzones();
         renderHero();
-        fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
+        await initBlogAdmin();
         renderRecords();
         initLinksAdmin();
         renderBlocksPanels();
@@ -2636,18 +2653,6 @@
     };
     reader.readAsText(file);
   });
-
-  if (panel.style.display !== 'none') {
-    renderCategoryManager();
-    renderCategoryDropzones();
-    renderHero();
-    fetchStaticPosts().then((posts) => { staticPostsCache = posts; populateBlogCategorySelect(); renderBlogList(); });
-    renderRecords();
-    initLinksAdmin();
-    renderBlocksPanels();
-    renderJoinPhotosPanels();
-    updateStorageUsage();
-  }
 
   // ブラウザの「戻る」でこのページがキャッシュ（bfcache）から復元された場合、
   // 未反映の変更（更新ボタンをまだ押していない状態）は破棄し、警告バナーも消す
