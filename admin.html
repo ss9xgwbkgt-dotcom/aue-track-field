@@ -622,9 +622,6 @@
 
 <script>
   const DOC_STORAGE_KEY = 'aue_documents_v1';
-  const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
-  const BLOG_STORAGE_KEY = 'aue_blog_posts_v1';
-  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
   const CATEGORY_STORAGE_KEY = 'aue_doc_categories_v1';
   const DEFAULT_CATEGORIES = [
     { id: 'kisoku', label: '部則・規約' },
@@ -684,12 +681,12 @@
     renderCategoryDropzones();
     renderAll();
     renderDocsUpdateUI();
-    renderHero();
+    await renderHero();
     await initBlogAdmin();
-    renderRecords();
+    await renderRecords();
     initLinksAdmin();
-    renderBlocksPanels();
-    renderJoinPhotosPanels();
+    await renderBlocksPanels();
+    await renderJoinPhotosPanels();
     updateStorageUsage();
     checkGlobalPending();
   }
@@ -1701,18 +1698,24 @@
     document.getElementById('linkConfirmBox').style.display = 'none';
   });
 
-  /* ---- 入部案内ページの写真（4枚。アップロードは更新ボタンで反映／削除は確認ダイアログで即時反映） ---- */
-  const JOIN_STORY_PHOTOS_KEY = 'aue_join_story_photos_v1';
+  /* ---- 入部案内ページの写真（Supabase: site_assets key='join_photo_{msgId}' ＋ Storage） ---- */
   const JOIN_STORY_MESSAGES = [
     { id: 'msg1', label: '①「今」を積み重ねるということ。' },
     { id: 'msg2', label: '②仲間と競い、限界に挑む。' },
     { id: 'msg3', label: '③昨日を超えるために、今日、何するか。' },
     { id: 'msg4', label: '④その本気が、自分を変える。' },
   ];
-  let pendingJoinPhotos = {}; // { msgId: {fileName,sizeLabel,dataUrl} } 未反映の新規アップロードのみ
+  let pendingJoinPhotos = {}; // { msgId: {fileName,sizeLabel,file} } 未反映の新規アップロードのみ
+  let joinPhotosAssetCache = {}; // key -> row
 
-  function loadJoinPhotosData() {
-    return loadFromStorage(JOIN_STORY_PHOTOS_KEY, {});
+  function joinPhotoKey(msgId) { return `join_photo_${msgId}`; }
+
+  async function loadJoinPhotosAssets() {
+    const { data, error } = await sb.from('site_assets').select('*').like('key', 'join_photo_%');
+    if (error) { showToast('写真の取得に失敗しました'); return {}; }
+    const map = {};
+    (data || []).forEach((row) => { map[row.key] = row; });
+    return map;
   }
   function joinPhotosHasPending() {
     return Object.keys(pendingJoinPhotos).length > 0;
@@ -1723,7 +1726,8 @@
     checkGlobalPending();
   }
 
-  function renderJoinPhotosPanels() {
+  async function renderJoinPhotosPanels() {
+    joinPhotosAssetCache = await loadJoinPhotosAssets();
     const container = document.getElementById('joinPhotosPanels');
     container.innerHTML = JOIN_STORY_MESSAGES.map((m) => `
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:18px;margin-bottom:16px;">
@@ -1744,29 +1748,30 @@
 
   function renderJoinPhotoRow(msgId) {
     const listEl = document.getElementById(`list-join-photo-${msgId}`);
-    const data = loadJoinPhotosData();
-    const committed = data[msgId];
+    const committedRow = joinPhotosAssetCache[joinPhotoKey(msgId)];
     const pendingEntry = pendingJoinPhotos[msgId];
     const isPending = pendingEntry !== undefined;
-    const display = isPending ? pendingEntry : committed;
+    const display = isPending ? pendingEntry : (committedRow && committedRow.file_path ? committedRow : null);
 
     if (!display) {
       listEl.innerHTML = `<p class="empty-row">まだ登録されていません（「写真は準備中です。」と表示されます）</p>`;
       return;
     }
+    const fileName = display.fileName || display.file_name;
+    const sizeLabel = display.sizeLabel || display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(display.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
-          <div class="file-meta">${display.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" data-remove-join-photo="${msgId}">削除</button>
         </div>
       </div>
     `;
-    listEl.querySelector('[data-remove-join-photo]').addEventListener('click', () => {
+    listEl.querySelector('[data-remove-join-photo]').addEventListener('click', async () => {
       if (isPending) {
         delete pendingJoinPhotos[msgId];
         renderJoinPhotoRow(msgId);
@@ -1774,9 +1779,9 @@
         return;
       }
       if (!confirm('この写真を削除しますか？')) return;
-      const d = loadJoinPhotosData();
-      delete d[msgId];
-      saveToStorage(JOIN_STORY_PHOTOS_KEY, d);
+      if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
+      await sb.from('site_assets').delete().eq('key', joinPhotoKey(msgId));
+      joinPhotosAssetCache = await loadJoinPhotosAssets();
       renderJoinPhotoRow(msgId);
       showToast('削除しました');
     });
@@ -1789,14 +1794,9 @@
       const file = fileList[0];
       if (!file) return;
       if (file.size > 8 * 1024 * 1024) { showToast('画像は8MB以下にしてください'); return; }
-      const reader = new FileReader();
-      reader.onload = () => {
-        pendingJoinPhotos[msgId] = { fileName: file.name, sizeLabel: formatSize(file.size), dataUrl: reader.result };
-        renderJoinPhotoRow(msgId);
-        renderJoinPhotosUpdateUI();
-      };
-      reader.onerror = () => showToast('画像の読み込みに失敗しました');
-      reader.readAsDataURL(file);
+      pendingJoinPhotos[msgId] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+      renderJoinPhotoRow(msgId);
+      renderJoinPhotosUpdateUI();
     }
     input.addEventListener('change', () => handle(input.files));
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
@@ -1808,14 +1808,26 @@
     });
   }
 
-  function commitJoinPhotosUpdate() {
-    const data = loadJoinPhotosData();
-    Object.keys(pendingJoinPhotos).forEach((msgId) => {
-      data[msgId] = pendingJoinPhotos[msgId];
-    });
-    saveToStorage(JOIN_STORY_PHOTOS_KEY, data);
+  async function commitJoinPhotosUpdate() {
+    try {
+      for (const msgId of Object.keys(pendingJoinPhotos)) {
+        const entry = pendingJoinPhotos[msgId];
+        const key = joinPhotoKey(msgId);
+        const path = await uploadToBucket(`site-assets/${key}`, entry.file);
+        const old = joinPhotosAssetCache[key];
+        if (old && old.file_path) await removeFromBucket(old.file_path);
+        const { error } = await sb.from('site_assets').upsert({
+          key, file_name: entry.fileName, file_path: path, size_label: entry.sizeLabel,
+          updated_at: new Date().toISOString(),
+        });
+        if (error) throw error;
+      }
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
+    }
     pendingJoinPhotos = {};
-    renderJoinPhotosPanels();
+    await renderJoinPhotosPanels();
     renderJoinPhotosUpdateUI();
     showToast('入部案内ページの写真を更新しました');
   }
@@ -1836,8 +1848,7 @@
     document.getElementById('joinPhotosConfirmBox').style.display = 'none';
   });
 
-  /* ---- 活動ブロック紹介（写真・PDFを4ブロック分。アップロードは更新ボタンで反映／削除は確認ダイアログで即時反映） ---- */
-  const BLOCKS_STORAGE_KEY = 'aue_blocks_v1';
+  /* ---- 活動ブロック紹介（Supabase: site_assets key='block_{id}_photo'/'block_{id}_pdf' ＋ Storage） ---- */
   const BLOCK_ORDER = [
     { id: 'short', label: '短距離' },
     { id: 'mid', label: '中長距離' },
@@ -1845,9 +1856,16 @@
     { id: 'manager', label: 'マネージャー' },
   ];
   let pendingBlocks = {}; // { blockId: { photo: {...}|undefined, pdf: {...}|undefined } } 未反映の新規アップロードのみ
+  let blocksAssetCache = {}; // key -> row
 
-  function loadBlocksData() {
-    return loadFromStorage(BLOCKS_STORAGE_KEY, {});
+  function blockAssetKey(blockId, kind) { return `block_${blockId}_${kind}`; }
+
+  async function loadBlocksAssets() {
+    const { data, error } = await sb.from('site_assets').select('*').like('key', 'block_%');
+    if (error) { showToast('活動ブロックの取得に失敗しました'); return {}; }
+    const map = {};
+    (data || []).forEach((row) => { map[row.key] = row; });
+    return map;
   }
   function blocksHasPending() {
     return Object.keys(pendingBlocks).some((id) => pendingBlocks[id] && (pendingBlocks[id].photo !== undefined || pendingBlocks[id].pdf !== undefined));
@@ -1858,9 +1876,9 @@
     checkGlobalPending();
   }
 
-  function renderBlocksPanels() {
+  async function renderBlocksPanels() {
+    blocksAssetCache = await loadBlocksAssets();
     const container = document.getElementById('blocksPanels');
-    const data = loadBlocksData();
     container.innerHTML = BLOCK_ORDER.map((b) => `
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:18px;margin-bottom:16px;">
         <p style="font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">${b.label}</p>
@@ -1895,29 +1913,30 @@
 
   function renderBlockFileRow(blockId, kind) {
     const listEl = document.getElementById(`list-block-${kind}-${blockId}`);
-    const data = loadBlocksData();
-    const committed = data[blockId] && data[blockId][kind];
+    const committedRow = blocksAssetCache[blockAssetKey(blockId, kind)];
     const pendingEntry = pendingBlocks[blockId] && pendingBlocks[blockId][kind];
     const isPending = pendingEntry !== undefined;
-    const display = isPending ? pendingEntry : committed;
+    const display = isPending ? pendingEntry : (committedRow && committedRow.file_path ? committedRow : null);
 
     if (!display) {
       listEl.innerHTML = `<p class="empty-row">まだ登録されていません</p>`;
       return;
     }
+    const fileName = display.fileName || display.file_name;
+    const sizeLabel = display.sizeLabel || display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(display.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
-          <div class="file-meta">${display.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" data-remove-block="${blockId}" data-kind="${kind}">削除</button>
         </div>
       </div>
     `;
-    listEl.querySelector('[data-remove-block]').addEventListener('click', () => {
+    listEl.querySelector('[data-remove-block]').addEventListener('click', async () => {
       if (isPending) {
         delete pendingBlocks[blockId][kind];
         renderBlockFileRow(blockId, kind);
@@ -1925,11 +1944,9 @@
         return;
       }
       if (!confirm(`この${kind === 'photo' ? '写真' : 'PDF'}を削除しますか？`)) return;
-      const d = loadBlocksData();
-      if (d[blockId]) {
-        delete d[blockId][kind];
-        saveToStorage(BLOCKS_STORAGE_KEY, d);
-      }
+      if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
+      await sb.from('site_assets').delete().eq('key', blockAssetKey(blockId, kind));
+      blocksAssetCache = await loadBlocksAssets();
       renderBlockFileRow(blockId, kind);
       showToast('削除しました');
     });
@@ -1946,15 +1963,10 @@
         if (!isPdf) { showToast('PDFファイルのみアップロードできます'); return; }
       }
       if (file.size > 8 * 1024 * 1024) { showToast('ファイルは8MB以下にしてください'); return; }
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
-        pendingBlocks[blockId][kind] = { fileName: file.name, sizeLabel: formatSize(file.size), dataUrl: reader.result };
-        renderBlockFileRow(blockId, kind);
-        renderBlocksUpdateUI();
-      };
-      reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
-      reader.readAsDataURL(file);
+      if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
+      pendingBlocks[blockId][kind] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+      renderBlockFileRow(blockId, kind);
+      renderBlocksUpdateUI();
     }
     input.addEventListener('change', () => handle(input.files));
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
@@ -1966,17 +1978,29 @@
     });
   }
 
-  function commitBlocksUpdate() {
-    const data = loadBlocksData();
-    Object.keys(pendingBlocks).forEach((blockId) => {
-      if (!data[blockId]) data[blockId] = {};
-      const entry = pendingBlocks[blockId];
-      if (entry.photo !== undefined) data[blockId].photo = entry.photo;
-      if (entry.pdf !== undefined) data[blockId].pdf = entry.pdf;
-    });
-    saveToStorage(BLOCKS_STORAGE_KEY, data);
+  async function commitBlocksUpdate() {
+    try {
+      for (const blockId of Object.keys(pendingBlocks)) {
+        const entry = pendingBlocks[blockId];
+        for (const kind of ['photo', 'pdf']) {
+          if (entry[kind] === undefined) continue;
+          const key = blockAssetKey(blockId, kind);
+          const path = await uploadToBucket(`site-assets/${key}`, entry[kind].file);
+          const old = blocksAssetCache[key];
+          if (old && old.file_path) await removeFromBucket(old.file_path);
+          const { error } = await sb.from('site_assets').upsert({
+            key, file_name: entry[kind].fileName, file_path: path, size_label: entry[kind].sizeLabel,
+            updated_at: new Date().toISOString(),
+          });
+          if (error) throw error;
+        }
+      }
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
+    }
     pendingBlocks = {};
-    renderBlocksPanels();
+    await renderBlocksPanels();
     renderBlocksUpdateUI();
     showToast('活動ブロック紹介を更新しました');
   }
@@ -2009,46 +2033,51 @@
     });
   }
 
-  /* ---- ホームの写真(アップロードは更新ボタンで反映／削除は確認ダイアログで即時反映) ---- */
+  /* ---- ホームの写真（Supabase: site_assets key='hero_photo' ＋ Storage） ---- */
 
-  let pendingHero = null; // {fileName,sizeLabel,dataUrl} | null （新規アップロードの未反映分のみ）
+  let pendingHero = null; // {fileName,sizeLabel,file} | null （新規アップロードの未反映分のみ）
+  let heroAssetCache = null; // Supabaseから取得した現在の登録内容 {file_name,file_path,size_label}
 
-  function renderHero() {
+  async function loadHeroAsset() {
+    const { data, error } = await sb.from('site_assets').select('*').eq('key', 'hero_photo').maybeSingle();
+    if (error) { showToast('写真の取得に失敗しました'); return null; }
+    return data;
+  }
+
+  async function renderHero() {
     const listEl = document.getElementById('list-hero');
-    const committed = loadFromStorage(HERO_STORAGE_KEY, null);
+    heroAssetCache = await loadHeroAsset();
     const isPending = pendingHero !== null;
     document.getElementById('heroUpdateMsg').style.display = isPending ? 'inline' : 'none';
     checkGlobalPending();
 
-    const display = pendingHero || committed;
+    const display = pendingHero || (heroAssetCache && heroAssetCache.file_path ? heroAssetCache : null);
     if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません。</p>';
       return;
     }
+    const fileName = display.fileName || display.file_name;
+    const sizeLabel = display.sizeLabel || display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(display.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
-          <div class="file-meta">${display.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" id="removeHero">削除</button>
         </div>
       </div>
     `;
-    document.getElementById('removeHero').addEventListener('click', () => {
+    document.getElementById('removeHero').addEventListener('click', async () => {
       if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
       pendingHero = null;
-      localStorage.removeItem(HERO_STORAGE_KEY);
-      window.dispatchEvent(new StorageEvent('storage', { key: HERO_STORAGE_KEY }));
-      renderHero();
-      renderHeroUpdateUIOnly();
+      if (heroAssetCache && heroAssetCache.file_path) await removeFromBucket(heroAssetCache.file_path);
+      await sb.from('site_assets').delete().eq('key', 'hero_photo');
+      await renderHero();
       showToast('既定の写真に戻しました');
     });
-  }
-  function renderHeroUpdateUIOnly() {
-    document.getElementById('heroUpdateMsg').style.display = pendingHero !== null ? 'inline' : 'none';
   }
   function handleHeroFile(fileList) {
     const file = fileList[0];
@@ -2057,18 +2086,8 @@
       showToast('画像は8MB以下にしてください');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingHero = {
-        fileName: file.name,
-        sizeLabel: formatSize(file.size),
-        dataUrl: reader.result,
-        uploadedAt: new Date().toISOString(),
-      };
-      renderHero();
-    };
-    reader.onerror = () => showToast('画像の読み込みに失敗しました');
-    reader.readAsDataURL(file);
+    pendingHero = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+    renderHero();
   }
   const dropHero = document.getElementById('drop-hero');
   const inputHero = document.getElementById('input-hero');
@@ -2080,10 +2099,21 @@
     dropHero.classList.remove('drag');
     handleHeroFile(e.dataTransfer.files);
   });
-  function commitHeroUpdate() {
-    saveToStorage(HERO_STORAGE_KEY, pendingHero);
+  async function commitHeroUpdate() {
+    try {
+      const path = await uploadToBucket('site-assets/hero_photo', pendingHero.file);
+      if (heroAssetCache && heroAssetCache.file_path) await removeFromBucket(heroAssetCache.file_path);
+      const { error } = await sb.from('site_assets').upsert({
+        key: 'hero_photo', file_name: pendingHero.fileName, file_path: path, size_label: pendingHero.sizeLabel,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
+    }
     pendingHero = null;
-    renderHero();
+    await renderHero();
     showToast('トップページの写真を更新しました');
   }
   document.getElementById('heroUpdateBtn').addEventListener('click', () => {
@@ -2493,27 +2523,36 @@
     document.getElementById('blogConfirmBox').style.display = 'none';
   });
 
-  /* ---- 愛教大10傑ファイル（アップロードは更新ボタンで反映／削除は確認ダイアログで即時反映） ---- */
-  let pendingRecords = null; // {fileName,sizeLabel,dataUrl} | null （新規アップロードの未反映分のみ）
+  /* ---- 愛教大10傑ファイル（Supabase: site_assets key='records_file' ＋ Storage） ---- */
+  let pendingRecords = null; // {fileName,sizeLabel,file} | null （新規アップロードの未反映分のみ）
+  let recordsAssetCache = null;
 
-  function renderRecords() {
+  async function loadRecordsAsset() {
+    const { data, error } = await sb.from('site_assets').select('*').eq('key', 'records_file').maybeSingle();
+    if (error) { showToast('ファイルの取得に失敗しました'); return null; }
+    return data;
+  }
+
+  async function renderRecords() {
     const listEl = document.getElementById('list-records');
-    const committed = loadFromStorage(RECORDS_STORAGE_KEY, null);
+    recordsAssetCache = await loadRecordsAsset();
     const isPending = pendingRecords !== null;
     document.getElementById('recordsUpdateMsg').style.display = isPending ? 'inline' : 'none';
     checkGlobalPending();
 
-    const display = pendingRecords || committed;
+    const display = pendingRecords || (recordsAssetCache && recordsAssetCache.file_path ? recordsAssetCache : null);
     if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだファイルが登録されていません</p>';
       return;
     }
+    const fileName = display.fileName || display.file_name;
+    const sizeLabel = display.sizeLabel || display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(display.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(display.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
-          <div class="file-meta">${display.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" id="openRecordsFile">DL</button>
@@ -2522,14 +2561,15 @@
       </div>
     `;
     document.getElementById('openRecordsFile').addEventListener('click', () => {
-      openFileInNewTabAdmin(display.dataUrl);
+      const path = pendingRecords ? null : (recordsAssetCache && recordsAssetCache.file_path);
+      if (path) window.open(getPublicUrl(path), '_blank');
     });
-    document.getElementById('removeRecords').addEventListener('click', () => {
+    document.getElementById('removeRecords').addEventListener('click', async () => {
       if (!confirm('愛教大10傑ファイルを削除しますか？')) return;
       pendingRecords = null;
-      localStorage.removeItem(RECORDS_STORAGE_KEY);
-      window.dispatchEvent(new StorageEvent('storage', { key: RECORDS_STORAGE_KEY }));
-      renderRecords();
+      if (recordsAssetCache && recordsAssetCache.file_path) await removeFromBucket(recordsAssetCache.file_path);
+      await sb.from('site_assets').delete().eq('key', 'records_file');
+      await renderRecords();
       showToast('削除しました');
     });
   }
@@ -2545,18 +2585,8 @@
       showToast('ファイルは8MB以下にしてください');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingRecords = {
-        fileName: file.name,
-        sizeLabel: formatSize(file.size),
-        dataUrl: reader.result,
-        uploadedAt: new Date().toISOString(),
-      };
-      renderRecords();
-    };
-    reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
-    reader.readAsDataURL(file);
+    pendingRecords = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+    renderRecords();
   }
   const dropRecords = document.getElementById('drop-records');
   const inputRecords = document.getElementById('input-records');
@@ -2568,10 +2598,21 @@
     dropRecords.classList.remove('drag');
     handleRecordsFile(e.dataTransfer.files);
   });
-  function commitRecordsUpdate() {
-    saveToStorage(RECORDS_STORAGE_KEY, pendingRecords);
+  async function commitRecordsUpdate() {
+    try {
+      const path = await uploadToBucket('site-assets/records_file', pendingRecords.file);
+      if (recordsAssetCache && recordsAssetCache.file_path) await removeFromBucket(recordsAssetCache.file_path);
+      const { error } = await sb.from('site_assets').upsert({
+        key: 'records_file', file_name: pendingRecords.fileName, file_path: path, size_label: pendingRecords.sizeLabel,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
+    }
     pendingRecords = null;
-    renderRecords();
+    await renderRecords();
     showToast('愛教大10傑ファイルを更新しました');
   }
   document.getElementById('recordsUpdateBtn').addEventListener('click', () => {
@@ -2595,14 +2636,10 @@
     const backup = {
       categories: loadCategories(),
       documents: loadDocs(),
-      heroPhoto: loadFromStorage(HERO_STORAGE_KEY, null),
-      recordsFile: loadFromStorage(RECORDS_STORAGE_KEY, null),
       linkCards: loadFromStorage(LINK_CARDS_KEY, []),
       linkStaticOverrides: loadFromStorage(LINK_OVERRIDE_KEY, {}),
       linkStaticDeleted: loadFromStorage(LINK_DELETED_KEY, []),
       linkCategoriesAdded: loadFromStorage(LINK_CATEGORY_ADDED_KEY, []),
-      blocksData: loadFromStorage(BLOCKS_STORAGE_KEY, {}),
-      joinPhotosData: loadFromStorage(JOIN_STORY_PHOTOS_KEY, {}),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2629,23 +2666,19 @@
         } else {
           if (imported.categories) saveCategories(imported.categories);
           if (imported.documents) saveDocs(imported.documents);
-          saveToStorage(HERO_STORAGE_KEY, imported.heroPhoto || null);
-          saveToStorage(RECORDS_STORAGE_KEY, imported.recordsFile || null);
           saveToStorage(LINK_CARDS_KEY, imported.linkCards || []);
           saveToStorage(LINK_OVERRIDE_KEY, imported.linkStaticOverrides || {});
           saveToStorage(LINK_DELETED_KEY, imported.linkStaticDeleted || []);
           saveToStorage(LINK_CATEGORY_ADDED_KEY, imported.linkCategoriesAdded || []);
-          saveToStorage(BLOCKS_STORAGE_KEY, imported.blocksData || {});
-          saveToStorage(JOIN_STORY_PHOTOS_KEY, imported.joinPhotosData || {});
         }
         renderCategoryManager();
         renderCategoryDropzones();
-        renderHero();
+        await renderHero();
         await initBlogAdmin();
-        renderRecords();
+        await renderRecords();
         initLinksAdmin();
-        renderBlocksPanels();
-        renderJoinPhotosPanels();
+        await renderBlocksPanels();
+        await renderJoinPhotosPanels();
         showToast('インポートが完了しました');
       } catch (err) {
         showToast('JSONの読み込みに失敗しました');

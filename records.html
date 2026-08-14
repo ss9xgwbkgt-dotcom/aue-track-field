@@ -6,6 +6,7 @@
 <title>愛教大10傑｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
@@ -211,40 +212,40 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== 愛教大10傑：編集者画面(admin.html)で登録されたPDFをクリックで新しいタブに開く ===== */
-  const RECORDS_STORAGE_KEY = 'aue_records_file_v1';
-
-  function loadRecordsFile() {
-    try { return JSON.parse(localStorage.getItem(RECORDS_STORAGE_KEY) || 'null'); }
-    catch (e) { return null; }
-  }
-  function dataUrlToBlobUrl(dataUrl) {
-    const [header, base64] = dataUrl.split(',');
-    const mimeMatch = header.match(/data:(.*?);base64/);
-    const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  /* ===== 愛教大10傑：Supabase(site_assets key='records_file')からPDFを取得してクリックで開く ===== */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
   }
 
-  const rec = loadRecordsFile();
   const panelTitle = document.getElementById('recordsPanelTitle');
   const panelText = document.getElementById('recordsPanelText');
   const openBtn = document.getElementById('recordsOpenBtn');
 
-  if (rec && rec.dataUrl) {
-    panelTitle.textContent = rec.fileName;
-    panelText.textContent = 'クリックすると記録表（PDF）が開きます。';
-    openBtn.addEventListener('click', () => {
-      // iOS Safariはblob:URLをwindow.open（新しいタブ）で開けないことがあるため、同じタブで遷移する
-      location.href = dataUrlToBlobUrl(rec.dataUrl);
+  sb.from('site_assets').select('*').eq('key', 'records_file').maybeSingle()
+    .then(({ data: rec }) => {
+      if (rec && rec.file_path) {
+        panelTitle.textContent = rec.file_name;
+        panelText.textContent = 'クリックすると記録表（PDF）が開きます。';
+        openBtn.addEventListener('click', () => {
+          // 同じタブで開く（iOS Safariでの互換性のため）
+          location.href = getPublicUrl(rec.file_path);
+        });
+      } else {
+        panelTitle.textContent = '記録表は現在準備中です。';
+        panelText.textContent = '';
+        openBtn.style.display = 'none';
+      }
+    })
+    .catch(() => {
+      panelTitle.textContent = '記録表を読み込めませんでした。';
+      panelText.textContent = 'しばらくしてから再度お試しください。';
+      openBtn.style.display = 'none';
     });
-  } else {
-    panelTitle.textContent = '記録表は現在準備中です。';
-    panelText.textContent = '';
-    openBtn.style.display = 'none';
-  }
 </script>
 
 </body>

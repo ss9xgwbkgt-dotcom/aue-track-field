@@ -515,26 +515,24 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  // 最新の活動報告：Supabaseの blog_posts テーブルから最新3件を取得
-  const HERO_STORAGE_KEY = 'aue_hero_photo_v1';
-
-  function loadFromStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
+  /* ---- Supabase クライアント ---- */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
   }
 
-  // ホームの写真：編集者画面で差し替えられていればそちらを表示。未登録の場合は「準備中」を表示
-  (function applyHeroPhoto() {
-    const hero = loadFromStorage(HERO_STORAGE_KEY, null);
+  // ホームの写真：Supabaseの site_assets（key='hero_photo'）に登録されていればそちらを表示。未登録の場合は「準備中」を表示
+  (async function applyHeroPhoto() {
+    const { data: hero } = await sb.from('site_assets').select('*').eq('key', 'hero_photo').maybeSingle();
     const container = document.getElementById('heroPhotoContainer');
     const img = document.getElementById('heroPhotoImg');
-    if (hero && hero.dataUrl) {
+    if (hero && hero.file_path) {
       if (img) {
-        img.src = hero.dataUrl;
+        img.src = getPublicUrl(hero.file_path);
         img.style.display = 'block';
       }
     } else if (container && img) {
@@ -546,11 +544,7 @@
     }
   })();
 
-  /* ---- Supabase クライアント ---- */
-  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
+  // 最新の活動報告：Supabaseの blog_posts テーブルから最新3件を取得
   sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(3)
     .then(({ data, error }) => {
       if (error) throw error;

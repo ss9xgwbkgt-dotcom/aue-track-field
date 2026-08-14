@@ -6,6 +6,7 @@
 <title>入部案内｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
@@ -170,7 +171,13 @@
   @media(max-width:420px){.blocks-grid{grid-template-columns:1fr 1fr;gap:12px;}.block-card .block-name{font-size:13px;padding:12px 8px 10px;}}
   .closing-eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);margin-bottom:22px;}
   .closing-message{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,6vw,52px);line-height:1.4;}
-  .closing-cta{display:inline-block;margin-top:40px;font-family:var(--f-display);font-size:15px;letter-spacing:0.05em;background:var(--gold);color:var(--navy);padding:17px 42px;border-radius:2px;transition:filter .2s,transform .2s;}
+  .closing-cta{
+    display:inline-block;margin-top:40px;font-family:var(--f-display);
+    font-size:clamp(12px, 3.4vw, 15px);font-weight:600;letter-spacing:0.05em;
+    background:var(--gold);color:var(--navy);padding:17px 32px;border-radius:2px;
+    transition:filter .2s,transform .2s;white-space:normal;
+  }
+  .closing-cta .cta-part{white-space:nowrap;display:inline-block;}
   .closing-cta:hover{filter:brightness(1.08);transform:translateY(-2px);}
 
   [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
@@ -284,7 +291,7 @@
     <div class="wrap">
       <p class="closing-eyebrow">JOIN US</p>
       <p class="closing-message">さあ、<br>自分史上、最高へ。</p>
-      <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="closing-cta" target="_blank" rel="noopener">見学・体験のお問い合わせはこちら →</a>
+      <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="closing-cta" target="_blank" rel="noopener"><span class="cta-part">見学・体験のお問い合わせは</span> <span class="cta-part">こちら →</span></a>
       <p class="closing-note">競技経験は問いません。少しでも興味を持ったら、まずは気軽にDMでご連絡ください。</p>
     </div>
   </section>
@@ -365,24 +372,31 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== 入部案内メッセージの写真：編集者画面(admin.html)で登録された写真を表示 ===== */
-  const JOIN_STORY_PHOTOS_KEY = 'aue_join_story_photos_v1';
-  (function applyJoinStoryPhotos() {
-    let photos = {};
-    try { photos = JSON.parse(localStorage.getItem(JOIN_STORY_PHOTOS_KEY) || '{}'); }
-    catch (e) { photos = {}; }
-    ['msg1', 'msg2', 'msg3', 'msg4'].forEach((key) => {
-      const el = document.getElementById('story-photo-' + key);
+  /* ---- Supabase クライアント ---- */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  /* ===== 入部案内メッセージの写真：Supabase(site_assets key='join_photo_msgN')から取得して表示 ===== */
+  (async function applyJoinStoryPhotos() {
+    const { data } = await sb.from('site_assets').select('*').like('key', 'join_photo_%');
+    const rows = data || [];
+    ['msg1', 'msg2', 'msg3', 'msg4'].forEach((msgId) => {
+      const el = document.getElementById('story-photo-' + msgId);
       if (!el) return;
-      const photo = photos[key];
-      if (photo && photo.dataUrl) {
-        el.innerHTML = `<img src="${photo.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+      const row = rows.find((r) => r.key === `join_photo_${msgId}`);
+      if (row && row.file_path) {
+        el.innerHTML = `<img src="${getPublicUrl(row.file_path)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
       }
     });
   })();
 
-  /* ===== 活動ブロック紹介：編集者画面(admin.html)で登録された写真・PDFを表示 ===== */
-  const BLOCKS_STORAGE_KEY = 'aue_blocks_v1';
+  /* ===== 活動ブロック紹介：Supabase(site_assets key='block_{id}_photo'/'block_{id}_pdf')から取得して表示 ===== */
   const BLOCK_ORDER = [
     { id: 'short', label: '短距離' },
     { id: 'mid', label: '中長距離' },
@@ -390,45 +404,42 @@
     { id: 'manager', label: 'マネージャー' },
   ];
 
-  function loadBlocks() {
-    try { return JSON.parse(localStorage.getItem(BLOCKS_STORAGE_KEY) || '{}'); }
-    catch (e) { return {}; }
-  }
-  function dataUrlToBlobUrlBlocks(dataUrl) {
-    const [header, base64] = dataUrl.split(',');
-    const mimeMatch = header.match(/data:(.*?);base64/);
-    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return URL.createObjectURL(new Blob([bytes], { type: mime }));
-  }
-
-  const blocksData = loadBlocks();
-  const blocksGrid = document.getElementById('blocksGrid');
-  blocksGrid.innerHTML = BLOCK_ORDER.map((b) => {
-    const block = blocksData[b.id] || {};
-    const photoImg = block.photo && block.photo.dataUrl
-      ? `<img src="${block.photo.dataUrl}" alt="${b.label}">`
-      : `<div class="block-photo-placeholder">写真は準備中です。</div>`;
-    const hasPdf = block.pdf && block.pdf.dataUrl;
-    return `
-      <button type="button" class="block-card" data-block-id="${b.id}"${hasPdf ? '' : ' disabled style="cursor:default;"'}>
-        ${photoImg}
-        <span class="block-name">${b.label}${hasPdf ? '<span class="block-pdf-hint">クリックしてPDFを見る</span>' : ''}</span>
-      </button>
-    `;
-  }).join('');
-
-  blocksGrid.querySelectorAll('[data-block-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-block-id');
-      const block = blocksData[id];
-      if (block && block.pdf && block.pdf.dataUrl) {
-        location.href = dataUrlToBlobUrlBlocks(block.pdf.dataUrl);
-      }
+  (async function applyBlocks() {
+    const { data } = await sb.from('site_assets').select('*').like('key', 'block_%');
+    const rows = data || [];
+    const blocksData = {};
+    BLOCK_ORDER.forEach((b) => {
+      blocksData[b.id] = {
+        photo: rows.find((r) => r.key === `block_${b.id}_photo`),
+        pdf: rows.find((r) => r.key === `block_${b.id}_pdf`),
+      };
     });
-  });
+
+    const blocksGrid = document.getElementById('blocksGrid');
+    blocksGrid.innerHTML = BLOCK_ORDER.map((b) => {
+      const block = blocksData[b.id];
+      const photoImg = block.photo && block.photo.file_path
+        ? `<img src="${getPublicUrl(block.photo.file_path)}" alt="${b.label}">`
+        : `<div class="block-photo-placeholder">写真は準備中です。</div>`;
+      const hasPdf = block.pdf && block.pdf.file_path;
+      return `
+        <button type="button" class="block-card" data-block-id="${b.id}"${hasPdf ? '' : ' disabled style="cursor:default;"'}>
+          ${photoImg}
+          <span class="block-name">${b.label}${hasPdf ? '<span class="block-pdf-hint">クリックしてPDFを見る</span>' : ''}</span>
+        </button>
+      `;
+    }).join('');
+
+    blocksGrid.querySelectorAll('[data-block-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-block-id');
+        const block = blocksData[id];
+        if (block && block.pdf && block.pdf.file_path) {
+          location.href = getPublicUrl(block.pdf.file_path);
+        }
+      });
+    });
+  })();
 </script>
 
 </body>
