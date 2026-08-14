@@ -130,7 +130,6 @@
     color:var(--ink-dim);padding:9px 16px;border-radius:20px;cursor:pointer;transition:.2s;
   }
   .toolbar button:hover{border-color:var(--rust);color:var(--rust);}
-  #importFile{display:none;}
   .toast{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
     background:var(--navy);color:#f5f1e8;font-family:var(--f-mono);font-size:12px;padding:12px 20px;
@@ -234,14 +233,11 @@
 
       <div class="warn">
         <span>⚠</span>
-        <p><b>保存範囲について：</b>このデータは今操作しているブラウザ内（localStorage）にのみ保存されます。別のパソコンやスマホの訪問者には自動では表示されません。他の端末にも反映したい場合は、下の「エクスポート」でバックアップ用JSONを書き出し、必要に応じてサイト運用者に共有・反映を依頼してください。1ファイルの目安は5MB以下を推奨します。</p>
+        <p><b>保存範囲について：</b>このデータはSupabase（サーバー）に保存されるため、どの端末・ブラウザからでも同じ内容が表示されます。</p>
       </div>
 
       <div class="toolbar">
-        <button id="exportBtn">エクスポート（JSON書き出し）</button>
-        <button id="importBtn">インポート（JSON読み込み）</button>
-        <input type="file" id="importFile" accept="application/json">
-        <span id="storageUsage" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);align-self:center;margin-left:auto;"></span>
+        <span id="storageUsage" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);"></span>
       </div>
 
       <div class="cat-section">
@@ -621,16 +617,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const DOC_STORAGE_KEY = 'aue_documents_v1';
-  const CATEGORY_STORAGE_KEY = 'aue_doc_categories_v1';
-  const DEFAULT_CATEGORIES = [
-    { id: 'kisoku', label: '部則・規約' },
-    { id: 'shinsei', label: '各種申請書' },
-    { id: 'taikai', label: '大会エントリー関連' },
-    { id: 'kaikei', label: '会費・会計関連' },
-    { id: 'menu', label: '練習メニュー・記録フォーマット' },
-  ];
-
   /* ---- Supabase クライアント ---- */
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
@@ -677,9 +663,10 @@
   async function enterPanel() {
     gate.style.display = 'none';
     panel.style.display = 'block';
-    renderCategoryManager();
-    renderCategoryDropzones();
-    renderAll();
+    await refreshCategoriesCache();
+    await refreshDocsCache();
+    await renderCategoryManager();
+    await renderCategoryDropzones();
     renderDocsUpdateUI();
     await renderHero();
     await initBlogAdmin();
@@ -710,10 +697,6 @@
   });
 
   /* ---- データ操作 ---- */
-  function loadDocs() {
-    try { return JSON.parse(localStorage.getItem(DOC_STORAGE_KEY) || '[]'); }
-    catch (e) { return []; }
-  }
   function updateStorageUsage() {
     const el = document.getElementById('storageUsage');
     if (!el) return;
@@ -727,16 +710,6 @@
     el.textContent = `使用容量の目安：約${mb}MB（ブラウザの上限は5〜10MB程度）`;
   }
 
-  function saveDocs(docs) {
-    try {
-      localStorage.setItem(DOC_STORAGE_KEY, JSON.stringify(docs));
-    } catch (e) {
-      showToast('保存容量がいっぱいです。写真やPDFを削除して空き容量を増やしてください。');
-      throw e;
-    }
-    window.dispatchEvent(new StorageEvent('storage', { key: DOC_STORAGE_KEY }));
-    updateStorageUsage();
-  }
   function saveToStorage(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -787,32 +760,23 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2200);
   }
-  function dataUrlToBlobUrlAdmin(dataUrl) {
-    const [header, base64] = dataUrl.split(',');
-    const mimeMatch = header.match(/data:(.*?);base64/);
-    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return URL.createObjectURL(new Blob([bytes], { type: mime }));
-  }
-  function openFileInNewTabAdmin(dataUrl) {
-    // iOS Safariはdownload属性やdata:URLを正しく扱えないことがあるため、blob:URLに変換してから同じタブで開く
-    location.href = dataUrlToBlobUrlAdmin(dataUrl);
-  }
-  window.openFileInNewTabAdmin = openFileInNewTabAdmin;
 
-  /* ---- カテゴリー管理：追加・削除・並べ替え ---- */
-  function loadCategories() {
-    const cats = loadFromStorage(CATEGORY_STORAGE_KEY, null);
-    return (cats && cats.length) ? cats : DEFAULT_CATEGORIES;
+  /* ---- カテゴリー管理：追加・削除・並べ替え（Supabase: document_categories） ---- */
+  let categoriesCache = [];
+  let docsCache = [];
+
+  async function refreshCategoriesCache() {
+    const { data, error } = await sb.from('document_categories').select('*').order('sort_order', { ascending: true });
+    if (error) { showToast('見出しの取得に失敗しました'); return; }
+    categoriesCache = data || [];
   }
-  function saveCategories(cats) {
-    saveToStorage(CATEGORY_STORAGE_KEY, cats);
+  async function refreshDocsCache() {
+    const { data, error } = await sb.from('documents').select('*').order('uploaded_at', { ascending: false });
+    if (error) { showToast('資料の取得に失敗しました'); return; }
+    docsCache = data || [];
   }
-  function slugifyCategory(label) {
-    return 'cat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  }
+  function loadCategories() { return categoriesCache; }
+  function loadDocs() { return docsCache; }
 
   function flipReorder(mutateFn) {
     const container = document.getElementById('categoryManager');
@@ -821,30 +785,31 @@
       oldRects[el.dataset.flipId] = el.getBoundingClientRect();
     });
 
-    mutateFn();
-    renderCategoryManager();
-    renderCategoryDropzones();
+    mutateFn().then(async () => {
+      await renderCategoryManager();
+      await renderCategoryDropzones();
 
-    const newEls = container.querySelectorAll('[data-flip-id]');
-    newEls.forEach((el) => {
-      const oldRect = oldRects[el.dataset.flipId];
-      if (!oldRect) return;
-      const newRect = el.getBoundingClientRect();
-      const dx = oldRect.left - newRect.left;
-      const dy = oldRect.top - newRect.top;
-      if (dx || dy) {
-        el.style.transition = 'none';
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-      }
-    });
-    void container.offsetHeight; // 強制的にリフローさせ、上のtransformを確定させる
-    newEls.forEach((el) => {
-      el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
-      el.style.transform = '';
+      const newEls = container.querySelectorAll('[data-flip-id]');
+      newEls.forEach((el) => {
+        const oldRect = oldRects[el.dataset.flipId];
+        if (!oldRect) return;
+        const newRect = el.getBoundingClientRect();
+        const dx = oldRect.left - newRect.left;
+        const dy = oldRect.top - newRect.top;
+        if (dx || dy) {
+          el.style.transition = 'none';
+          el.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+      });
+      void container.offsetHeight;
+      newEls.forEach((el) => {
+        el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+        el.style.transform = '';
+      });
     });
   }
 
-  function renderCategoryManager() {
+  async function renderCategoryManager() {
     const el = document.getElementById('categoryManager');
     const cats = loadCategories();
     const countEl = document.getElementById('categoryListCount');
@@ -870,12 +835,14 @@
     el.querySelectorAll('[data-move-up]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-move-up');
-        flipReorder(() => {
+        flipReorder(async () => {
           const list = loadCategories();
           const idx = list.findIndex((c) => c.id === id);
           if (idx > 0) {
-            [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]];
-            saveCategories(list);
+            const a = list[idx - 1], b = list[idx];
+            await sb.from('document_categories').update({ sort_order: idx - 1 }).eq('id', b.id);
+            await sb.from('document_categories').update({ sort_order: idx }).eq('id', a.id);
+            await refreshCategoriesCache();
           }
         });
       });
@@ -883,29 +850,32 @@
     el.querySelectorAll('[data-move-down]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-move-down');
-        flipReorder(() => {
+        flipReorder(async () => {
           const list = loadCategories();
           const idx = list.findIndex((c) => c.id === id);
           if (idx > -1 && idx < list.length - 1) {
-            [list[idx + 1], list[idx]] = [list[idx], list[idx + 1]];
-            saveCategories(list);
+            const a = list[idx], b = list[idx + 1];
+            await sb.from('document_categories').update({ sort_order: idx }).eq('id', b.id);
+            await sb.from('document_categories').update({ sort_order: idx + 1 }).eq('id', a.id);
+            await refreshCategoriesCache();
           }
         });
       });
     });
     el.querySelectorAll('[data-delete-cat]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-delete-cat');
         const list = loadCategories();
         const cat = list.find((c) => c.id === id);
-        const docsInCat = loadDocs().filter((d) => d.category === id);
+        const docsInCat = loadDocs().filter((d) => d.category_id === id);
 
         if (docsInCat.length === 0) {
           if (!confirm(`「${cat ? cat.label : ''}」を削除しますか？`)) return;
-          saveCategories(list.filter((c) => c.id !== id));
-          renderCategoryManager();
-          renderCategoryDropzones();
-          renderUncategorizedDocs();
+          await sb.from('document_categories').delete().eq('id', id);
+          await refreshCategoriesCache();
+          await renderCategoryManager();
+          await renderCategoryDropzones();
+          await renderUncategorizedDocs();
           showToast('見出しを削除しました');
           return;
         }
@@ -921,21 +891,24 @@
           renderDocsUpdateUI();
           showToast('見出しとファイルを削除予定にしました（「更新」ボタンで確定してください）');
         } else {
-          saveCategories(list.filter((c) => c.id !== id));
+          await sb.from('document_categories').delete().eq('id', id);
+          await sb.from('documents').update({ category_id: null }).eq('category_id', id);
+          await refreshCategoriesCache();
+          await refreshDocsCache();
           pendingDocs = pendingDocs.filter((d) => d.category !== id);
           const orphanedIds = docsInCat.map((d) => d.id);
           pendingDeletedDocIds = pendingDeletedDocIds.filter((did) => !orphanedIds.includes(did));
-          renderCategoryManager();
-          renderCategoryDropzones();
+          await renderCategoryManager();
+          await renderCategoryDropzones();
           renderDocsUpdateUI();
-          renderUncategorizedDocs();
+          await renderUncategorizedDocs();
           showToast('見出しを削除しました');
         }
       });
     });
   }
 
-  document.getElementById('addCategoryBtn').addEventListener('click', () => {
+  document.getElementById('addCategoryBtn').addEventListener('click', async () => {
     const input = document.getElementById('newCategoryInput');
     const errorEl = document.getElementById('newCategoryError');
     const label = input.value.trim();
@@ -945,12 +918,12 @@
       return;
     }
     errorEl.style.display = 'none';
-    const list = loadCategories();
-    list.push({ id: slugifyCategory(label), label });
-    saveCategories(list);
+    const { error } = await sb.from('document_categories').insert({ label, sort_order: categoriesCache.length });
+    if (error) { showToast('追加に失敗しました： ' + error.message); return; }
+    await refreshCategoriesCache();
     input.value = '';
-    renderCategoryManager();
-    renderCategoryDropzones();
+    await renderCategoryManager();
+    await renderCategoryDropzones();
     showToast('見出しを追加しました');
   });
   document.getElementById('newCategoryInput').addEventListener('input', () => {
@@ -962,7 +935,7 @@
 
   /* ---- 各見出しのアップロード欄（動的生成） ---- */
   const categoriesEl = document.getElementById('categories');
-  function renderCategoryDropzones() {
+  async function renderCategoryDropzones() {
     const cats = loadCategories();
     categoriesEl.innerHTML = '';
     cats.forEach((cat) => {
@@ -989,10 +962,10 @@
         handleFiles(cat.id, e.dataTransfer.files);
       });
     });
-    renderAll();
+    await renderAll();
   }
 
-  let pendingDocs = []; // {tempId, category, fileName, sizeLabel, dataUrl, uploadedAt}
+  let pendingDocs = []; // {tempId, category, fileName, sizeLabel, file}
   let pendingDeletedDocIds = []; // 見出しごと削除を選んだ場合の削除予定ファイルid（更新ボタンで確定）
   let pendingDeletedCategoryIds = []; // ファイルごと削除を選んだ場合の削除予定見出しid（更新ボタンで確定）
 
@@ -1013,36 +986,33 @@
         showToast(`「${file.name}」は8MBを超えるため保存できません`);
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        pendingDocs.push({
-          tempId: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-          category: catId,
-          fileName: file.name,
-          sizeLabel: formatSize(file.size),
-          dataUrl: reader.result,
-          uploadedAt: new Date().toISOString(),
-        });
-        renderCategory(catId);
-        renderDocsUpdateUI();
-      };
-      reader.onerror = () => showToast(`「${file.name}」の読み込みに失敗しました`);
-      reader.readAsDataURL(file);
+      pendingDocs.push({
+        tempId: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        category: catId,
+        fileName: file.name,
+        sizeLabel: formatSize(file.size),
+        file: file,
+      });
+      renderCategory(catId);
+      renderDocsUpdateUI();
     });
   }
 
-  function removeDoc(id) {
+  async function removeDoc(id) {
     if (!confirm('このファイルを削除しますか？')) return;
-    const docs = loadDocs().filter((d) => d.id !== id);
-    saveDocs(docs);
-    renderAll();
+    const doc = docsCache.find((d) => d.id === id);
+    const { error } = await sb.from('documents').delete().eq('id', id);
+    if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+    if (doc && doc.file_path) await removeFromBucket(doc.file_path);
+    await refreshDocsCache();
+    await renderAll();
     showToast('削除しました');
   }
 
   function renderCategory(catId) {
     const listEl = document.getElementById('list-' + catId);
     if (!listEl) return;
-    const committed = loadDocs().filter((d) => d.category === catId);
+    const committed = loadDocs().filter((d) => d.category_id === catId);
     const pending = pendingDocs.filter((d) => d.category === catId);
     const combined = committed.concat(pending);
     if (combined.length === 0) {
@@ -1051,13 +1021,15 @@
     }
     listEl.innerHTML = combined.map((d) => {
       const isPending = !!d.tempId;
+      const fileName = d.fileName || d.file_name;
+      const sizeLabel = d.sizeLabel || d.size_label;
       const isDeleting = !isPending && pendingDeletedDocIds.includes(d.id);
       return `
         <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}>
-          <span class="file-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+          <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
           <div class="file-info">
-            <div class="file-name">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(d.fileName) + '</span>' : escapeHtml(d.fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
-            <div class="file-meta">${d.sizeLabel}</div>
+            <div class="file-name">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
+            <div class="file-meta">${sizeLabel || ''}</div>
           </div>
           <div class="file-actions">
             ${(isPending || isDeleting) ? '' : `<button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>`}
@@ -1072,7 +1044,7 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-open-file');
         const doc = combined.find((d) => d.id === id);
-        if (doc) openFileInNewTabAdmin(doc.dataUrl);
+        if (doc && doc.file_path) window.open(getPublicUrl(doc.file_path), '_blank');
       });
     });
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
@@ -1097,16 +1069,16 @@
     });
   }
 
-  function renderAll() {
+  async function renderAll() {
     loadCategories().forEach((cat) => renderCategory(cat.id));
-    renderUncategorizedDocs();
+    await renderUncategorizedDocs();
   }
 
-  function renderUncategorizedDocs() {
+  async function renderUncategorizedDocs() {
     const box = document.getElementById('uncategorizedDocsBox');
     if (!box) return;
     const catIds = loadCategories().map((c) => c.id);
-    const orphaned = loadDocs().filter((d) => !catIds.includes(d.category));
+    const orphaned = loadDocs().filter((d) => !d.category_id || !catIds.includes(d.category_id));
     if (orphaned.length === 0) {
       box.style.display = 'none';
       box.innerHTML = '';
@@ -1123,10 +1095,10 @@
     const listEl = document.getElementById('uncategorizedDocsList');
     listEl.innerHTML = orphaned.map((d) => `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(d.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(d.file_name))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(d.fileName)}</div>
-          <div class="file-meta">見出し：なし ・ ${d.sizeLabel}</div>
+          <div class="file-name">${escapeHtml(d.file_name)}</div>
+          <div class="file-meta">見出し：なし ・ ${d.size_label || ''}</div>
         </div>
         <div class="file-actions" style="gap:8px;">
           <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:11px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
@@ -1137,44 +1109,51 @@
       </div>
     `).join('');
     listEl.querySelectorAll('[data-reassign-btn]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const docId = btn.getAttribute('data-reassign-btn');
         const sel = listEl.querySelector(`[data-reassign-select="${docId}"]`);
         const newCat = sel.value;
-        const docs = loadDocs();
-        const idx = docs.findIndex((d) => d.id === docId);
-        if (idx > -1) {
-          docs[idx] = Object.assign({}, docs[idx], { category: newCat });
-          saveDocs(docs);
-        }
-        renderAll();
+        const { error } = await sb.from('documents').update({ category_id: newCat }).eq('id', docId);
+        if (error) { showToast('移動に失敗しました： ' + error.message); return; }
+        await refreshDocsCache();
+        await renderAll();
         showToast('見出しを移動しました');
       });
     });
   }
 
-  function commitDocsUpdate() {
-    let docs = loadDocs().filter((d) => !pendingDeletedDocIds.includes(d.id));
-    pendingDocs.forEach((p) => {
-      docs.push({
-        id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-        category: p.category,
-        fileName: p.fileName,
-        sizeLabel: p.sizeLabel,
-        dataUrl: p.dataUrl,
-        uploadedAt: p.uploadedAt,
-      });
-    });
-    saveDocs(docs);
-    if (pendingDeletedCategoryIds.length > 0) {
-      saveCategories(loadCategories().filter((c) => !pendingDeletedCategoryIds.includes(c.id)));
+  async function commitDocsUpdate() {
+    try {
+      for (const p of pendingDocs) {
+        const path = await uploadToBucket('documents', p.file);
+        const { error } = await sb.from('documents').insert({
+          category_id: p.category, file_name: p.fileName, file_path: path, size_label: p.sizeLabel,
+        });
+        if (error) throw error;
+      }
+      if (pendingDeletedDocIds.length > 0) {
+        for (const id of pendingDeletedDocIds) {
+          const doc = docsCache.find((d) => d.id === id);
+          await sb.from('documents').delete().eq('id', id);
+          if (doc && doc.file_path) await removeFromBucket(doc.file_path);
+        }
+      }
+      if (pendingDeletedCategoryIds.length > 0) {
+        for (const id of pendingDeletedCategoryIds) {
+          await sb.from('document_categories').delete().eq('id', id);
+        }
+      }
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
     }
     pendingDocs = [];
     pendingDeletedDocIds = [];
     pendingDeletedCategoryIds = [];
-    renderCategoryManager();
-    renderCategoryDropzones();
-    renderAll();
+    await refreshCategoriesCache();
+    await refreshDocsCache();
+    await renderCategoryManager();
+    await renderCategoryDropzones();
     renderDocsUpdateUI();
     showToast('各種資料を更新しました');
   }
@@ -1194,48 +1173,38 @@
     document.getElementById('docsConfirmBox').style.display = 'none';
   });
 
-  /* ---- リンク集（カードの追加・編集・削除・閲覧） ---- */
-  const LINK_CARDS_KEY = 'aue_link_cards_v1';
-  const LINK_OVERRIDE_KEY = 'aue_link_static_overrides_v1';
-  const LINK_DELETED_KEY = 'aue_link_static_deleted_v1';
-  const LINK_CATEGORY_ADDED_KEY = 'aue_link_categories_added_v1';
-  let staticLinkCategoriesCache = [];
+  /* ---- リンク集（Supabase: link_categories / link_cards / link_card_urls） ---- */
+  let linkCategoriesCache = [];
+  let linkCardsCache = []; // 各カードに links: [{label,url}] を付与済み
   let editingLinkId = null;
-  let editingLinkIsStatic = false;
-  let linkDataLoadFailed = false;
 
-  function fetchLinkData() {
-    return fetch('data/links.json')
-      .then((res) => {
-        if (!res.ok) { linkDataLoadFailed = true; return { categories: [], cards: [] }; }
-        linkDataLoadFailed = false;
-        return res.json();
-      })
-      .catch(() => {
-        linkDataLoadFailed = true;
-        return { categories: [], cards: [] };
-      });
+  async function refreshLinkCategoriesCache() {
+    const { data, error } = await sb.from('link_categories').select('*').order('sort_order', { ascending: true });
+    if (error) { showToast('カテゴリーの取得に失敗しました'); return; }
+    linkCategoriesCache = data || [];
+  }
+  async function refreshLinkCardsCache() {
+    const [{ data: cards, error: cardsErr }, { data: urls, error: urlsErr }] = await Promise.all([
+      sb.from('link_cards').select('*'),
+      sb.from('link_card_urls').select('*').order('sort_order', { ascending: true }),
+    ]);
+    if (cardsErr || urlsErr) { showToast('カードの取得に失敗しました'); return; }
+    linkCardsCache = (cards || []).map((c) => ({
+      ...c,
+      links: (urls || []).filter((u) => u.card_id === c.id).map((u) => ({ label: u.label, url: u.url })),
+    }));
   }
 
   function getAllLinkCardsForAdmin() {
-    const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
-    const deleted = loadFromStorage(LINK_DELETED_KEY, []);
-    const staticCards = linkCardsCache
-      .filter((c) => !deleted.includes(c.id))
-      .map((c) => {
-        const pendingEdit = pendingLinkEdits[c.id];
-        const isPending = !!pendingEdit;
-        return Object.assign({}, c, overrides[c.id] || {}, pendingEdit || {}, { isStatic: true, isPendingEdit: isPending, isPendingDelete: pendingLinkDeletes.includes(c.id) });
-      });
-    const dynamicCards = loadFromStorage(LINK_CARDS_KEY, []).map((c) => {
+    return linkCardsCache.map((c) => {
       const pendingEdit = pendingLinkEdits[c.id];
-      const isPending = !!pendingEdit;
-      return Object.assign({}, c, pendingEdit || {}, { isStatic: false, isPendingEdit: isPending, isPendingDelete: pendingLinkDeletes.includes(c.id) });
-    });
-    const pendingNewCards = pendingLinkCards.map((c) => Object.assign({}, c, { isStatic: false, isPendingNew: true }));
-    return staticCards.concat(dynamicCards, pendingNewCards);
+      return Object.assign({}, c, pendingEdit || {}, {
+        category: (pendingEdit && pendingEdit.category) || c.category_id,
+        isPendingEdit: !!pendingEdit,
+        isPendingDelete: pendingLinkDeletes.includes(c.id),
+      });
+    }).concat(pendingLinkCards.map((c) => Object.assign({}, c, { isPendingNew: true })));
   }
-  let linkCardsCache = [];
   let pendingLinkCards = []; // 新規追加でまだ更新されていないカード: {id(tempId), category, name, links}
   let pendingLinkEdits = {}; // 既存カードの未反映の編集: {cardId: {name, category, links}}
   let pendingLinkDeletes = []; // 既存カードのうち削除予定（更新ボタンを押すまで確定しない）のid
@@ -1249,13 +1218,8 @@
     checkGlobalPending();
   }
 
-  const LINK_STATIC_CATEGORY_DELETED_KEY = 'aue_link_static_categories_deleted_v1';
-
   function getAllLinkCategories() {
-    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-    const deletedStatic = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
-    const statics = staticLinkCategoriesCache.filter((c) => !deletedStatic.includes(c.id));
-    return statics.concat(added);
+    return linkCategoriesCache;
   }
 
   function categoryLabel(catId) {
@@ -1277,72 +1241,37 @@
   }
   document.getElementById('linkListFilter').addEventListener('change', renderLinkList);
 
-  function slugifyLinkCategory() {
-    return 'linkcat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  }
-
-  function renderLinkCategoryManager() {
+  async function renderLinkCategoryManager() {
     const el = document.getElementById('linkCategoryManager');
-    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-    const deletedStatic = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
-    const statics = staticLinkCategoriesCache.filter((c) => !deletedStatic.includes(c.id));
-    if (statics.length === 0 && added.length === 0) {
+    const cats = getAllLinkCategories();
+    if (cats.length === 0) {
       el.innerHTML = '<p class="empty-row">カテゴリーがありません</p>';
       return;
     }
-    const staticRows = statics.map((c) => `
+    el.innerHTML = cats.map((c) => `
       <div class="file-row">
-        <span class="file-icon">初期</span>
+        <span class="file-icon">CAT</span>
         <div class="file-info">
           <div class="file-name">${escapeHtml(c.label)}</div>
-          <div class="file-meta">初期設定のカテゴリー</div>
-        </div>
-        <div class="file-actions">
-          <button class="icon-btn" data-remove-link-static-cat="${escapeHtml(c.id)}">削除</button>
-        </div>
-      </div>
-    `).join('');
-    const addedRows = added.map((c) => `
-      <div class="file-row">
-        <span class="file-icon">＋</span>
-        <div class="file-info">
-          <div class="file-name">${escapeHtml(c.label)}</div>
-          <div class="file-meta">追加したカテゴリー</div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" data-remove-link-cat="${escapeHtml(c.id)}">削除</button>
         </div>
       </div>
     `).join('');
-    el.innerHTML = staticRows + addedRows;
-    el.querySelectorAll('[data-remove-link-static-cat]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-remove-link-static-cat');
-        const cardsInCat = getAllLinkCardsForAdmin().filter((c) => c.category === id);
-        const msg = cardsInCat.length > 0
-          ? `「${categoryLabel(id)}」を削除しますか？登録済みのカード${cardsInCat.length}件は削除されず、「未分類」として残ります。`
-          : 'このカテゴリーを削除しますか？';
-        if (!confirm(msg)) return;
-        const deleted = loadFromStorage(LINK_STATIC_CATEGORY_DELETED_KEY, []);
-        if (!deleted.includes(id)) deleted.push(id);
-        saveToStorage(LINK_STATIC_CATEGORY_DELETED_KEY, deleted);
-        renderLinkCategoryManager();
-        populateLinkCategorySelect();
-        renderLinkList();
-        showToast('カテゴリーを削除しました');
-      });
-    });
     el.querySelectorAll('[data-remove-link-cat]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-remove-link-cat');
         const cardsInCat = getAllLinkCardsForAdmin().filter((c) => c.category === id);
         const msg = cardsInCat.length > 0
           ? `「${categoryLabel(id)}」を削除しますか？登録済みのカード${cardsInCat.length}件は削除されず、「未分類」として残ります。`
           : 'このカテゴリーを削除しますか？';
         if (!confirm(msg)) return;
-        const remaining = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []).filter((c) => c.id !== id);
-        saveToStorage(LINK_CATEGORY_ADDED_KEY, remaining);
-        renderLinkCategoryManager();
+        await sb.from('link_categories').delete().eq('id', id);
+        await sb.from('link_cards').update({ category_id: null }).eq('category_id', id);
+        await refreshLinkCategoriesCache();
+        await refreshLinkCardsCache();
+        await renderLinkCategoryManager();
         populateLinkCategorySelect();
         renderLinkList();
         showToast('カテゴリーを削除しました');
@@ -1364,7 +1293,7 @@
     if (isHidden) renderLinkCategoryManager();
   });
 
-  document.getElementById('addLinkCategoryBtn').addEventListener('click', () => {
+  document.getElementById('addLinkCategoryBtn').addEventListener('click', async () => {
     const input = document.getElementById('newLinkCategoryInput');
     const errorEl = document.getElementById('newLinkCategoryError');
     const label = input.value.trim();
@@ -1374,15 +1303,16 @@
       return;
     }
     errorEl.style.display = 'none';
-    const added = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-    const newCat = { id: slugifyLinkCategory(), label };
-    added.push(newCat);
-    saveToStorage(LINK_CATEGORY_ADDED_KEY, added);
+    const { data, error } = await sb.from('link_categories')
+      .insert({ label, sort_order: linkCategoriesCache.length })
+      .select('id').single();
+    if (error) { showToast('追加に失敗しました： ' + error.message); return; }
+    await refreshLinkCategoriesCache();
     input.value = '';
     document.getElementById('newLinkCategoryRow').style.display = 'none';
-    renderLinkCategoryManager();
+    await renderLinkCategoryManager();
     populateLinkCategorySelect();
-    document.getElementById('linkCategory').value = newCat.id;
+    document.getElementById('linkCategory').value = data.id;
     showToast('カテゴリーを追加しました');
   });
   document.getElementById('newLinkCategoryInput').addEventListener('input', () => {
@@ -1391,10 +1321,6 @@
   document.getElementById('newLinkCategoryInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('addLinkCategoryBtn').click();
   });
-
-  function slugifyLink() {
-    return 'link-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  }
 
   function renderLinkEntries(links) {
     const el = document.getElementById('linkEntries');
@@ -1456,8 +1382,8 @@
           </div>
           <div class="file-actions">
             <button class="icon-btn" data-view-link="${escapeHtml(c.id)}">閲覧</button>
-            <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-static="${c.isStatic}" data-pending-new="${!!c.isPendingNew}">編集</button>
-            <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-static="${c.isStatic}" data-pending-new="${!!c.isPendingNew}">削除</button>
+            <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">編集</button>
+            <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">削除</button>
           </div>
         </div>
         <div class="post-detail" id="link-detail-${escapeHtml(c.id)}" style="display:none;"></div>
@@ -1473,15 +1399,10 @@
     const cards = getAllLinkCardsForAdmin();
     countEl.textContent = String(cards.length);
 
-    if (linkDataLoadFailed) {
-      listEl.innerHTML = '<p class="empty-row">data/links.json を読み込めませんでした。サーバー上（GitHub Pagesなど）で開いているか、data フォルダが正しく配置されているかご確認ください。</p>';
-      return;
-    }
-
     const allCats = getAllLinkCategories();
     const orphanedAll = cards.filter((c) => !allCats.some((cat) => cat.id === c.category));
     if (orphanedAll.length > 0) {
-      errorEl.textContent = `削除されたカテゴリーに属していたカードが${orphanedAll.length}件あります。下の「未分類」から編集を開き、どのカテゴリーに移すか決めてください。決めるまでこの案内は表示され続けます（この状態でも保存はできます。移すまで、これらのカードのカテゴリーは「なし」として扱われます）。`;
+      errorEl.textContent = `カテゴリー未設定のカードが${orphanedAll.length}件あります。下の「未分類」から編集を開き、どのカテゴリーに移すか決めてください。`;
       errorEl.style.display = 'block';
       const details = document.getElementById('linkListDetails');
       if (details) details.open = true;
@@ -1505,7 +1426,6 @@
       html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">${escapeHtml(cat.label)}（${inCat.length}件）</p>`;
       html += inCat.map((c) => renderLinkCardRow(c, categoryLabel(c.category))).join('');
     });
-    // カテゴリーが未設定・不明なカードも念のため表示
     const uncategorized = filtered.filter((c) => !cats.some((cat) => cat.id === c.category));
     if (uncategorized.length > 0) {
       html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">未分類（${uncategorized.length}件）</p>`;
@@ -1533,17 +1453,14 @@
     listEl.querySelectorAll('[data-edit-link]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-edit-link');
-        const isStatic = btn.getAttribute('data-static') === 'true';
         const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
         const card = cards.find((c) => c.id === id);
         if (!card) return;
         if (isPendingNew) {
           pendingLinkCards = pendingLinkCards.filter((c) => c.id !== id);
           editingLinkId = null;
-          editingLinkIsStatic = false;
         } else {
           editingLinkId = id;
-          editingLinkIsStatic = isStatic;
         }
         document.getElementById('linkName').value = card.name || '';
         document.getElementById('linkCategory').value = card.category || '';
@@ -1560,9 +1477,8 @@
     });
 
     listEl.querySelectorAll('[data-remove-link]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-remove-link');
-        const isStatic = btn.getAttribute('data-static') === 'true';
         const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
         if (isPendingNew) {
           pendingLinkCards = pendingLinkCards.filter((c) => c.id !== id);
@@ -1573,14 +1489,9 @@
         }
         if (!confirm('このカードを削除しますか？')) return;
         delete pendingLinkEdits[id];
-        if (isStatic) {
-          const deleted = loadFromStorage(LINK_DELETED_KEY, []);
-          if (!deleted.includes(id)) deleted.push(id);
-          saveToStorage(LINK_DELETED_KEY, deleted);
-        } else {
-          const remaining = loadFromStorage(LINK_CARDS_KEY, []).filter((c) => c.id !== id);
-          saveToStorage(LINK_CARDS_KEY, remaining);
-        }
+        const { error } = await sb.from('link_cards').delete().eq('id', id);
+        if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+        await refreshLinkCardsCache();
         if (editingLinkId === id) resetLinkForm();
         renderLinkList();
         renderLinkUpdateUI();
@@ -1591,7 +1502,6 @@
 
   function resetLinkForm() {
     editingLinkId = null;
-    editingLinkIsStatic = false;
     document.getElementById('linkName').value = '';
     if (getAllLinkCategories().length) document.getElementById('linkCategory').value = getAllLinkCategories()[0].id;
     renderLinkEntries([{ label: '', url: '' }]);
@@ -1603,46 +1513,43 @@
 
   document.getElementById('linkCancelEdit').addEventListener('click', resetLinkForm);
 
-  function commitLinkUpdate() {
-    if (pendingLinkCards.length > 0) {
-      const list = loadFromStorage(LINK_CARDS_KEY, []);
-      pendingLinkCards.forEach((c) => {
-        list.push({ id: slugifyLink(), name: c.name, category: c.category, links: c.links });
-      });
-      saveToStorage(LINK_CARDS_KEY, list);
-    }
-    Object.keys(pendingLinkEdits).forEach((cardId) => {
-      const edit = pendingLinkEdits[cardId];
-      const isStaticCard = linkCardsCache.some((c) => c.id === cardId);
-      if (isStaticCard) {
-        const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
-        overrides[cardId] = edit;
-        saveToStorage(LINK_OVERRIDE_KEY, overrides);
-      } else {
-        const list = loadFromStorage(LINK_CARDS_KEY, []);
-        const idx = list.findIndex((c) => c.id === cardId);
-        if (idx > -1) {
-          list[idx] = Object.assign({}, list[idx], edit);
-          saveToStorage(LINK_CARDS_KEY, list);
+  async function commitLinkUpdate() {
+    try {
+      for (const c of pendingLinkCards) {
+        const { data: newCard, error } = await sb.from('link_cards')
+          .insert({ name: c.name, category_id: c.category || null })
+          .select('id').single();
+        if (error) throw error;
+        const urlRows = (c.links || []).map((l, i) => ({ card_id: newCard.id, label: l.label, url: l.url, sort_order: i }));
+        if (urlRows.length > 0) {
+          const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
+          if (urlErr) throw urlErr;
         }
       }
-    });
-    if (pendingLinkDeletes.length > 0) {
-      pendingLinkDeletes.forEach((cardId) => {
-        const isStaticCard = linkCardsCache.some((c) => c.id === cardId);
-        if (isStaticCard) {
-          const deleted = loadFromStorage(LINK_DELETED_KEY, []);
-          if (!deleted.includes(cardId)) deleted.push(cardId);
-          saveToStorage(LINK_DELETED_KEY, deleted);
-        } else {
-          const remaining = loadFromStorage(LINK_CARDS_KEY, []).filter((c) => c.id !== cardId);
-          saveToStorage(LINK_CARDS_KEY, remaining);
+      for (const cardId of Object.keys(pendingLinkEdits)) {
+        const edit = pendingLinkEdits[cardId];
+        const { error } = await sb.from('link_cards').update({
+          name: edit.name, category_id: edit.category || null, updated_at: new Date().toISOString(),
+        }).eq('id', cardId);
+        if (error) throw error;
+        await sb.from('link_card_urls').delete().eq('card_id', cardId);
+        const urlRows = (edit.links || []).map((l, i) => ({ card_id: cardId, label: l.label, url: l.url, sort_order: i }));
+        if (urlRows.length > 0) {
+          const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
+          if (urlErr) throw urlErr;
         }
-      });
+      }
+      for (const cardId of pendingLinkDeletes) {
+        await sb.from('link_cards').delete().eq('id', cardId);
+      }
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
     }
     pendingLinkCards = [];
     pendingLinkEdits = {};
     pendingLinkDeletes = [];
+    await refreshLinkCardsCache();
     renderLinkList();
     renderLinkUpdateUI();
     showToast('リンク集を更新しました');
@@ -2021,16 +1928,14 @@
     document.getElementById('blocksConfirmBox').style.display = 'none';
   });
 
-  function initLinksAdmin() {
-    fetchLinkData().then((data) => {
-      staticLinkCategoriesCache = data.categories || [];
-      linkCardsCache = data.cards || [];
-      populateLinkCategorySelect();
-      renderLinkCategoryManager();
-      renderLinkEntries([{ label: '', url: '' }]);
-      renderLinkList();
-      renderLinkUpdateUI();
-    });
+  async function initLinksAdmin() {
+    await refreshLinkCategoriesCache();
+    await refreshLinkCardsCache();
+    populateLinkCategorySelect();
+    await renderLinkCategoryManager();
+    renderLinkEntries([{ label: '', url: '' }]);
+    renderLinkList();
+    renderLinkUpdateUI();
   }
 
   /* ---- ホームの写真（Supabase: site_assets key='hero_photo' ＋ Storage） ---- */
@@ -2631,65 +2536,9 @@
     document.getElementById('recordsConfirmBox').style.display = 'none';
   });
 
-  /* ---- エクスポート／インポート（全データ対象） ---- */
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    const backup = {
-      categories: loadCategories(),
-      documents: loadDocs(),
-      linkCards: loadFromStorage(LINK_CARDS_KEY, []),
-      linkStaticOverrides: loadFromStorage(LINK_OVERRIDE_KEY, {}),
-      linkStaticDeleted: loadFromStorage(LINK_DELETED_KEY, []),
-      linkCategoriesAdded: loadFromStorage(LINK_CATEGORY_ADDED_KEY, []),
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'aue-site-backup.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  document.getElementById('importBtn').addEventListener('click', () => {
-    document.getElementById('importFile').click();
-  });
-  document.getElementById('importFile').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const imported = JSON.parse(reader.result);
-        if (Array.isArray(imported)) {
-          // 旧形式（各種資料のみ）との互換
-          saveDocs(imported);
-        } else {
-          if (imported.categories) saveCategories(imported.categories);
-          if (imported.documents) saveDocs(imported.documents);
-          saveToStorage(LINK_CARDS_KEY, imported.linkCards || []);
-          saveToStorage(LINK_OVERRIDE_KEY, imported.linkStaticOverrides || {});
-          saveToStorage(LINK_DELETED_KEY, imported.linkStaticDeleted || []);
-          saveToStorage(LINK_CATEGORY_ADDED_KEY, imported.linkCategoriesAdded || []);
-        }
-        renderCategoryManager();
-        renderCategoryDropzones();
-        await renderHero();
-        await initBlogAdmin();
-        await renderRecords();
-        initLinksAdmin();
-        await renderBlocksPanels();
-        await renderJoinPhotosPanels();
-        showToast('インポートが完了しました');
-      } catch (err) {
-        showToast('JSONの読み込みに失敗しました');
-      }
-    };
-    reader.readAsText(file);
-  });
-
   // ブラウザの「戻る」でこのページがキャッシュ（bfcache）から復元された場合、
   // 未反映の変更（更新ボタンをまだ押していない状態）は破棄し、警告バナーも消す
-  window.addEventListener('pageshow', (e) => {
+  window.addEventListener('pageshow', async (e) => {
     if (!e.persisted) return;
     pendingHero = null;
     pendingRecords = null;
@@ -2698,9 +2547,12 @@
     pendingDeletedCategoryIds = [];
     pendingLinkCards = [];
     pendingLinkEdits = {};
-    renderHero();
-    renderRecords();
-    renderAll();
+    pendingLinkDeletes = [];
+    await renderHero();
+    await renderRecords();
+    await refreshCategoriesCache();
+    await refreshDocsCache();
+    await renderAll();
     renderDocsUpdateUI();
     renderLinkList();
     renderLinkUpdateUI();
