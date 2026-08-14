@@ -6,6 +6,7 @@
 <title>リンク集｜愛知教育大学 陸上競技部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
@@ -319,19 +320,11 @@
   window.addEventListener('resize', updateJumpnavScrollHint);
   window.addEventListener('load', updateJumpnavScrollHint);
 
-  /* ===== リンク集：data/links.json ＋ 編集者画面での追加・編集・削除を反映 ===== */
-  const LINK_CARDS_KEY = 'aue_link_cards_v1';
-  const LINK_OVERRIDE_KEY = 'aue_link_static_overrides_v1';
-  const LINK_DELETED_KEY = 'aue_link_static_deleted_v1';
+  /* ===== リンク集：Supabase(link_categories / link_cards / link_card_urls)から取得して表示 ===== */
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  function loadFromStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -361,37 +354,33 @@
     `;
   }
 
-  const LINK_CATEGORY_ADDED_KEY = 'aue_link_categories_added_v1';
-
-  fetch('data/links.json')
-    .then((res) => (res.ok ? res.json() : { categories: [], cards: [] }))
-    .catch(() => ({ categories: [], cards: [] }))
-    .then((data) => {
-      const addedCategories = loadFromStorage(LINK_CATEGORY_ADDED_KEY, []);
-      const categories = (data.categories || []).concat(addedCategories);
-
-      const overrides = loadFromStorage(LINK_OVERRIDE_KEY, {});
-      const deleted = loadFromStorage(LINK_DELETED_KEY, []);
-      const staticCards = (data.cards || [])
-        .filter((c) => !deleted.includes(c.id))
-        .map((c) => Object.assign({}, c, overrides[c.id] || {}));
-      const dynamicCards = loadFromStorage(LINK_CARDS_KEY, []);
-      const allCards = staticCards.concat(dynamicCards);
+  Promise.all([
+    sb.from('link_categories').select('*').order('sort_order', { ascending: true }),
+    sb.from('link_cards').select('*'),
+    sb.from('link_card_urls').select('*').order('sort_order', { ascending: true }),
+  ]).then(([{ data: categories, error: catErr }, { data: cards, error: cardsErr }, { data: urls, error: urlsErr }]) => {
+      if (catErr || cardsErr || urlsErr) throw new Error('load failed');
+      const allCards = (cards || []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        category: c.category_id,
+        links: (urls || []).filter((u) => u.card_id === c.id).map((u) => ({ label: u.label, url: u.url })),
+      }));
 
       // ジャンプナビを生成
       const jumpnavEl = document.getElementById('jumpnavInner');
-      jumpnavEl.innerHTML = categories.map((cat) => `<a href="#${escapeHtml(cat.id)}">${escapeHtml(cat.label)}</a>`).join('');
+      jumpnavEl.innerHTML = (categories || []).map((cat) => `<a href="#${escapeHtml(cat.id)}">${escapeHtml(cat.label)}</a>`).join('');
 
       // セクションを生成
       const sectionsEl = document.getElementById('linkSections');
-      sectionsEl.innerHTML = categories.map((cat) => `
+      sectionsEl.innerHTML = (categories || []).map((cat) => `
         <div class="link-section" id="${escapeHtml(cat.id)}" data-reveal>
           <h2 class="link-section-title">${escapeHtml(cat.label)}</h2>
           <div class="link-card-grid" id="grid-${escapeHtml(cat.id)}"></div>
         </div>
       `).join('');
 
-      categories.forEach((cat) => {
+      (categories || []).forEach((cat) => {
         const grid = document.getElementById('grid-' + cat.id);
         if (!grid) return;
         const cardsInCat = allCards.filter((c) => c.category === cat.id);
@@ -411,6 +400,10 @@
         }
       });
       updateJumpnavScrollHint();
+    })
+    .catch(() => {
+      document.getElementById('linkSections').innerHTML =
+        '<p style="color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">リンク集を読み込めませんでした。しばらくしてから再度お試しください。</p>';
     });
 
 </script>
