@@ -96,17 +96,12 @@
   /* 左右にスクロール可能であることを示すヒント（スマホのみ・シェブロン記号＋揺れる動き） */
   .jumpnav-arrow{
     position:absolute;top:50%;transform:translateY(-50%);
-    z-index:2;font-family:var(--f-mono);font-size:15px;line-height:1;
+    z-index:2;font-family:var(--f-mono);font-size:15px;line-height:1;letter-spacing:-3px;
     color:rgba(245,241,232,0.5);pointer-events:auto;cursor:default;
     padding:14px 6px;
-    animation:jumpnav-hint 1.6s ease-in-out infinite;
   }
-  .jumpnav-arrow-left{left:2px;animation-delay:.3s;}
+  .jumpnav-arrow-left{left:2px;}
   .jumpnav-arrow-right{right:2px;}
-  @keyframes jumpnav-hint{
-    0%,100%{opacity:.35;}
-    50%{opacity:.85;}
-  }
   .jumpnav-toast{
     position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(12px);
     background:var(--navy);color:#f5f1e8;border:1px solid var(--gold-soft);
