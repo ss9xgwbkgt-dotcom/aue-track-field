@@ -82,8 +82,10 @@
   .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
   .file-row{
     display:flex;align-items:center;gap:14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
-    will-change:transform;
+    will-change:transform;background:#fff;
   }
+  .file-row[data-flip-id]{touch-action:pan-x;cursor:grab;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .file-row.dragging{cursor:grabbing;opacity:0.9;background:var(--cream);}
   .file-icon{
     flex-shrink:0;width:36px;height:36px;border-radius:4px;background:var(--cream);
     display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);
@@ -474,7 +476,7 @@
           </div>
           <p id="newCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
 
-          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 8px;">↓ 現在のカテゴリー一覧です。↑↓で並べ替え、「削除」で削除できます。</p>
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 8px;">↓ 現在のカテゴリー一覧です。順番は↑↓ボタンでも、カードを長押ししてそのままドラッグしても入れ替えられます。「削除」で削除できます。</p>
           <div id="categoryManager" class="file-list"></div>
         </details>
 
@@ -605,6 +607,7 @@
           <select id="linkListFilter" style="font-family:var(--f-mono);font-size:12px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
             <option value="">すべてのカテゴリー</option>
           </select>
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:10px;">↓ カードの順番は、↑↓ボタンでも、カードを長押ししてそのままドラッグしても入れ替えられます（同じカテゴリー内のみ）。</p>
           <p id="linkOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
           <div class="file-list" id="list-links-all"></div>
         </details>
@@ -781,34 +784,47 @@
   function loadDocs() { return docsCache; }
 
   function flipReorder(mutateFn) {
+    if (isReordering) return;
+    isReordering = true;
     const container = document.getElementById('categoryManager');
+    container.querySelectorAll('[data-move-up],[data-move-down]').forEach((b) => { b.disabled = true; });
     const oldRects = {};
     container.querySelectorAll('[data-flip-id]').forEach((el) => {
       oldRects[el.dataset.flipId] = el.getBoundingClientRect();
     });
 
-    mutateFn().then(async () => {
-      await renderCategoryManager();
-      await renderCategoryDropzones();
+    let hadError = false;
+    mutateFn()
+      .catch((err) => {
+        hadError = true;
+        showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      })
+      .then(async () => {
+        await renderCategoryManager();
+        await renderCategoryDropzones();
+        if (!hadError) showToast('並べ替えました。カードを長押ししてドラッグすることでも並べ替えできます。');
 
-      const newEls = container.querySelectorAll('[data-flip-id]');
-      newEls.forEach((el) => {
-        const oldRect = oldRects[el.dataset.flipId];
-        if (!oldRect) return;
-        const newRect = el.getBoundingClientRect();
-        const dx = oldRect.left - newRect.left;
-        const dy = oldRect.top - newRect.top;
-        if (dx || dy) {
-          el.style.transition = 'none';
-          el.style.transform = `translate(${dx}px, ${dy}px)`;
-        }
+        const newEls = container.querySelectorAll('[data-flip-id]');
+        newEls.forEach((el) => {
+          const oldRect = oldRects[el.dataset.flipId];
+          if (!oldRect) return;
+          const newRect = el.getBoundingClientRect();
+          const dx = oldRect.left - newRect.left;
+          const dy = oldRect.top - newRect.top;
+          if (dx || dy) {
+            el.style.transition = 'none';
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
+          }
+        });
+        void container.offsetHeight;
+        newEls.forEach((el) => {
+          el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+          el.style.transform = '';
+        });
+      })
+      .finally(() => {
+        isReordering = false;
       });
-      void container.offsetHeight;
-      newEls.forEach((el) => {
-        el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
-        el.style.transform = '';
-      });
-    });
   }
 
   async function renderCategoryManager() {
@@ -842,8 +858,10 @@
           const idx = list.findIndex((c) => c.id === id);
           if (idx > 0) {
             const a = list[idx - 1], b = list[idx];
-            await sb.from('document_categories').update({ sort_order: idx - 1 }).eq('id', b.id);
-            await sb.from('document_categories').update({ sort_order: idx }).eq('id', a.id);
+            const r1 = await sb.from('document_categories').update({ sort_order: idx - 1 }).eq('id', b.id);
+            if (r1.error) throw r1.error;
+            const r2 = await sb.from('document_categories').update({ sort_order: idx }).eq('id', a.id);
+            if (r2.error) throw r2.error;
             await refreshCategoriesCache();
           }
         });
@@ -857,8 +875,10 @@
           const idx = list.findIndex((c) => c.id === id);
           if (idx > -1 && idx < list.length - 1) {
             const a = list[idx], b = list[idx + 1];
-            await sb.from('document_categories').update({ sort_order: idx }).eq('id', b.id);
-            await sb.from('document_categories').update({ sort_order: idx + 1 }).eq('id', a.id);
+            const r1 = await sb.from('document_categories').update({ sort_order: idx }).eq('id', b.id);
+            if (r1.error) throw r1.error;
+            const r2 = await sb.from('document_categories').update({ sort_order: idx + 1 }).eq('id', a.id);
+            if (r2.error) throw r2.error;
             await refreshCategoriesCache();
           }
         });
@@ -908,6 +928,23 @@
         }
       });
     });
+
+    setupDragReorder(el, async (orderedIds) => {
+      if (isReordering) return;
+      isReordering = true;
+      try {
+        const results = await Promise.all(orderedIds.map((id, i) => sb.from('document_categories').update({ sort_order: i }).eq('id', id)));
+        const failed = results.find((r) => r.error);
+        if (failed) throw failed.error;
+        await refreshCategoriesCache();
+        await renderCategoryManager();
+        await renderCategoryDropzones();
+      } catch (err) {
+        showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      } finally {
+        isReordering = false;
+      }
+    }, () => true);
   }
 
   document.getElementById('addCategoryBtn').addEventListener('click', async () => {
@@ -949,6 +986,7 @@
           <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
           <input type="file" id="input-${cat.id}" multiple>
         </label>
+        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:12px 0 4px;">↓ ファイルの順番は、↑↓ボタンでも、カードを長押ししてそのままドラッグしても入れ替えられます。</p>
         <div class="file-list" id="list-${cat.id}"></div>
       `;
       categoriesEl.appendChild(section);
@@ -1011,8 +1049,122 @@
     showToast('削除しました');
   }
 
+  let isReordering = false;
+
+  /* ---- 長押しドラッグでの並べ替え（共通ヘルパー） ----
+     container: 行（[data-flip-id]）を含む親要素
+     onDrop(orderedIds): ドラッグ終了時、その時点のDOM順（idの配列）を渡して呼ばれる。
+                          呼び出し側でSupabaseへの保存・再描画を行う。
+     rowFilter(el): その行がドラッグ対象として有効かどうか（省略時は常にtrue） */
+  function setupDragReorder(container, onDrop, rowFilter) {
+    if (!container || container.dataset.dragReorderSetup) return;
+    container.dataset.dragReorderSetup = '1';
+    let longPressTimer = null;
+    let dragRow = null;
+    let startY = 0;
+    let startX = 0;
+    let moved = false;
+    let placeholder = null;
+    let pointerId = null;
+
+    function cancelLongPress() {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+
+    function cleanupDrag() {
+      if (dragRow) {
+        dragRow.classList.remove('dragging');
+        dragRow.style.transform = '';
+        dragRow.style.zIndex = '';
+        dragRow.style.boxShadow = '';
+        dragRow.style.pointerEvents = '';
+      }
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      placeholder = null;
+      dragRow = null;
+      moved = false;
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('pointercancel', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+      if (!dragRow) return;
+      e.preventDefault();
+      const dy = e.clientY - startY;
+      moved = true;
+      dragRow.style.transform = `translateY(${dy}px)`;
+
+      // ドラッグ中の行の中心が、他の行の中心を越えたら入れ替える
+      const rows = Array.from(container.querySelectorAll('[data-flip-id]')).filter((r) => r !== dragRow);
+      const dragRect = dragRow.getBoundingClientRect();
+      const dragCenter = dragRect.top + dragRect.height / 2;
+      for (const row of rows) {
+        const rect = row.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        if (dy < 0 && dragCenter < center) {
+          container.insertBefore(placeholder, row);
+          container.insertBefore(dragRow, placeholder);
+          break;
+        } else if (dy > 0 && dragCenter > center) {
+          container.insertBefore(placeholder, row.nextSibling);
+          container.insertBefore(dragRow, placeholder);
+          break;
+        }
+      }
+      startY = e.clientY;
+      dragRow.style.transform = '';
+    }
+
+    function onPointerUp() {
+      if (!dragRow) { cleanupDrag(); return; }
+      const wasMoved = moved;
+      const row = dragRow;
+      cleanupDrag();
+      if (wasMoved) {
+        const orderedIds = Array.from(container.querySelectorAll('[data-flip-id]')).map((r) => r.dataset.flipId);
+        onDrop(orderedIds);
+      }
+    }
+
+    container.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button,a,input,select,textarea')) return;
+      const row = e.target.closest('[data-flip-id]');
+      if (!row || !container.contains(row)) return;
+      if (rowFilter && !rowFilter(row)) return;
+      startY = e.clientY;
+      startX = e.clientX;
+      longPressTimer = setTimeout(() => {
+        dragRow = row;
+        pointerId = e.pointerId;
+        row.classList.add('dragging');
+        row.style.zIndex = '10';
+        row.style.boxShadow = '0 8px 20px rgba(0,0,0,0.18)';
+        row.style.pointerEvents = 'none';
+        placeholder = document.createElement('div');
+        placeholder.className = 'drag-placeholder';
+        placeholder.style.cssText = `height:${row.offsetHeight}px;border:2px dashed var(--rust);border-radius:6px;`;
+        row.parentNode.insertBefore(placeholder, row.nextSibling);
+        if (navigator.vibrate) navigator.vibrate(15);
+        document.addEventListener('pointermove', onPointerMove, { passive: false });
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerUp);
+      }, 380);
+    });
+    container.addEventListener('pointermove', (e) => {
+      if (dragRow) return;
+      if (Math.abs(e.clientY - startY) > 8 || Math.abs(e.clientX - startX) > 8) cancelLongPress();
+    });
+    container.addEventListener('pointerup', cancelLongPress);
+    container.addEventListener('pointercancel', cancelLongPress);
+  }
+
   async function moveDocInCategory(id, catId, direction) {
+    if (isReordering) return;
+    isReordering = true;
     const listEl = document.getElementById('list-' + catId);
+    if (listEl) listEl.querySelectorAll('[data-doc-move-up],[data-doc-move-down]').forEach((b) => { b.disabled = true; });
     const oldRects = {};
     if (listEl) {
       listEl.querySelectorAll('[data-flip-id]').forEach((el) => {
@@ -1020,15 +1172,25 @@
       });
     }
 
-    const list = loadDocs().filter((d) => d.category_id === catId);
-    const idx = list.findIndex((d) => d.id === id);
-    const targetIdx = idx + direction;
-    if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
-    const a = list[idx], b = list[targetIdx];
-    await sb.from('documents').update({ sort_order: b.sort_order }).eq('id', a.id);
-    await sb.from('documents').update({ sort_order: a.sort_order }).eq('id', b.id);
-    await refreshDocsCache();
-    renderCategory(catId);
+    try {
+      const list = loadDocs().filter((d) => d.category_id === catId);
+      const idx = list.findIndex((d) => d.id === id);
+      const targetIdx = idx + direction;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
+      const a = list[idx], b = list[targetIdx];
+      const r1 = await sb.from('documents').update({ sort_order: b.sort_order }).eq('id', a.id);
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('documents').update({ sort_order: a.sort_order }).eq('id', b.id);
+      if (r2.error) throw r2.error;
+      await refreshDocsCache();
+      renderCategory(catId);
+      showToast('並べ替えました。カードを長押ししてドラッグすることでも並べ替えできます。');
+    } catch (err) {
+      showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      return;
+    } finally {
+      isReordering = false;
+    }
 
     if (listEl) {
       const newEls = listEl.querySelectorAll('[data-flip-id]');
@@ -1068,7 +1230,7 @@
       const committedIdx = isPending ? -1 : committed.findIndex((c) => c.id === d.id);
       const canReorder = !isPending && !isDeleting && committed.length > 1;
       return `
-        <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}${!isPending ? ` data-flip-id="${escapeHtml(d.id)}"` : ''}>
+        <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}${!isPending ? ` data-flip-id="${escapeHtml(d.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
           <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
           <div class="file-info">
             <div class="file-name">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
@@ -1095,6 +1257,24 @@
         moveDocInCategory(btn.getAttribute('data-doc-move-down'), btn.getAttribute('data-cat'), 1);
       });
     });
+    setupDragReorder(listEl, async (orderedIds) => {
+      if (isReordering) return;
+      isReordering = true;
+      try {
+        // orderedIdsには非対象行（未反映・削除予定）のidは含まれない想定だが、念のためcommitted内のidだけに絞る
+        const committedIds = new Set(committed.map((d) => d.id));
+        const finalOrder = orderedIds.filter((id) => committedIds.has(id));
+        const results = await Promise.all(finalOrder.map((id, i) => sb.from('documents').update({ sort_order: i }).eq('id', id)));
+        const failed = results.find((r) => r.error);
+        if (failed) throw failed.error;
+        await refreshDocsCache();
+        renderCategory(catId);
+      } catch (err) {
+        showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      } finally {
+        isReordering = false;
+      }
+    }, (row) => row.dataset.draggable === 'true');
     listEl.querySelectorAll('[data-open-file]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-open-file');
@@ -1433,7 +1613,7 @@
     const canReorder = posInfo && posInfo.total > 1 && !c.isPendingNew && !c.isPendingEdit;
     return `
       <div>
-        <div class="file-row"${posInfo ? ` data-flip-id="${escapeHtml(c.id)}"` : ''}>
+        <div class="file-row"${posInfo ? ` data-flip-id="${escapeHtml(c.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
           <span class="file-icon">${(c.links || []).length}</span>
           <div class="file-info">
             <div class="file-name">${escapeHtml(c.name)}${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
@@ -1453,7 +1633,10 @@
   }
 
   async function moveLinkCardInCategory(id, catId, direction) {
+    if (isReordering) return;
+    isReordering = true;
     const listEl = document.getElementById('list-links-all');
+    if (listEl) listEl.querySelectorAll('[data-link-move-up],[data-link-move-down]').forEach((b) => { b.disabled = true; });
     const oldRects = {};
     if (listEl) {
       listEl.querySelectorAll('[data-flip-id]').forEach((el) => {
@@ -1461,15 +1644,25 @@
       });
     }
 
-    const list = linkCardsCache.filter((c) => c.category_id === catId);
-    const idx = list.findIndex((c) => c.id === id);
-    const targetIdx = idx + direction;
-    if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
-    const a = list[idx], b = list[targetIdx];
-    await sb.from('link_cards').update({ sort_order: b.sort_order }).eq('id', a.id);
-    await sb.from('link_cards').update({ sort_order: a.sort_order }).eq('id', b.id);
-    await refreshLinkCardsCache();
-    renderLinkList();
+    try {
+      const list = linkCardsCache.filter((c) => c.category_id === catId);
+      const idx = list.findIndex((c) => c.id === id);
+      const targetIdx = idx + direction;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
+      const a = list[idx], b = list[targetIdx];
+      const r1 = await sb.from('link_cards').update({ sort_order: b.sort_order }).eq('id', a.id);
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('link_cards').update({ sort_order: a.sort_order }).eq('id', b.id);
+      if (r2.error) throw r2.error;
+      await refreshLinkCardsCache();
+      renderLinkList();
+      showToast('並べ替えました。カードを長押ししてドラッグすることでも並べ替えできます。');
+    } catch (err) {
+      showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      return;
+    } finally {
+      isReordering = false;
+    }
 
     if (listEl) {
       const newEls = listEl.querySelectorAll('[data-flip-id]');
@@ -1520,16 +1713,20 @@
     const groups = filterVal ? cats.filter((c) => c.id === filterVal) : cats;
 
     let html = '';
+    const dragGroupCatIds = [];
     groups.forEach((cat) => {
       const inCat = filtered.filter((c) => c.category === cat.id);
       if (inCat.length === 0) return;
       const committedInCat = inCat.filter((c) => !c.isPendingNew);
+      dragGroupCatIds.push(cat.id);
       html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">${escapeHtml(cat.label)}（${inCat.length}件）</p>`;
+      html += `<div id="linkgroup-${escapeHtml(cat.id)}">`;
       html += inCat.map((c) => {
         const committedIdx = committedInCat.findIndex((x) => x.id === c.id);
         const posInfo = committedIdx > -1 ? { catId: cat.id, index: committedIdx, total: committedInCat.length } : null;
         return renderLinkCardRow(c, categoryLabel(c.category), posInfo);
       }).join('');
+      html += `</div>`;
     });
     const uncategorized = filtered.filter((c) => !cats.some((cat) => cat.id === c.category));
     if (uncategorized.length > 0) {
@@ -1538,6 +1735,29 @@
     }
 
     listEl.innerHTML = html || '<p class="empty-row">該当するカードがありません</p>';
+
+    dragGroupCatIds.forEach((catId) => {
+      const groupEl = document.getElementById('linkgroup-' + catId);
+      if (!groupEl) return;
+      setupDragReorder(groupEl, async (orderedIds) => {
+        if (isReordering) return;
+        isReordering = true;
+        try {
+          const inCatCommitted = linkCardsCache.filter((c) => c.category_id === catId);
+          const committedIdSet = new Set(inCatCommitted.map((c) => c.id));
+          const finalOrder = orderedIds.filter((id) => committedIdSet.has(id));
+          const results = await Promise.all(finalOrder.map((id, i) => sb.from('link_cards').update({ sort_order: i }).eq('id', id)));
+          const failed = results.find((r) => r.error);
+          if (failed) throw failed.error;
+          await refreshLinkCardsCache();
+          renderLinkList();
+        } catch (err) {
+          showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+        } finally {
+          isReordering = false;
+        }
+      }, (row) => row.dataset.draggable === 'true');
+    });
 
     listEl.querySelectorAll('[data-link-move-up]').forEach((btn) => {
       btn.addEventListener('click', () => {
