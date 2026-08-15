@@ -93,24 +93,29 @@
     background:linear-gradient(to right, rgba(24,28,38,0), var(--navy) 75%);
     pointer-events:none;
   }
-  /* 左右にスクロール可能であることを示す矢印（スマホのみ・三角形） */
+  /* 左右にスクロール可能であることを示すヒント（スマホのみ・シェブロン記号＋揺れる動き） */
   .jumpnav-arrow{
     position:absolute;top:50%;transform:translateY(-50%);
-    width:0;height:0;
-    pointer-events:none;z-index:2;
+    z-index:2;font-family:var(--f-mono);font-size:15px;line-height:1;
+    color:rgba(245,241,232,0.5);pointer-events:auto;cursor:default;
+    padding:14px 6px;
+    animation:jumpnav-hint 1.6s ease-in-out infinite;
   }
-  .jumpnav-arrow-left{
-    left:8px;
-    border-top:7px solid transparent;
-    border-bottom:7px solid transparent;
-    border-right:10px solid rgba(245,241,232,0.55);
+  .jumpnav-arrow-left{left:2px;animation-delay:.3s;}
+  .jumpnav-arrow-right{right:2px;}
+  @keyframes jumpnav-hint{
+    0%,100%{opacity:.35;}
+    50%{opacity:.85;}
   }
-  .jumpnav-arrow-right{
-    right:8px;
-    border-top:7px solid transparent;
-    border-bottom:7px solid transparent;
-    border-left:10px solid rgba(245,241,232,0.55);
+  .jumpnav-toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(12px);
+    background:var(--navy);color:#f5f1e8;border:1px solid var(--gold-soft);
+    font-family:var(--f-mono);font-size:12px;letter-spacing:0.02em;
+    padding:12px 18px;border-radius:6px;z-index:200;
+    opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;
+    white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.35);
   }
+  .jumpnav-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   /* タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示 */
   .jumpnav-wrap.no-scroll .jumpnav-arrow{display:none;}
   .jumpnav-wrap.no-scroll::after{display:none;}
@@ -238,17 +243,18 @@
   <div class="wrap">
     <span class="eyebrow">LINKS</span>
     <h1 class="page-title">リンク集</h1>
-    <p class="page-sub">様々な関連リンクをまとめています。</p>
+    <p class="page-sub">関連リンクをまとめています。</p>
   </div>
 </section>
 
 <nav class="jumpnav" aria-label="カテゴリー内リンク">
   <div class="wrap jumpnav-wrap">
-    <span class="jumpnav-arrow jumpnav-arrow-left" aria-hidden="true"></span>
+    <span class="jumpnav-arrow jumpnav-arrow-left" id="jumpnavArrowLeft">‹‹</span>
     <div class="jumpnav-inner" id="jumpnavInner"></div>
-    <span class="jumpnav-arrow jumpnav-arrow-right" aria-hidden="true"></span>
+    <span class="jumpnav-arrow jumpnav-arrow-right" id="jumpnavArrowRight">››</span>
   </div>
 </nav>
+<div class="jumpnav-toast" id="jumpnavToast">← → バーを指でスクロールしてください</div>
 
 <main>
   <div class="wrap">
@@ -323,6 +329,21 @@
   updateJumpnavScrollHint();
   window.addEventListener('resize', updateJumpnavScrollHint);
   window.addEventListener('load', updateJumpnavScrollHint);
+
+  // 矢印は装飾（スクロールできる旨のヒント）であり、ボタンではない。
+  // 誤ってタップした人向けに、短い時間だけ案内メッセージを表示する
+  let jumpnavToastTimer = null;
+  function showJumpnavToast() {
+    const toast = document.getElementById('jumpnavToast');
+    if (!toast) return;
+    toast.classList.add('show');
+    clearTimeout(jumpnavToastTimer);
+    jumpnavToastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  const jumpnavArrowLeft = document.getElementById('jumpnavArrowLeft');
+  const jumpnavArrowRight = document.getElementById('jumpnavArrowRight');
+  if (jumpnavArrowLeft) jumpnavArrowLeft.addEventListener('click', showJumpnavToast);
+  if (jumpnavArrowRight) jumpnavArrowRight.addEventListener('click', showJumpnavToast);
 
   /* ===== リンク集：Supabase(link_categories / link_cards / link_card_urls)から取得して表示 ===== */
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';

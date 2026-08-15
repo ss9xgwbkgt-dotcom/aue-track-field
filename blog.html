@@ -358,7 +358,10 @@
         if (target && target.classList.contains('post-card')) {
           target.classList.add('open');
           target.querySelector('.post-toggle')?.setAttribute('aria-expanded', 'true');
-          target.scrollIntoView({ block: 'start' });
+          // 固定ヘッダー（76px）の裏にタイトルが隠れないよう、その分を差し引いた位置までスクロールする
+          const headerOffset = 76;
+          const targetTop = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: targetTop, behavior: 'auto' });
         }
       }
     })

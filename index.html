@@ -545,7 +545,7 @@
   })();
 
   // 最新の活動報告：Supabaseの blog_posts テーブルから最新3件を取得
-  sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(3)
+  sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(5)
     .then(({ data, error }) => {
       if (error) throw error;
       const posts = data || [];
