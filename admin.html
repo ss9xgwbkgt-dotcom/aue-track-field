@@ -726,7 +726,9 @@
       (typeof pendingHero !== 'undefined' && pendingHero !== null) ||
       (typeof pendingRecords !== 'undefined' && pendingRecords !== null) ||
       (typeof docsHasPending === 'function' && docsHasPending()) ||
-      (typeof linkHasPending === 'function' && linkHasPending());
+      (typeof linkHasPending === 'function' && linkHasPending()) ||
+      (typeof blocksHasPending === 'function' && blocksHasPending()) ||
+      (typeof joinPhotosHasPending === 'function' && joinPhotosHasPending());
     const banner = document.getElementById('globalPendingBanner');
     if (banner) banner.classList.toggle('show', !!hasPending);
   }
@@ -771,7 +773,7 @@
     categoriesCache = data || [];
   }
   async function refreshDocsCache() {
-    const { data, error } = await sb.from('documents').select('*').order('uploaded_at', { ascending: false });
+    const { data, error } = await sb.from('documents').select('*').order('sort_order', { ascending: true });
     if (error) { showToast('資料の取得に失敗しました'); return; }
     docsCache = data || [];
   }
@@ -1009,6 +1011,45 @@
     showToast('削除しました');
   }
 
+  async function moveDocInCategory(id, catId, direction) {
+    const listEl = document.getElementById('list-' + catId);
+    const oldRects = {};
+    if (listEl) {
+      listEl.querySelectorAll('[data-flip-id]').forEach((el) => {
+        oldRects[el.dataset.flipId] = el.getBoundingClientRect();
+      });
+    }
+
+    const list = loadDocs().filter((d) => d.category_id === catId);
+    const idx = list.findIndex((d) => d.id === id);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
+    const a = list[idx], b = list[targetIdx];
+    await sb.from('documents').update({ sort_order: b.sort_order }).eq('id', a.id);
+    await sb.from('documents').update({ sort_order: a.sort_order }).eq('id', b.id);
+    await refreshDocsCache();
+    renderCategory(catId);
+
+    if (listEl) {
+      const newEls = listEl.querySelectorAll('[data-flip-id]');
+      newEls.forEach((el) => {
+        const oldRect = oldRects[el.dataset.flipId];
+        if (!oldRect) return;
+        const newRect = el.getBoundingClientRect();
+        const dy = oldRect.top - newRect.top;
+        if (dy) {
+          el.style.transition = 'none';
+          el.style.transform = `translateY(${dy}px)`;
+        }
+      });
+      void listEl.offsetHeight;
+      newEls.forEach((el) => {
+        el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+        el.style.transform = '';
+      });
+    }
+  }
+
   function renderCategory(catId) {
     const listEl = document.getElementById('list-' + catId);
     if (!listEl) return;
@@ -1019,19 +1060,23 @@
       listEl.innerHTML = '<p class="empty-row">まだファイルがありません</p>';
       return;
     }
-    listEl.innerHTML = combined.map((d) => {
+    listEl.innerHTML = combined.map((d, i) => {
       const isPending = !!d.tempId;
       const fileName = d.fileName || d.file_name;
       const sizeLabel = d.sizeLabel || d.size_label;
       const isDeleting = !isPending && pendingDeletedDocIds.includes(d.id);
+      const committedIdx = isPending ? -1 : committed.findIndex((c) => c.id === d.id);
+      const canReorder = !isPending && !isDeleting && committed.length > 1;
       return `
-        <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}>
+        <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}${!isPending ? ` data-flip-id="${escapeHtml(d.id)}"` : ''}>
           <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
           <div class="file-info">
             <div class="file-name">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
             <div class="file-meta">${sizeLabel || ''}</div>
           </div>
           <div class="file-actions">
+            ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${committedIdx === 0 ? 'disabled' : ''}>↑</button>` : ''}
+            ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${committedIdx === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
             ${(isPending || isDeleting) ? '' : `<button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>`}
             ${isDeleting
               ? `<button class="icon-btn" data-undo-remove="${escapeHtml(d.id)}">取り消す</button>`
@@ -1040,6 +1085,16 @@
         </div>
       `;
     }).join('');
+    listEl.querySelectorAll('[data-doc-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveDocInCategory(btn.getAttribute('data-doc-move-up'), btn.getAttribute('data-cat'), -1);
+      });
+    });
+    listEl.querySelectorAll('[data-doc-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveDocInCategory(btn.getAttribute('data-doc-move-down'), btn.getAttribute('data-cat'), 1);
+      });
+    });
     listEl.querySelectorAll('[data-open-file]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-open-file');
@@ -1126,8 +1181,11 @@
     try {
       for (const p of pendingDocs) {
         const path = await uploadToBucket('documents', p.file);
+        const inCat = docsCache.filter((d) => d.category_id === p.category);
+        const maxOrder = inCat.reduce((max, d) => Math.max(max, d.sort_order || 0), -1);
         const { error } = await sb.from('documents').insert({
           category_id: p.category, file_name: p.fileName, file_path: path, size_label: p.sizeLabel,
+          sort_order: maxOrder + 1,
         });
         if (error) throw error;
       }
@@ -1185,7 +1243,7 @@
   }
   async function refreshLinkCardsCache() {
     const [{ data: cards, error: cardsErr }, { data: urls, error: urlsErr }] = await Promise.all([
-      sb.from('link_cards').select('*'),
+      sb.from('link_cards').select('*').order('sort_order', { ascending: true }),
       sb.from('link_card_urls').select('*').order('sort_order', { ascending: true }),
     ]);
     if (cardsErr || urlsErr) { showToast('カードの取得に失敗しました'); return; }
@@ -1355,7 +1413,7 @@
     renderLinkEntries(current);
   });
 
-  function renderLinkCardRow(c, categoryLabelText) {
+  function renderLinkCardRow(c, categoryLabelText, posInfo) {
     if (c.isPendingDelete) {
       return `
         <div>
@@ -1372,15 +1430,18 @@
         </div>
       `;
     }
+    const canReorder = posInfo && posInfo.total > 1 && !c.isPendingNew && !c.isPendingEdit;
     return `
       <div>
-        <div class="file-row">
+        <div class="file-row"${posInfo ? ` data-flip-id="${escapeHtml(c.id)}"` : ''}>
           <span class="file-icon">${(c.links || []).length}</span>
           <div class="file-info">
             <div class="file-name">${escapeHtml(c.name)}${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
             <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
           </div>
           <div class="file-actions">
+            ${canReorder ? `<button class="icon-btn" data-link-move-up="${escapeHtml(c.id)}" data-cat="${escapeHtml(posInfo.catId)}" ${posInfo.index === 0 ? 'disabled' : ''}>↑</button>` : ''}
+            ${canReorder ? `<button class="icon-btn" data-link-move-down="${escapeHtml(c.id)}" data-cat="${escapeHtml(posInfo.catId)}" ${posInfo.index === posInfo.total - 1 ? 'disabled' : ''}>↓</button>` : ''}
             <button class="icon-btn" data-view-link="${escapeHtml(c.id)}">閲覧</button>
             <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">編集</button>
             <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">削除</button>
@@ -1389,6 +1450,45 @@
         <div class="post-detail" id="link-detail-${escapeHtml(c.id)}" style="display:none;"></div>
       </div>
     `;
+  }
+
+  async function moveLinkCardInCategory(id, catId, direction) {
+    const listEl = document.getElementById('list-links-all');
+    const oldRects = {};
+    if (listEl) {
+      listEl.querySelectorAll('[data-flip-id]').forEach((el) => {
+        oldRects[el.dataset.flipId] = el.getBoundingClientRect();
+      });
+    }
+
+    const list = linkCardsCache.filter((c) => c.category_id === catId);
+    const idx = list.findIndex((c) => c.id === id);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
+    const a = list[idx], b = list[targetIdx];
+    await sb.from('link_cards').update({ sort_order: b.sort_order }).eq('id', a.id);
+    await sb.from('link_cards').update({ sort_order: a.sort_order }).eq('id', b.id);
+    await refreshLinkCardsCache();
+    renderLinkList();
+
+    if (listEl) {
+      const newEls = listEl.querySelectorAll('[data-flip-id]');
+      newEls.forEach((el) => {
+        const oldRect = oldRects[el.dataset.flipId];
+        if (!oldRect) return;
+        const newRect = el.getBoundingClientRect();
+        const dy = oldRect.top - newRect.top;
+        if (dy) {
+          el.style.transition = 'none';
+          el.style.transform = `translateY(${dy}px)`;
+        }
+      });
+      void listEl.offsetHeight;
+      newEls.forEach((el) => {
+        el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+        el.style.transform = '';
+      });
+    }
   }
 
   function renderLinkList() {
@@ -1423,8 +1523,13 @@
     groups.forEach((cat) => {
       const inCat = filtered.filter((c) => c.category === cat.id);
       if (inCat.length === 0) return;
+      const committedInCat = inCat.filter((c) => !c.isPendingNew);
       html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">${escapeHtml(cat.label)}（${inCat.length}件）</p>`;
-      html += inCat.map((c) => renderLinkCardRow(c, categoryLabel(c.category))).join('');
+      html += inCat.map((c) => {
+        const committedIdx = committedInCat.findIndex((x) => x.id === c.id);
+        const posInfo = committedIdx > -1 ? { catId: cat.id, index: committedIdx, total: committedInCat.length } : null;
+        return renderLinkCardRow(c, categoryLabel(c.category), posInfo);
+      }).join('');
     });
     const uncategorized = filtered.filter((c) => !cats.some((cat) => cat.id === c.category));
     if (uncategorized.length > 0) {
@@ -1434,6 +1539,16 @@
 
     listEl.innerHTML = html || '<p class="empty-row">該当するカードがありません</p>';
 
+    listEl.querySelectorAll('[data-link-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveLinkCardInCategory(btn.getAttribute('data-link-move-up'), btn.getAttribute('data-cat'), -1);
+      });
+    });
+    listEl.querySelectorAll('[data-link-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveLinkCardInCategory(btn.getAttribute('data-link-move-down'), btn.getAttribute('data-cat'), 1);
+      });
+    });
     listEl.querySelectorAll('[data-view-link]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-view-link');
@@ -1516,8 +1631,10 @@
   async function commitLinkUpdate() {
     try {
       for (const c of pendingLinkCards) {
+        const inCat = linkCardsCache.filter((x) => x.category_id === (c.category || null));
+        const maxOrder = inCat.reduce((max, x) => Math.max(max, x.sort_order || 0), -1);
         const { data: newCard, error } = await sb.from('link_cards')
-          .insert({ name: c.name, category_id: c.category || null })
+          .insert({ name: c.name, category_id: c.category || null, sort_order: maxOrder + 1 })
           .select('id').single();
         if (error) throw error;
         const urlRows = (c.links || []).map((l, i) => ({ card_id: newCard.id, label: l.label, url: l.url, sort_order: i }));
