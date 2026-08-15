@@ -54,7 +54,7 @@
   .update-msg{font-family:var(--f-mono);font-size:11px;color:var(--rust-dark);}
   .update-btn{font-family:var(--f-display);font-size:12px;letter-spacing:0.04em;background:var(--rust);color:#fff;border:0;padding:9px 18px;border-radius:4px;cursor:pointer;transition:filter .2s;flex-shrink:0;}
   .update-btn:hover{filter:brightness(1.08);}
-  .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;}
+  .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;flex-shrink:0;}
 
   .global-pending-banner{
     position:fixed;top:0;left:0;right:0;z-index:1000;
@@ -81,7 +81,7 @@
 
   .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
   .file-row{
-    display:flex;align-items:center;gap:14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
     will-change:transform;background:#fff;
   }
   .file-row[data-flip-id]{touch-action:pan-x;cursor:grab;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
@@ -91,10 +91,17 @@
     display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);
     font-size:10px;font-weight:700;color:var(--olive);border:1px solid var(--cream-line);
   }
-  .file-info{flex:1;min-width:0;}
-  .file-name{font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--navy);word-break:break-all;}
+  .file-info{flex:1 1 140px;min-width:140px;}
+  .file-name{
+    display:flex;align-items:flex-start;gap:6px;min-width:0;
+    font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--navy);
+  }
+  .file-name-text{
+    overflow:hidden;min-width:0;word-break:break-all;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  }
   .file-meta{font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-top:2px;}
-  .file-actions{display:flex;gap:8px;flex-shrink:0;}
+  .file-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;margin-left:auto;}
   .icon-btn{
     font-family:var(--f-mono);font-size:11px;border:1px solid var(--cream-line);background:none;
     color:var(--ink-dim);padding:6px 10px;border-radius:20px;cursor:pointer;transition:.2s;
@@ -840,7 +847,7 @@
       <div class="file-row" data-flip-id="${c.id}">
         <span class="file-icon">${String(i + 1).padStart(2, '0')}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(c.label)}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(c.label)}</span></div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" data-move-up="${c.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
@@ -1233,7 +1240,7 @@
         <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}${!isPending ? ` data-flip-id="${escapeHtml(d.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
           <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
           <div class="file-info">
-            <div class="file-name">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
+            <div class="file-name"><span class="file-name-text">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
             <div class="file-meta">${sizeLabel || ''}</div>
           </div>
           <div class="file-actions">
@@ -1332,7 +1339,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(d.file_name))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(d.file_name)}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(d.file_name)}</span></div>
           <div class="file-meta">見出し：なし ・ ${d.size_label || ''}</div>
         </div>
         <div class="file-actions" style="gap:8px;">
@@ -1490,7 +1497,7 @@
       <div class="file-row">
         <span class="file-icon">CAT</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(c.label)}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(c.label)}</span></div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" data-remove-link-cat="${escapeHtml(c.id)}">削除</button>
@@ -1600,7 +1607,7 @@
           <div class="file-row" style="opacity:0.55;">
             <span class="file-icon">${(c.links || []).length}</span>
             <div class="file-info">
-              <div class="file-name"><span style="text-decoration:line-through;">${escapeHtml(c.name)}</span><span class="pending-badge">削除予定</span></div>
+              <div class="file-name"><span class="file-name-text" style="text-decoration:line-through;">${escapeHtml(c.name)}</span><span class="pending-badge">削除予定</span></div>
               <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
             </div>
             <div class="file-actions">
@@ -1616,7 +1623,7 @@
         <div class="file-row"${posInfo ? ` data-flip-id="${escapeHtml(c.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
           <span class="file-icon">${(c.links || []).length}</span>
           <div class="file-info">
-            <div class="file-name">${escapeHtml(c.name)}${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-name"><span class="file-name-text">${escapeHtml(c.name)}</span>${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
             <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
           </div>
           <div class="file-actions">
@@ -2007,7 +2014,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2172,7 +2179,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2304,7 +2311,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2436,7 +2443,7 @@
       <div class="file-row">
         <span class="file-icon">タグ</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(t.label)}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(t.label)}</span></div>
         </div>
         <div class="file-actions">
           <button class="icon-btn" data-remove-blog-tag="${escapeHtml(t.id)}">削除</button>
@@ -2584,7 +2591,7 @@
         <div class="file-row">
           <span class="file-icon">${p.image_path ? escapeHtml(getExtLabel(p.image_name || '')) : 'TXT'}</span>
           <div class="file-info">
-            <div class="file-name">${escapeHtml(p.title)}</div>
+            <div class="file-name"><span class="file-name-text">${escapeHtml(p.title)}</span></div>
             <div class="file-meta">${allTags.includes(p.tag) ? escapeHtml(p.tag) : 'なし'} ・ ${p.post_date}${p.image_path ? ' ・ 添付あり' : ''}</div>
           </div>
           <div class="file-actions">
@@ -2628,7 +2635,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(pendingBlogImage.fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(pendingBlogImage.fileName)}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(pendingBlogImage.fileName)}</span></div>
           <div class="file-meta">${pendingBlogImage.sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2793,7 +2800,7 @@
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name">${escapeHtml(fileName)}${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
