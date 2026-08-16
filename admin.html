@@ -30,11 +30,6 @@
   h1{font-family:var(--f-display);font-weight:700;font-size:26px;margin-bottom:8px;color:var(--navy);}
   .lead{font-size:13px;color:var(--ink-dim);max-width:64ch;margin-bottom:8px;}
 
-  .warn{
-    display:flex;gap:12px;background:#fff;border:1px solid var(--cream-line);border-left:4px solid var(--rust);
-    border-radius:4px;padding:16px 18px;margin:26px 0 40px;font-size:13px;color:var(--ink-dim);line-height:1.85;
-  }
-  .warn b{color:var(--rust-dark);}
 
   .gate{max-width:380px;margin:80px auto;background:#fff;border:1px solid var(--cream-line);border-radius:6px;padding:32px;text-align:center;}
   .gate h2{font-family:var(--f-display);font-size:18px;margin-bottom:14px;}
@@ -66,7 +61,7 @@
     display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
     will-change:transform;background:#fff;
   }
-  .file-row[data-flip-id]{touch-action:pan-x;cursor:grab;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .file-row[data-flip-id]{touch-action:none;cursor:grab;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .file-row.dragging{cursor:grabbing;opacity:0.9;background:var(--cream);}
   .file-icon{
     flex-shrink:0;width:36px;height:36px;border-radius:4px;background:var(--cream);
@@ -204,11 +199,11 @@
         <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">追加・変更するとき</div>
-            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">ファイルを選んだり、フォームを送信したりすると、その場に<b style="color:var(--rust-dark);">確認ダイアログ</b>が表示されます。「確定」を押すとすぐにサイトへ反映されます。キャンセルすれば、その内容は反映されません。</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">ファイルを選んだり、フォームを送信したりすると、その場に確認ダイアログが表示されます。「<b style="color:var(--rust-dark);">確定</b>」を押すとすぐにサイトへ反映されます。キャンセルすれば、その内容は反映されません。</div>
           </div>
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">削除するとき</div>
-            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;"><b style="color:var(--rust-dark);">「削除」</b>を押すと<b style="color:var(--rust-dark);">確認ダイアログ</b>が出ます。「OK」を押すとその場ですぐに削除されます。</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.9;">「<b style="color:var(--rust-dark);">削除</b>」を押すと確認ダイアログが出ます。「OK」を押すとその場ですぐに削除されます。</div>
           </div>
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">カテゴリー・タグを削除するとき</div>
@@ -217,10 +212,7 @@
         </div>
       </details>
 
-      <div class="warn">
-        <span>⚠</span>
-        <p><b>保存範囲について：</b>このデータはSupabase（サーバー）に保存されるため、どの端末・ブラウザからでも同じ内容が表示されます。</p>
-      </div>
+      <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存範囲について：このデータはSupabase（サーバー）に保存されるため、どの端末・ブラウザからでも同じ内容が表示されます。</p>
 
       <div class="toolbar">
         <span id="storageUsage" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);"></span>
@@ -824,7 +816,8 @@
 
         if (docsInCat.length === 0) {
           if (!confirm(`「${cat ? cat.label : ''}」を削除しますか？`)) return;
-          await sb.from('document_categories').delete().eq('id', id);
+          const r = await sb.from('document_categories').delete().eq('id', id);
+          if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
           await refreshCategoriesCache();
           await renderCategoryManager();
           await renderCategoryDropzones();
@@ -838,19 +831,32 @@
         );
 
         if (deleteFilesToo) {
-          for (const d of docsInCat) {
-            await sb.from('documents').delete().eq('id', d.id);
-            if (d.file_path) await removeFromBucket(d.file_path);
+          try {
+            for (const d of docsInCat) {
+              const rd = await sb.from('documents').delete().eq('id', d.id);
+              if (rd.error) throw rd.error;
+              if (d.file_path) await removeFromBucket(d.file_path);
+            }
+            const rc = await sb.from('document_categories').delete().eq('id', id);
+            if (rc.error) throw rc.error;
+          } catch (err) {
+            showToast('削除に失敗しました： ' + (err && err.message ? err.message : err));
+            await refreshCategoriesCache();
+            await refreshDocsCache();
+            await renderCategoryManager();
+            await renderCategoryDropzones();
+            return;
           }
-          await sb.from('document_categories').delete().eq('id', id);
           await refreshCategoriesCache();
           await refreshDocsCache();
           await renderCategoryManager();
           await renderCategoryDropzones();
           showToast('見出しとファイルを削除しました');
         } else {
-          await sb.from('document_categories').delete().eq('id', id);
-          await sb.from('documents').update({ category_id: null }).eq('category_id', id);
+          const rc = await sb.from('document_categories').delete().eq('id', id);
+          if (rc.error) { showToast('削除に失敗しました： ' + rc.error.message); return; }
+          const ru = await sb.from('documents').update({ category_id: null }).eq('category_id', id);
+          if (ru.error) { showToast('見出しの解除に失敗しました： ' + ru.error.message); }
           await refreshCategoriesCache();
           await refreshDocsCache();
           await renderCategoryManager();
@@ -1114,7 +1120,7 @@
     });
     container.addEventListener('pointermove', (e) => {
       if (dragRow) return;
-      if (Math.abs(e.clientY - startY) > 8 || Math.abs(e.clientX - startX) > 8) cancelLongPress();
+      if (Math.abs(e.clientY - startY) > 12 || Math.abs(e.clientX - startX) > 12) cancelLongPress();
     });
     container.addEventListener('pointerup', cancelLongPress);
     container.addEventListener('pointercancel', cancelLongPress);
@@ -1367,8 +1373,10 @@
           ? `「${categoryLabel(id)}」を削除しますか？登録済みのカード${cardsInCat.length}件は削除されず、「未分類」として残ります。`
           : 'このカテゴリーを削除しますか？';
         if (!confirm(msg)) return;
-        await sb.from('link_categories').delete().eq('id', id);
-        await sb.from('link_cards').update({ category_id: null }).eq('category_id', id);
+        const rc = await sb.from('link_categories').delete().eq('id', id);
+        if (rc.error) { showToast('削除に失敗しました： ' + rc.error.message); return; }
+        const ru = await sb.from('link_cards').update({ category_id: null }).eq('category_id', id);
+        if (ru.error) { showToast('カードの分類解除に失敗しました： ' + ru.error.message); }
         await refreshLinkCategoriesCache();
         await refreshLinkCardsCache();
         await renderLinkCategoryManager();
@@ -1682,7 +1690,8 @@
           name, category_id: category || null, updated_at: new Date().toISOString(),
         }).eq('id', editingId);
         if (error) throw error;
-        await sb.from('link_card_urls').delete().eq('card_id', editingId);
+        const rd = await sb.from('link_card_urls').delete().eq('card_id', editingId);
+        if (rd.error) throw rd.error;
         const urlRows = links.map((l, i) => ({ card_id: editingId, label: l.label, url: l.url, sort_order: i }));
         if (urlRows.length > 0) {
           const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
@@ -1836,7 +1845,8 @@
     listEl.querySelector('[data-remove-join-photo]').addEventListener('click', async () => {
       if (!confirm('この写真を削除しますか？')) return;
       if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
-      await sb.from('site_assets').delete().eq('key', joinPhotoKey(msgId));
+      const r = await sb.from('site_assets').delete().eq('key', joinPhotoKey(msgId));
+      if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
       joinPhotosAssetCache = await loadJoinPhotosAssets();
       renderJoinPhotoRow(msgId);
       showToast('削除しました');
@@ -1916,8 +1926,8 @@
     container.innerHTML = BLOCK_ORDER.map((b) => `
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:18px;margin-bottom:16px;">
         <p style="font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">${b.label}</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;">
+          <div style="min-width:0;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:8px;">写真</p>
             <label class="dropzone" id="drop-block-photo-${b.id}" style="padding:16px;">
               <div style="font-size:12px;"><strong>クリックして選択</strong> または画像をドロップ</div>
@@ -1932,7 +1942,7 @@
             </div>
             <div class="file-list" id="list-block-photo-${b.id}" style="margin-top:8px;"></div>
           </div>
-          <div>
+          <div style="min-width:0;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:8px;">PDF</p>
             <label class="dropzone" id="drop-block-pdf-${b.id}" style="padding:16px;">
               <div style="font-size:12px;"><strong>クリックして選択</strong> またはPDFをドロップ</div>
@@ -1998,7 +2008,8 @@
     listEl.querySelector('[data-remove-block]').addEventListener('click', async () => {
       if (!confirm(`この${kind === 'photo' ? '写真' : 'PDF'}を削除しますか？`)) return;
       if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
-      await sb.from('site_assets').delete().eq('key', blockAssetKey(blockId, kind));
+      const r = await sb.from('site_assets').delete().eq('key', blockAssetKey(blockId, kind));
+      if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
       blocksAssetCache = await loadBlocksAssets();
       renderBlockFileRow(blockId, kind);
       showToast('削除しました');
@@ -2103,7 +2114,8 @@
     document.getElementById('removeHero').addEventListener('click', async () => {
       if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
       if (heroAssetCache && heroAssetCache.file_path) await removeFromBucket(heroAssetCache.file_path);
-      await sb.from('site_assets').delete().eq('key', 'hero_photo');
+      const r = await sb.from('site_assets').delete().eq('key', 'hero_photo');
+      if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
       await renderHero();
       showToast('既定の写真に戻しました');
     });
@@ -2587,7 +2599,8 @@
     document.getElementById('removeRecords').addEventListener('click', async () => {
       if (!confirm('愛教大10傑ファイルを削除しますか？')) return;
       if (recordsAssetCache && recordsAssetCache.file_path) await removeFromBucket(recordsAssetCache.file_path);
-      await sb.from('site_assets').delete().eq('key', 'records_file');
+      const r = await sb.from('site_assets').delete().eq('key', 'records_file');
+      if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
       await renderRecords();
       showToast('削除しました');
     });
