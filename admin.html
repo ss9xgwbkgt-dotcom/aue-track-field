@@ -50,25 +50,7 @@
   .cat-title{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row .cat-title{margin-bottom:0;padding-bottom:0;border-bottom:0;}
-  .update-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .update-msg{font-family:var(--f-mono);font-size:11px;color:var(--rust-dark);}
-  .update-btn{font-family:var(--f-display);font-size:12px;letter-spacing:0.04em;background:var(--rust);color:#fff;border:0;padding:9px 18px;border-radius:4px;cursor:pointer;transition:filter .2s;flex-shrink:0;}
-  .update-btn:hover{filter:brightness(1.08);}
   .pending-badge{font-family:var(--f-mono);font-size:9px;color:var(--rust-dark);border:1px solid rgba(184,64,43,0.35);border-radius:20px;padding:2px 7px;margin-left:6px;flex-shrink:0;}
-
-  .global-pending-banner{
-    position:fixed;top:0;left:0;right:0;z-index:1000;
-    background:var(--rust);color:#fff;
-    padding:16px 20px;text-align:center;
-    font-family:var(--f-display);font-size:14px;font-weight:600;letter-spacing:0.02em;
-    box-shadow:0 4px 16px rgba(0,0,0,0.25);
-    display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
-    transform:translateY(-120%);
-    transition:transform .35s cubic-bezier(.4,0,.2,1);
-  }
-  .global-pending-banner.show{transform:translateY(0);}
-  .global-pending-icon{font-size:16px;flex-shrink:0;}
-  @media(max-width:640px){.global-pending-banner{font-size:12.5px;padding:14px 16px;}}
 
   .dropzone{
     border:2px dashed var(--cream-line);border-radius:8px;padding:38px 20px;text-align:center;
@@ -148,11 +130,6 @@
 </style>
 </head>
 <body>
-
-<div id="globalPendingBanner" class="global-pending-banner">
-  <span class="global-pending-icon">⚠</span>
-  <span>まだ更新ボタンが押されていない変更があります。「更新」ボタンを押して確定してください。</span>
-</div>
 
 <header>
   <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
@@ -252,15 +229,11 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">トップページの写真</div>
-          <div class="update-row">
-            <span class="update-msg" id="heroUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="heroUpdateBtn" type="button">更新</button>
-          </div>
         </div>
         <div id="heroConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
+          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
-            <button class="btn" id="heroConfirmYes" type="button">更新を確定</button>
+            <button class="btn" id="heroConfirmYes" type="button">差し替えを確定</button>
             <button class="icon-btn" id="heroConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
@@ -410,15 +383,11 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">愛教大10傑ファイル</div>
-          <div class="update-row">
-            <span class="update-msg" id="recordsUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="recordsUpdateBtn" type="button">更新</button>
-          </div>
         </div>
         <div id="recordsConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
+          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">このファイルに差し替えてもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
-            <button class="btn" id="recordsConfirmYes" type="button">更新を確定</button>
+            <button class="btn" id="recordsConfirmYes" type="button">差し替えを確定</button>
             <button class="icon-btn" id="recordsConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
@@ -433,17 +402,6 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">各種資料</div>
-          <div class="update-row">
-            <span class="update-msg" id="docsUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="docsUpdateBtn" type="button">更新</button>
-          </div>
-        </div>
-        <div id="docsConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="docsConfirmYes" type="button">更新を確定</button>
-            <button class="icon-btn" id="docsConfirmNo" type="button">キャンセル</button>
-          </div>
         </div>
 
         <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料を追加・削除・並べ替えができます。</p>
@@ -495,17 +453,6 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">入部案内ページの写真</div>
-          <div class="update-row">
-            <span class="update-msg" id="joinPhotosUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="joinPhotosUpdateBtn" type="button">更新</button>
-          </div>
-        </div>
-        <div id="joinPhotosConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="joinPhotosConfirmYes" type="button">更新を確定</button>
-            <button class="icon-btn" id="joinPhotosConfirmNo" type="button">キャンセル</button>
-          </div>
         </div>
         <p class="lead" style="margin-bottom:14px;">入部案内ページにある4つのメッセージそれぞれの背景に表示する写真です。</p>
         <div id="joinPhotosPanels"></div>
@@ -514,17 +461,6 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">活動ブロック紹介</div>
-          <div class="update-row">
-            <span class="update-msg" id="blocksUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="blocksUpdateBtn" type="button">更新</button>
-          </div>
-        </div>
-        <div id="blocksConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="blocksConfirmYes" type="button">更新を確定</button>
-            <button class="icon-btn" id="blocksConfirmNo" type="button">キャンセル</button>
-          </div>
         </div>
         <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する、短距離・中長距離・フィールド・マネージャーの4つの紹介カードです。各ブロックに写真とPDF（部門紹介資料など）を1つずつ登録できます。カードをクリックするとPDFが開きます。</p>
         <div id="blocksPanels"></div>
@@ -533,15 +469,11 @@
       <div class="cat-section">
         <div class="cat-title-row">
           <div class="cat-title">リンク集</div>
-          <div class="update-row">
-            <span class="update-msg" id="linkUpdateMsg" style="display:none;">まだ更新されていません。更新を確定する場合は更新ボタンをクリックしてください。</span>
-            <button class="update-btn" id="linkUpdateBtn" type="button">更新</button>
-          </div>
         </div>
         <div id="linkConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に更新してもよろしいですか？</p>
+          <p id="linkConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
-            <button class="btn" id="linkConfirmYes" type="button">更新を確定</button>
+            <button class="btn" id="linkConfirmYes" type="button">登録を確定</button>
             <button class="icon-btn" id="linkConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
@@ -677,7 +609,6 @@
     await refreshDocsCache();
     await renderCategoryManager();
     await renderCategoryDropzones();
-    renderDocsUpdateUI();
     await renderHero();
     await initBlogAdmin();
     await renderRecords();
@@ -732,15 +663,8 @@
   }
 
   function checkGlobalPending() {
-    const hasPending =
-      (typeof pendingHero !== 'undefined' && pendingHero !== null) ||
-      (typeof pendingRecords !== 'undefined' && pendingRecords !== null) ||
-      (typeof docsHasPending === 'function' && docsHasPending()) ||
-      (typeof linkHasPending === 'function' && linkHasPending()) ||
-      (typeof blocksHasPending === 'function' && blocksHasPending()) ||
-      (typeof joinPhotosHasPending === 'function' && joinPhotosHasPending());
-    const banner = document.getElementById('globalPendingBanner');
-    if (banner) banner.classList.toggle('show', !!hasPending);
+    // 各操作はその場で確認ダイアログが出て即座に反映されるため、
+    // 「更新し忘れ」を知らせるこのグローバルな警告は不要になった（互換のため関数だけ残す）
   }
 
   function loadFromStorage(key, fallback) {
@@ -910,26 +834,27 @@
         }
 
         const deleteFilesToo = confirm(
-          `「${cat ? cat.label : ''}」には資料が${docsInCat.length}件あります。\n\nOK：ファイルごと削除する（「更新」ボタンを押して確定するまで、実際のページには反映されません）\nキャンセル：見出しだけ削除し、ファイルは「未分類」として残す`
+          `「${cat ? cat.label : ''}」には資料が${docsInCat.length}件あります。\n\nOK：見出しとファイルをまとめて削除する\nキャンセル：見出しだけ削除し、ファイルは「未分類」として残す`
         );
 
         if (deleteFilesToo) {
-          if (!pendingDeletedCategoryIds.includes(id)) pendingDeletedCategoryIds.push(id);
-          docsInCat.forEach((d) => { if (!pendingDeletedDocIds.includes(d.id)) pendingDeletedDocIds.push(d.id); });
-          renderCategory(id);
-          renderDocsUpdateUI();
-          showToast('見出しとファイルを削除予定にしました（「更新」ボタンで確定してください）');
+          for (const d of docsInCat) {
+            await sb.from('documents').delete().eq('id', d.id);
+            if (d.file_path) await removeFromBucket(d.file_path);
+          }
+          await sb.from('document_categories').delete().eq('id', id);
+          await refreshCategoriesCache();
+          await refreshDocsCache();
+          await renderCategoryManager();
+          await renderCategoryDropzones();
+          showToast('見出しとファイルを削除しました');
         } else {
           await sb.from('document_categories').delete().eq('id', id);
           await sb.from('documents').update({ category_id: null }).eq('category_id', id);
           await refreshCategoriesCache();
           await refreshDocsCache();
-          pendingDocs = pendingDocs.filter((d) => d.category !== id);
-          const orphanedIds = docsInCat.map((d) => d.id);
-          pendingDeletedDocIds = pendingDeletedDocIds.filter((did) => !orphanedIds.includes(did));
           await renderCategoryManager();
           await renderCategoryDropzones();
-          renderDocsUpdateUI();
           await renderUncategorizedDocs();
           showToast('見出しを削除しました');
         }
@@ -993,6 +918,13 @@
           <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
           <input type="file" id="input-${cat.id}" multiple>
         </label>
+        <div id="confirm-doc-${cat.id}" style="display:none;margin-top:10px;padding:12px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p id="confirm-doc-text-${cat.id}" style="font-size:13px;color:var(--ink);margin-bottom:8px;"></p>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" type="button" data-confirm-yes-doc="${cat.id}">アップロードを確定</button>
+            <button class="icon-btn" type="button" data-confirm-no-doc="${cat.id}">キャンセル</button>
+          </div>
+        </div>
         <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:12px 0 4px;">↓ ファイルの順番は、↑↓ボタンでも、カードを長押ししてそのままドラッグしても入れ替えられます。</p>
         <div class="file-list" id="list-${cat.id}"></div>
       `;
@@ -1008,41 +940,62 @@
         drop.classList.remove('drag');
         handleFiles(cat.id, e.dataTransfer.files);
       });
+      section.querySelector(`[data-confirm-yes-doc]`).addEventListener('click', () => commitDocUploads(cat.id));
+      section.querySelector(`[data-confirm-no-doc]`).addEventListener('click', () => {
+        delete pendingDocs[cat.id];
+        input.value = '';
+        section.querySelector(`#confirm-doc-${cat.id}`).style.display = 'none';
+      });
     });
     await renderAll();
   }
 
-  let pendingDocs = []; // {tempId, category, fileName, sizeLabel, file}
-  let pendingDeletedDocIds = []; // 見出しごと削除を選んだ場合の削除予定ファイルid（更新ボタンで確定）
-  let pendingDeletedCategoryIds = []; // ファイルごと削除を選んだ場合の削除予定見出しid（更新ボタンで確定）
-
-  function docsHasPending() {
-    return pendingDocs.length > 0 || pendingDeletedDocIds.length > 0 || pendingDeletedCategoryIds.length > 0;
-  }
-  function renderDocsUpdateUI() {
-    const msg = document.getElementById('docsUpdateMsg');
-    if (msg) msg.style.display = docsHasPending() ? 'inline' : 'none';
-    checkGlobalPending();
-  }
+  let pendingDocs = {}; // { catId: [{fileName,sizeLabel,file}] } 確認ダイアログ表示中の選択ファイル
 
   function handleFiles(catId, fileList) {
-    const files = Array.from(fileList);
-    if (files.length === 0) return;
-    files.forEach((file) => {
+    const files = Array.from(fileList).filter((file) => {
       if (file.size > 8 * 1024 * 1024) {
         showToast(`「${file.name}」は8MBを超えるため保存できません`);
-        return;
+        return false;
       }
-      pendingDocs.push({
-        tempId: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-        category: catId,
-        fileName: file.name,
-        sizeLabel: formatSize(file.size),
-        file: file,
-      });
-      renderCategory(catId);
-      renderDocsUpdateUI();
+      return true;
     });
+    if (files.length === 0) return;
+    pendingDocs[catId] = files.map((file) => ({ fileName: file.name, sizeLabel: formatSize(file.size), file }));
+    const textEl = document.getElementById(`confirm-doc-text-${catId}`);
+    textEl.textContent = files.length === 1
+      ? `「${files[0].name}」をアップロードしてもよろしいですか？`
+      : `${files.length}個のファイルをアップロードしてもよろしいですか？`;
+    const box = document.getElementById(`confirm-doc-${catId}`);
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function commitDocUploads(catId) {
+    const files = pendingDocs[catId];
+    if (!files || files.length === 0) return;
+    try {
+      const inCat = docsCache.filter((d) => d.category_id === catId);
+      let maxOrder = inCat.reduce((max, d) => Math.max(max, d.sort_order || 0), -1);
+      for (const p of files) {
+        const path = await uploadToBucket('documents', p.file);
+        maxOrder += 1;
+        const { error } = await sb.from('documents').insert({
+          category_id: catId, file_name: p.fileName, file_path: path, size_label: p.sizeLabel,
+          sort_order: maxOrder,
+        });
+        if (error) throw error;
+      }
+    } catch (err) {
+      showToast('アップロードに失敗しました： ' + err.message);
+      return;
+    }
+    delete pendingDocs[catId];
+    document.getElementById(`input-${catId}`).value = '';
+    document.getElementById(`confirm-doc-${catId}`).style.display = 'none';
+    await refreshDocsCache();
+    await renderAll();
+    showToast('ファイルをアップロードしました');
   }
 
   async function removeDoc(id) {
@@ -1223,33 +1176,24 @@
     const listEl = document.getElementById('list-' + catId);
     if (!listEl) return;
     const committed = loadDocs().filter((d) => d.category_id === catId);
-    const pending = pendingDocs.filter((d) => d.category === catId);
-    const combined = committed.concat(pending);
-    if (combined.length === 0) {
+    if (committed.length === 0) {
       listEl.innerHTML = '<p class="empty-row">まだファイルがありません</p>';
       return;
     }
-    listEl.innerHTML = combined.map((d, i) => {
-      const isPending = !!d.tempId;
-      const fileName = d.fileName || d.file_name;
-      const sizeLabel = d.sizeLabel || d.size_label;
-      const isDeleting = !isPending && pendingDeletedDocIds.includes(d.id);
-      const committedIdx = isPending ? -1 : committed.findIndex((c) => c.id === d.id);
-      const canReorder = !isPending && !isDeleting && committed.length > 1;
+    listEl.innerHTML = committed.map((d, i) => {
+      const canReorder = committed.length > 1;
       return `
-        <div class="file-row"${isDeleting ? ' style="opacity:0.55;"' : ''}${!isPending ? ` data-flip-id="${escapeHtml(d.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
-          <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
+        <div class="file-row" data-flip-id="${escapeHtml(d.id)}"${canReorder ? ' data-draggable="true"' : ''}>
+          <span class="file-icon">${escapeHtml(getExtLabel(d.file_name))}</span>
           <div class="file-info">
-            <div class="file-name"><span class="file-name-text">${isDeleting ? '<span style="text-decoration:line-through;">' + escapeHtml(fileName) + '</span>' : escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}${isDeleting ? '<span class="pending-badge">削除予定（見出しごと削除・更新で確定）</span>' : ''}</div>
-            <div class="file-meta">${sizeLabel || ''}</div>
+            <div class="file-name"><span class="file-name-text">${escapeHtml(d.file_name)}</span></div>
+            <div class="file-meta">${d.size_label || ''}</div>
           </div>
           <div class="file-actions">
-            ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${committedIdx === 0 ? 'disabled' : ''}>↑</button>` : ''}
-            ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${committedIdx === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
-            ${(isPending || isDeleting) ? '' : `<button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>`}
-            ${isDeleting
-              ? `<button class="icon-btn" data-undo-remove="${escapeHtml(d.id)}">取り消す</button>`
-              : `<button class="icon-btn" data-remove="${isPending ? d.tempId : d.id}" data-pending="${isPending}">削除</button>`}
+            ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
+            ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
+            <button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>
+            <button class="icon-btn" data-remove="${escapeHtml(d.id)}">削除</button>
           </div>
         </div>
       `;
@@ -1268,7 +1212,6 @@
       if (isReordering) return;
       isReordering = true;
       try {
-        // orderedIdsには非対象行（未反映・削除予定）のidは含まれない想定だが、念のためcommitted内のidだけに絞る
         const committedIds = new Set(committed.map((d) => d.id));
         const finalOrder = orderedIds.filter((id) => committedIds.has(id));
         const results = await Promise.all(finalOrder.map((id, i) => sb.from('documents').update({ sort_order: i }).eq('id', id)));
@@ -1285,28 +1228,13 @@
     listEl.querySelectorAll('[data-open-file]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-open-file');
-        const doc = combined.find((d) => d.id === id);
+        const doc = committed.find((d) => d.id === id);
         if (doc && doc.file_path) window.open(getPublicUrl(doc.file_path), '_blank');
       });
     });
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        if (btn.getAttribute('data-pending') === 'true') {
-          const tempId = btn.getAttribute('data-remove');
-          pendingDocs = pendingDocs.filter((d) => d.tempId !== tempId);
-          renderCategory(catId);
-          renderDocsUpdateUI();
-        } else {
-          removeDoc(btn.getAttribute('data-remove'));
-        }
-      });
-    });
-    listEl.querySelectorAll('[data-undo-remove]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-undo-remove');
-        pendingDeletedDocIds = pendingDeletedDocIds.filter((x) => x !== id);
-        renderCategory(catId);
-        renderDocsUpdateUI();
+        removeDoc(btn.getAttribute('data-remove'));
       });
     });
   }
@@ -1330,7 +1258,7 @@
     box.style.display = 'block';
     box.innerHTML = `
       <p style="color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:12px;line-height:1.9;">
-        削除された見出しに属していた資料が${orphaned.length}件あります。どの見出しに移すか決めてください。決めるまでこの案内は表示され続けます（この状態でも「更新」は行えます。移動するまで、これらの資料の見出しは「なし」として扱われます）。
+        削除された見出しに属していた資料が${orphaned.length}件あります。どの見出しに移すか決めてください。決めるまでこの案内は表示され続けます（移動するまで、これらの資料の見出しは「なし」として扱われます）。
       </p>
       <div class="file-list" id="uncategorizedDocsList"></div>
     `;
@@ -1364,60 +1292,6 @@
     });
   }
 
-  async function commitDocsUpdate() {
-    try {
-      for (const p of pendingDocs) {
-        const path = await uploadToBucket('documents', p.file);
-        const inCat = docsCache.filter((d) => d.category_id === p.category);
-        const maxOrder = inCat.reduce((max, d) => Math.max(max, d.sort_order || 0), -1);
-        const { error } = await sb.from('documents').insert({
-          category_id: p.category, file_name: p.fileName, file_path: path, size_label: p.sizeLabel,
-          sort_order: maxOrder + 1,
-        });
-        if (error) throw error;
-      }
-      if (pendingDeletedDocIds.length > 0) {
-        for (const id of pendingDeletedDocIds) {
-          const doc = docsCache.find((d) => d.id === id);
-          await sb.from('documents').delete().eq('id', id);
-          if (doc && doc.file_path) await removeFromBucket(doc.file_path);
-        }
-      }
-      if (pendingDeletedCategoryIds.length > 0) {
-        for (const id of pendingDeletedCategoryIds) {
-          await sb.from('document_categories').delete().eq('id', id);
-        }
-      }
-    } catch (err) {
-      showToast('更新に失敗しました： ' + err.message);
-      return;
-    }
-    pendingDocs = [];
-    pendingDeletedDocIds = [];
-    pendingDeletedCategoryIds = [];
-    await refreshCategoriesCache();
-    await refreshDocsCache();
-    await renderCategoryManager();
-    await renderCategoryDropzones();
-    renderDocsUpdateUI();
-    showToast('各種資料を更新しました');
-  }
-  document.getElementById('docsUpdateBtn').addEventListener('click', () => {
-    if (!docsHasPending()) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('docsConfirmBox').style.display = 'block';
-    document.getElementById('docsConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('docsConfirmYes').addEventListener('click', () => {
-    document.getElementById('docsConfirmBox').style.display = 'none';
-    commitDocsUpdate();
-  });
-  document.getElementById('docsConfirmNo').addEventListener('click', () => {
-    document.getElementById('docsConfirmBox').style.display = 'none';
-  });
-
   /* ---- リンク集（Supabase: link_categories / link_cards / link_card_urls） ---- */
   let linkCategoriesCache = [];
   let linkCardsCache = []; // 各カードに links: [{label,url}] を付与済み
@@ -1441,28 +1315,9 @@
   }
 
   function getAllLinkCardsForAdmin() {
-    return linkCardsCache.map((c) => {
-      const pendingEdit = pendingLinkEdits[c.id];
-      return Object.assign({}, c, pendingEdit || {}, {
-        category: (pendingEdit && pendingEdit.category) || c.category_id,
-        isPendingEdit: !!pendingEdit,
-        isPendingDelete: pendingLinkDeletes.includes(c.id),
-      });
-    }).concat(pendingLinkCards.map((c) => Object.assign({}, c, { isPendingNew: true })));
+    return linkCardsCache.map((c) => Object.assign({}, c, { category: c.category_id }));
   }
-  let pendingLinkCards = []; // 新規追加でまだ更新されていないカード: {id(tempId), category, name, links}
-  let pendingLinkEdits = {}; // 既存カードの未反映の編集: {cardId: {name, category, links}}
-  let pendingLinkDeletes = []; // 既存カードのうち削除予定（更新ボタンを押すまで確定しない）のid
-
-  function linkHasPending() {
-    return pendingLinkCards.length > 0 || Object.keys(pendingLinkEdits).length > 0 || pendingLinkDeletes.length > 0;
-  }
-  function renderLinkUpdateUI() {
-    const msg = document.getElementById('linkUpdateMsg');
-    if (msg) msg.style.display = linkHasPending() ? 'inline' : 'none';
-    checkGlobalPending();
-  }
-
+  let pendingLinkSubmit = null; // 確認ダイアログ表示中の追加・編集内容: {editingId|null, name, category, links}
   function getAllLinkCategories() {
     return linkCategoriesCache;
   }
@@ -1601,37 +1456,21 @@
   });
 
   function renderLinkCardRow(c, categoryLabelText, posInfo) {
-    if (c.isPendingDelete) {
-      return `
-        <div>
-          <div class="file-row" style="opacity:0.55;">
-            <span class="file-icon">${(c.links || []).length}</span>
-            <div class="file-info">
-              <div class="file-name"><span class="file-name-text" style="text-decoration:line-through;">${escapeHtml(c.name)}</span><span class="pending-badge">削除予定</span></div>
-              <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
-            </div>
-            <div class="file-actions">
-              <button class="icon-btn" data-undo-remove-link="${escapeHtml(c.id)}">取り消す</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    const canReorder = posInfo && posInfo.total > 1 && !c.isPendingNew && !c.isPendingEdit;
+    const canReorder = posInfo && posInfo.total > 1;
     return `
       <div>
         <div class="file-row"${posInfo ? ` data-flip-id="${escapeHtml(c.id)}"` : ''}${canReorder ? ' data-draggable="true"' : ''}>
           <span class="file-icon">${(c.links || []).length}</span>
           <div class="file-info">
-            <div class="file-name"><span class="file-name-text">${escapeHtml(c.name)}</span>${(c.isPendingNew || c.isPendingEdit) ? '<span class="pending-badge">未反映</span>' : ''}</div>
+            <div class="file-name"><span class="file-name-text">${escapeHtml(c.name)}</span></div>
             <div class="file-meta">${escapeHtml(categoryLabelText)} ・ リンク${(c.links || []).length}件</div>
           </div>
           <div class="file-actions">
             ${canReorder ? `<button class="icon-btn" data-link-move-up="${escapeHtml(c.id)}" data-cat="${escapeHtml(posInfo.catId)}" ${posInfo.index === 0 ? 'disabled' : ''}>↑</button>` : ''}
             ${canReorder ? `<button class="icon-btn" data-link-move-down="${escapeHtml(c.id)}" data-cat="${escapeHtml(posInfo.catId)}" ${posInfo.index === posInfo.total - 1 ? 'disabled' : ''}>↓</button>` : ''}
             <button class="icon-btn" data-view-link="${escapeHtml(c.id)}">閲覧</button>
-            <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">編集</button>
-            <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}" data-pending-new="${!!c.isPendingNew}">削除</button>
+            <button class="icon-btn" data-edit-link="${escapeHtml(c.id)}">編集</button>
+            <button class="icon-btn" data-remove-link="${escapeHtml(c.id)}">削除</button>
           </div>
         </div>
         <div class="post-detail" id="link-detail-${escapeHtml(c.id)}" style="display:none;"></div>
@@ -1724,13 +1563,11 @@
     groups.forEach((cat) => {
       const inCat = filtered.filter((c) => c.category === cat.id);
       if (inCat.length === 0) return;
-      const committedInCat = inCat.filter((c) => !c.isPendingNew);
       dragGroupCatIds.push(cat.id);
       html += `<p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 6px;">${escapeHtml(cat.label)}（${inCat.length}件）</p>`;
       html += `<div id="linkgroup-${escapeHtml(cat.id)}">`;
-      html += inCat.map((c) => {
-        const committedIdx = committedInCat.findIndex((x) => x.id === c.id);
-        const posInfo = committedIdx > -1 ? { catId: cat.id, index: committedIdx, total: committedInCat.length } : null;
+      html += inCat.map((c, i) => {
+        const posInfo = { catId: cat.id, index: i, total: inCat.length };
         return renderLinkCardRow(c, categoryLabel(c.category), posInfo);
       }).join('');
       html += `</div>`;
@@ -1795,48 +1632,28 @@
     listEl.querySelectorAll('[data-edit-link]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-edit-link');
-        const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
         const card = cards.find((c) => c.id === id);
         if (!card) return;
-        if (isPendingNew) {
-          pendingLinkCards = pendingLinkCards.filter((c) => c.id !== id);
-          editingLinkId = null;
-        } else {
-          editingLinkId = id;
-        }
+        editingLinkId = id;
         document.getElementById('linkName').value = card.name || '';
         document.getElementById('linkCategory').value = card.category || '';
         renderLinkEntries(card.links || []);
-        document.getElementById('linkSubmit').textContent = isPendingNew ? 'カードを追加' : '変更を保存';
-        document.getElementById('linkEditingNote').style.display = isPendingNew ? 'none' : 'block';
-        document.getElementById('linkCancelEdit').style.display = isPendingNew ? 'none' : 'inline-block';
+        document.getElementById('linkSubmit').textContent = '変更を保存';
+        document.getElementById('linkEditingNote').style.display = 'block';
+        document.getElementById('linkCancelEdit').style.display = 'inline-block';
         document.querySelector('#linkName').closest('.blog-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (isPendingNew) {
-          renderLinkList();
-          renderLinkUpdateUI();
-        }
       });
     });
 
     listEl.querySelectorAll('[data-remove-link]').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-remove-link');
-        const isPendingNew = btn.getAttribute('data-pending-new') === 'true';
-        if (isPendingNew) {
-          pendingLinkCards = pendingLinkCards.filter((c) => c.id !== id);
-          renderLinkList();
-          renderLinkUpdateUI();
-          showToast('未反映のカードを取り消しました');
-          return;
-        }
         if (!confirm('このカードを削除しますか？')) return;
-        delete pendingLinkEdits[id];
         const { error } = await sb.from('link_cards').delete().eq('id', id);
         if (error) { showToast('削除に失敗しました： ' + error.message); return; }
         await refreshLinkCardsCache();
         if (editingLinkId === id) resetLinkForm();
         renderLinkList();
-        renderLinkUpdateUI();
         showToast('カードを削除しました');
       });
     });
@@ -1851,52 +1668,48 @@
     document.getElementById('linkEditingNote').style.display = 'none';
     document.getElementById('linkCancelEdit').style.display = 'none';
     document.getElementById('linkFormError').style.display = 'none';
+    document.getElementById('linkConfirmBox').style.display = 'none';
   }
 
   document.getElementById('linkCancelEdit').addEventListener('click', resetLinkForm);
 
-  async function commitLinkUpdate() {
+  async function commitLinkSubmit() {
+    if (!pendingLinkSubmit) return;
+    const { editingId, name, category, links } = pendingLinkSubmit;
     try {
-      for (const c of pendingLinkCards) {
-        const inCat = linkCardsCache.filter((x) => x.category_id === (c.category || null));
+      if (editingId) {
+        const { error } = await sb.from('link_cards').update({
+          name, category_id: category || null, updated_at: new Date().toISOString(),
+        }).eq('id', editingId);
+        if (error) throw error;
+        await sb.from('link_card_urls').delete().eq('card_id', editingId);
+        const urlRows = links.map((l, i) => ({ card_id: editingId, label: l.label, url: l.url, sort_order: i }));
+        if (urlRows.length > 0) {
+          const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
+          if (urlErr) throw urlErr;
+        }
+      } else {
+        const inCat = linkCardsCache.filter((x) => x.category_id === (category || null));
         const maxOrder = inCat.reduce((max, x) => Math.max(max, x.sort_order || 0), -1);
         const { data: newCard, error } = await sb.from('link_cards')
-          .insert({ name: c.name, category_id: c.category || null, sort_order: maxOrder + 1 })
+          .insert({ name, category_id: category || null, sort_order: maxOrder + 1 })
           .select('id').single();
         if (error) throw error;
-        const urlRows = (c.links || []).map((l, i) => ({ card_id: newCard.id, label: l.label, url: l.url, sort_order: i }));
+        const urlRows = links.map((l, i) => ({ card_id: newCard.id, label: l.label, url: l.url, sort_order: i }));
         if (urlRows.length > 0) {
           const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
           if (urlErr) throw urlErr;
         }
-      }
-      for (const cardId of Object.keys(pendingLinkEdits)) {
-        const edit = pendingLinkEdits[cardId];
-        const { error } = await sb.from('link_cards').update({
-          name: edit.name, category_id: edit.category || null, updated_at: new Date().toISOString(),
-        }).eq('id', cardId);
-        if (error) throw error;
-        await sb.from('link_card_urls').delete().eq('card_id', cardId);
-        const urlRows = (edit.links || []).map((l, i) => ({ card_id: cardId, label: l.label, url: l.url, sort_order: i }));
-        if (urlRows.length > 0) {
-          const { error: urlErr } = await sb.from('link_card_urls').insert(urlRows);
-          if (urlErr) throw urlErr;
-        }
-      }
-      for (const cardId of pendingLinkDeletes) {
-        await sb.from('link_cards').delete().eq('id', cardId);
       }
     } catch (err) {
-      showToast('更新に失敗しました： ' + err.message);
+      showToast('登録に失敗しました： ' + err.message);
       return;
     }
-    pendingLinkCards = [];
-    pendingLinkEdits = {};
-    pendingLinkDeletes = [];
+    pendingLinkSubmit = null;
+    resetLinkForm();
     await refreshLinkCardsCache();
     renderLinkList();
-    renderLinkUpdateUI();
-    showToast('リンク集を更新しました');
+    showToast(editingId ? 'カードを更新しました' : 'カードを追加しました');
   }
 
   document.getElementById('linkSubmit').addEventListener('click', () => {
@@ -1916,14 +1729,13 @@
     }
     errorEl.style.display = 'none';
 
-    if (editingLinkId) {
-      pendingLinkEdits[editingLinkId] = { name, category, links };
-    } else {
-      pendingLinkCards.push({ id: 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), name, category, links });
-    }
-    resetLinkForm();
-    renderLinkList();
-    renderLinkUpdateUI();
+    pendingLinkSubmit = { editingId: editingLinkId, name, category, links };
+    document.getElementById('linkConfirmText').textContent = editingLinkId
+      ? 'この内容に変更してもよろしいですか？'
+      : 'このカードを追加してもよろしいですか？';
+    document.getElementById('linkConfirmYes').textContent = editingLinkId ? '変更を確定' : '追加を確定';
+    document.getElementById('linkConfirmBox').style.display = 'block';
+    document.getElementById('linkConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
   document.getElementById('linkName').addEventListener('input', () => {
@@ -1933,19 +1745,9 @@
     document.getElementById('linkFormError').style.display = 'none';
   });
 
-  document.getElementById('linkUpdateBtn').addEventListener('click', () => {
-    if (!linkHasPending()) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('linkConfirmBox').style.display = 'block';
-    document.getElementById('linkConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('linkConfirmYes').addEventListener('click', () => {
-    document.getElementById('linkConfirmBox').style.display = 'none';
-    commitLinkUpdate();
-  });
+  document.getElementById('linkConfirmYes').addEventListener('click', commitLinkSubmit);
   document.getElementById('linkConfirmNo').addEventListener('click', () => {
+    pendingLinkSubmit = null;
     document.getElementById('linkConfirmBox').style.display = 'none';
   });
 
@@ -1956,7 +1758,7 @@
     { id: 'msg3', label: '③昨日を超えるために、今日、何するか。' },
     { id: 'msg4', label: '④その本気が、自分を変える。' },
   ];
-  let pendingJoinPhotos = {}; // { msgId: {fileName,sizeLabel,file} } 未反映の新規アップロードのみ
+  let pendingJoinPhotos = {}; // { msgId: {fileName,sizeLabel,file} } 確認ダイアログ表示中の選択ファイル
   let joinPhotosAssetCache = {}; // key -> row
 
   function joinPhotoKey(msgId) { return `join_photo_${msgId}`; }
@@ -1967,14 +1769,6 @@
     const map = {};
     (data || []).forEach((row) => { map[row.key] = row; });
     return map;
-  }
-  function joinPhotosHasPending() {
-    return Object.keys(pendingJoinPhotos).length > 0;
-  }
-  function renderJoinPhotosUpdateUI() {
-    const msg = document.getElementById('joinPhotosUpdateMsg');
-    if (msg) msg.style.display = joinPhotosHasPending() ? 'inline' : 'none';
-    checkGlobalPending();
   }
 
   async function renderJoinPhotosPanels() {
@@ -1987,6 +1781,13 @@
           <div style="font-size:12px;"><strong>クリックして選択</strong> または画像をドロップ</div>
           <input type="file" id="input-join-photo-${m.id}" accept="image/*">
         </label>
+        <div id="confirm-join-photo-${m.id}" style="display:none;margin-top:8px;padding:12px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p style="font-size:12px;color:var(--ink);margin-bottom:8px;">この写真に差し替えてもよろしいですか？</p>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" type="button" data-confirm-yes-join="${m.id}">確定</button>
+            <button class="icon-btn" type="button" data-confirm-no-join="${m.id}">キャンセル</button>
+          </div>
+        </div>
         <div class="file-list" id="list-join-photo-${m.id}" style="margin-top:8px;"></div>
       </div>
     `).join('');
@@ -1995,26 +1796,36 @@
       renderJoinPhotoRow(m.id);
       setupJoinPhotoDropzone(m.id);
     });
+
+    container.querySelectorAll('[data-confirm-yes-join]').forEach((btn) => {
+      btn.addEventListener('click', () => commitJoinPhotoSlot(btn.getAttribute('data-confirm-yes-join')));
+    });
+    container.querySelectorAll('[data-confirm-no-join]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const msgId = btn.getAttribute('data-confirm-no-join');
+        delete pendingJoinPhotos[msgId];
+        document.getElementById(`input-join-photo-${msgId}`).value = '';
+        document.getElementById(`confirm-join-photo-${msgId}`).style.display = 'none';
+      });
+    });
   }
 
   function renderJoinPhotoRow(msgId) {
     const listEl = document.getElementById(`list-join-photo-${msgId}`);
     const committedRow = joinPhotosAssetCache[joinPhotoKey(msgId)];
-    const pendingEntry = pendingJoinPhotos[msgId];
-    const isPending = pendingEntry !== undefined;
-    const display = isPending ? pendingEntry : (committedRow && committedRow.file_path ? committedRow : null);
+    const display = committedRow && committedRow.file_path ? committedRow : null;
 
     if (!display) {
       listEl.innerHTML = `<p class="empty-row">まだ登録されていません（「写真は準備中です。」と表示されます）</p>`;
       return;
     }
-    const fileName = display.fileName || display.file_name;
-    const sizeLabel = display.sizeLabel || display.size_label;
+    const fileName = display.file_name;
+    const sizeLabel = display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span></div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2023,12 +1834,6 @@
       </div>
     `;
     listEl.querySelector('[data-remove-join-photo]').addEventListener('click', async () => {
-      if (isPending) {
-        delete pendingJoinPhotos[msgId];
-        renderJoinPhotoRow(msgId);
-        renderJoinPhotosUpdateUI();
-        return;
-      }
       if (!confirm('この写真を削除しますか？')) return;
       if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
       await sb.from('site_assets').delete().eq('key', joinPhotoKey(msgId));
@@ -2046,8 +1851,9 @@
       if (!file) return;
       if (file.size > 8 * 1024 * 1024) { showToast('画像は8MB以下にしてください'); return; }
       pendingJoinPhotos[msgId] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
-      renderJoinPhotoRow(msgId);
-      renderJoinPhotosUpdateUI();
+      const box = document.getElementById(`confirm-join-photo-${msgId}`);
+      box.style.display = 'block';
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     input.addEventListener('change', () => handle(input.files));
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
@@ -2059,45 +1865,30 @@
     });
   }
 
-  async function commitJoinPhotosUpdate() {
+  async function commitJoinPhotoSlot(msgId) {
+    const entry = pendingJoinPhotos[msgId];
+    if (!entry) return;
     try {
-      for (const msgId of Object.keys(pendingJoinPhotos)) {
-        const entry = pendingJoinPhotos[msgId];
-        const key = joinPhotoKey(msgId);
-        const path = await uploadToBucket(`site-assets/${key}`, entry.file);
-        const old = joinPhotosAssetCache[key];
-        if (old && old.file_path) await removeFromBucket(old.file_path);
-        const { error } = await sb.from('site_assets').upsert({
-          key, file_name: entry.fileName, file_path: path, size_label: entry.sizeLabel,
-          updated_at: new Date().toISOString(),
-        });
-        if (error) throw error;
-      }
+      const key = joinPhotoKey(msgId);
+      const path = await uploadToBucket(`site-assets/${key}`, entry.file);
+      const old = joinPhotosAssetCache[key];
+      if (old && old.file_path) await removeFromBucket(old.file_path);
+      const { error } = await sb.from('site_assets').upsert({
+        key, file_name: entry.fileName, file_path: path, size_label: entry.sizeLabel,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
     } catch (err) {
       showToast('更新に失敗しました： ' + err.message);
       return;
     }
-    pendingJoinPhotos = {};
-    await renderJoinPhotosPanels();
-    renderJoinPhotosUpdateUI();
+    delete pendingJoinPhotos[msgId];
+    document.getElementById(`input-join-photo-${msgId}`).value = '';
+    document.getElementById(`confirm-join-photo-${msgId}`).style.display = 'none';
+    joinPhotosAssetCache = await loadJoinPhotosAssets();
+    renderJoinPhotoRow(msgId);
     showToast('入部案内ページの写真を更新しました');
   }
-
-  document.getElementById('joinPhotosUpdateBtn').addEventListener('click', () => {
-    if (!joinPhotosHasPending()) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('joinPhotosConfirmBox').style.display = 'block';
-    document.getElementById('joinPhotosConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('joinPhotosConfirmYes').addEventListener('click', () => {
-    document.getElementById('joinPhotosConfirmBox').style.display = 'none';
-    commitJoinPhotosUpdate();
-  });
-  document.getElementById('joinPhotosConfirmNo').addEventListener('click', () => {
-    document.getElementById('joinPhotosConfirmBox').style.display = 'none';
-  });
 
   /* ---- 活動ブロック紹介（Supabase: site_assets key='block_{id}_photo'/'block_{id}_pdf' ＋ Storage） ---- */
   const BLOCK_ORDER = [
@@ -2106,7 +1897,7 @@
     { id: 'field', label: 'フィールド' },
     { id: 'manager', label: 'マネージャー' },
   ];
-  let pendingBlocks = {}; // { blockId: { photo: {...}|undefined, pdf: {...}|undefined } } 未反映の新規アップロードのみ
+  let pendingBlocks = {}; // { blockId: { photo: {...}|undefined, pdf: {...}|undefined } } 確認ダイアログ表示中の選択ファイル
   let blocksAssetCache = {}; // key -> row
 
   function blockAssetKey(blockId, kind) { return `block_${blockId}_${kind}`; }
@@ -2117,14 +1908,6 @@
     const map = {};
     (data || []).forEach((row) => { map[row.key] = row; });
     return map;
-  }
-  function blocksHasPending() {
-    return Object.keys(pendingBlocks).some((id) => pendingBlocks[id] && (pendingBlocks[id].photo !== undefined || pendingBlocks[id].pdf !== undefined));
-  }
-  function renderBlocksUpdateUI() {
-    const msg = document.getElementById('blocksUpdateMsg');
-    if (msg) msg.style.display = blocksHasPending() ? 'inline' : 'none';
-    checkGlobalPending();
   }
 
   async function renderBlocksPanels() {
@@ -2140,6 +1923,13 @@
               <div style="font-size:12px;"><strong>クリックして選択</strong> または画像をドロップ</div>
               <input type="file" id="input-block-photo-${b.id}" accept="image/*">
             </label>
+            <div id="confirm-block-photo-${b.id}" style="display:none;margin-top:8px;padding:12px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+              <p style="font-size:12px;color:var(--ink);margin-bottom:8px;">この写真に差し替えてもよろしいですか？</p>
+              <div style="display:flex;gap:8px;">
+                <button class="btn" type="button" data-confirm-yes-block="${b.id}" data-kind="photo">確定</button>
+                <button class="icon-btn" type="button" data-confirm-no-block="${b.id}" data-kind="photo">キャンセル</button>
+              </div>
+            </div>
             <div class="file-list" id="list-block-photo-${b.id}" style="margin-top:8px;"></div>
           </div>
           <div>
@@ -2148,6 +1938,13 @@
               <div style="font-size:12px;"><strong>クリックして選択</strong> またはPDFをドロップ</div>
               <input type="file" id="input-block-pdf-${b.id}" accept="application/pdf,.pdf">
             </label>
+            <div id="confirm-block-pdf-${b.id}" style="display:none;margin-top:8px;padding:12px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+              <p style="font-size:12px;color:var(--ink);margin-bottom:8px;">このPDFに差し替えてもよろしいですか？</p>
+              <div style="display:flex;gap:8px;">
+                <button class="btn" type="button" data-confirm-yes-block="${b.id}" data-kind="pdf">確定</button>
+                <button class="icon-btn" type="button" data-confirm-no-block="${b.id}" data-kind="pdf">キャンセル</button>
+              </div>
+            </div>
             <div class="file-list" id="list-block-pdf-${b.id}" style="margin-top:8px;"></div>
           </div>
         </div>
@@ -2160,26 +1957,37 @@
       setupBlockDropzone(b.id, 'photo');
       setupBlockDropzone(b.id, 'pdf');
     });
+
+    container.querySelectorAll('[data-confirm-yes-block]').forEach((btn) => {
+      btn.addEventListener('click', () => commitBlockSlot(btn.getAttribute('data-confirm-yes-block'), btn.getAttribute('data-kind')));
+    });
+    container.querySelectorAll('[data-confirm-no-block]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const blockId = btn.getAttribute('data-confirm-no-block');
+        const kind = btn.getAttribute('data-kind');
+        if (pendingBlocks[blockId]) delete pendingBlocks[blockId][kind];
+        document.getElementById(`input-block-${kind}-${blockId}`).value = '';
+        document.getElementById(`confirm-block-${kind}-${blockId}`).style.display = 'none';
+      });
+    });
   }
 
   function renderBlockFileRow(blockId, kind) {
     const listEl = document.getElementById(`list-block-${kind}-${blockId}`);
     const committedRow = blocksAssetCache[blockAssetKey(blockId, kind)];
-    const pendingEntry = pendingBlocks[blockId] && pendingBlocks[blockId][kind];
-    const isPending = pendingEntry !== undefined;
-    const display = isPending ? pendingEntry : (committedRow && committedRow.file_path ? committedRow : null);
+    const display = committedRow && committedRow.file_path ? committedRow : null;
 
     if (!display) {
       listEl.innerHTML = `<p class="empty-row">まだ登録されていません</p>`;
       return;
     }
-    const fileName = display.fileName || display.file_name;
-    const sizeLabel = display.sizeLabel || display.size_label;
+    const fileName = display.file_name;
+    const sizeLabel = display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span></div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2188,12 +1996,6 @@
       </div>
     `;
     listEl.querySelector('[data-remove-block]').addEventListener('click', async () => {
-      if (isPending) {
-        delete pendingBlocks[blockId][kind];
-        renderBlockFileRow(blockId, kind);
-        renderBlocksUpdateUI();
-        return;
-      }
       if (!confirm(`この${kind === 'photo' ? '写真' : 'PDF'}を削除しますか？`)) return;
       if (committedRow && committedRow.file_path) await removeFromBucket(committedRow.file_path);
       await sb.from('site_assets').delete().eq('key', blockAssetKey(blockId, kind));
@@ -2216,8 +2018,9 @@
       if (file.size > 8 * 1024 * 1024) { showToast('ファイルは8MB以下にしてください'); return; }
       if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
       pendingBlocks[blockId][kind] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
-      renderBlockFileRow(blockId, kind);
-      renderBlocksUpdateUI();
+      const box = document.getElementById(`confirm-block-${kind}-${blockId}`);
+      box.style.display = 'block';
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     input.addEventListener('change', () => handle(input.files));
     drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
@@ -2229,48 +2032,30 @@
     });
   }
 
-  async function commitBlocksUpdate() {
+  async function commitBlockSlot(blockId, kind) {
+    const entry = pendingBlocks[blockId] && pendingBlocks[blockId][kind];
+    if (!entry) return;
     try {
-      for (const blockId of Object.keys(pendingBlocks)) {
-        const entry = pendingBlocks[blockId];
-        for (const kind of ['photo', 'pdf']) {
-          if (entry[kind] === undefined) continue;
-          const key = blockAssetKey(blockId, kind);
-          const path = await uploadToBucket(`site-assets/${key}`, entry[kind].file);
-          const old = blocksAssetCache[key];
-          if (old && old.file_path) await removeFromBucket(old.file_path);
-          const { error } = await sb.from('site_assets').upsert({
-            key, file_name: entry[kind].fileName, file_path: path, size_label: entry[kind].sizeLabel,
-            updated_at: new Date().toISOString(),
-          });
-          if (error) throw error;
-        }
-      }
+      const key = blockAssetKey(blockId, kind);
+      const path = await uploadToBucket(`site-assets/${key}`, entry.file);
+      const old = blocksAssetCache[key];
+      if (old && old.file_path) await removeFromBucket(old.file_path);
+      const { error } = await sb.from('site_assets').upsert({
+        key, file_name: entry.fileName, file_path: path, size_label: entry.sizeLabel,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
     } catch (err) {
       showToast('更新に失敗しました： ' + err.message);
       return;
     }
-    pendingBlocks = {};
-    await renderBlocksPanels();
-    renderBlocksUpdateUI();
-    showToast('活動ブロック紹介を更新しました');
+    delete pendingBlocks[blockId][kind];
+    document.getElementById(`input-block-${kind}-${blockId}`).value = '';
+    document.getElementById(`confirm-block-${kind}-${blockId}`).style.display = 'none';
+    blocksAssetCache = await loadBlocksAssets();
+    renderBlockFileRow(blockId, kind);
+    showToast(`${BLOCK_ORDER.find((b) => b.id === blockId).label}の${kind === 'photo' ? '写真' : 'PDF'}を更新しました`);
   }
-
-  document.getElementById('blocksUpdateBtn').addEventListener('click', () => {
-    if (!blocksHasPending()) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('blocksConfirmBox').style.display = 'block';
-    document.getElementById('blocksConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('blocksConfirmYes').addEventListener('click', () => {
-    document.getElementById('blocksConfirmBox').style.display = 'none';
-    commitBlocksUpdate();
-  });
-  document.getElementById('blocksConfirmNo').addEventListener('click', () => {
-    document.getElementById('blocksConfirmBox').style.display = 'none';
-  });
 
   async function initLinksAdmin() {
     await refreshLinkCategoriesCache();
@@ -2279,12 +2064,11 @@
     await renderLinkCategoryManager();
     renderLinkEntries([{ label: '', url: '' }]);
     renderLinkList();
-    renderLinkUpdateUI();
   }
 
   /* ---- ホームの写真（Supabase: site_assets key='hero_photo' ＋ Storage） ---- */
 
-  let pendingHero = null; // {fileName,sizeLabel,file} | null （新規アップロードの未反映分のみ）
+  let pendingHero = null; // {fileName,sizeLabel,file} | null （確認ダイアログ表示中の選択ファイル。確定と同時にnullに戻る）
   let heroAssetCache = null; // Supabaseから取得した現在の登録内容 {file_name,file_path,size_label}
 
   async function loadHeroAsset() {
@@ -2296,22 +2080,19 @@
   async function renderHero() {
     const listEl = document.getElementById('list-hero');
     heroAssetCache = await loadHeroAsset();
-    const isPending = pendingHero !== null;
-    document.getElementById('heroUpdateMsg').style.display = isPending ? 'inline' : 'none';
-    checkGlobalPending();
 
-    const display = pendingHero || (heroAssetCache && heroAssetCache.file_path ? heroAssetCache : null);
+    const display = heroAssetCache && heroAssetCache.file_path ? heroAssetCache : null;
     if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません。</p>';
       return;
     }
-    const fileName = display.fileName || display.file_name;
-    const sizeLabel = display.sizeLabel || display.size_label;
+    const fileName = display.file_name;
+    const sizeLabel = display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span></div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2321,7 +2102,6 @@
     `;
     document.getElementById('removeHero').addEventListener('click', async () => {
       if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
-      pendingHero = null;
       if (heroAssetCache && heroAssetCache.file_path) await removeFromBucket(heroAssetCache.file_path);
       await sb.from('site_assets').delete().eq('key', 'hero_photo');
       await renderHero();
@@ -2336,7 +2116,8 @@
       return;
     }
     pendingHero = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
-    renderHero();
+    document.getElementById('heroConfirmBox').style.display = 'block';
+    document.getElementById('heroConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   const dropHero = document.getElementById('drop-hero');
   const inputHero = document.getElementById('input-hero');
@@ -2362,22 +2143,15 @@
       return;
     }
     pendingHero = null;
+    inputHero.value = '';
+    document.getElementById('heroConfirmBox').style.display = 'none';
     await renderHero();
     showToast('トップページの写真を更新しました');
   }
-  document.getElementById('heroUpdateBtn').addEventListener('click', () => {
-    if (pendingHero === null) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('heroConfirmBox').style.display = 'block';
-    document.getElementById('heroConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('heroConfirmYes').addEventListener('click', () => {
-    document.getElementById('heroConfirmBox').style.display = 'none';
-    commitHeroUpdate();
-  });
+  document.getElementById('heroConfirmYes').addEventListener('click', commitHeroUpdate);
   document.getElementById('heroConfirmNo').addEventListener('click', () => {
+    pendingHero = null;
+    inputHero.value = '';
     document.getElementById('heroConfirmBox').style.display = 'none';
   });
 
@@ -2773,7 +2547,7 @@
   });
 
   /* ---- 愛教大10傑ファイル（Supabase: site_assets key='records_file' ＋ Storage） ---- */
-  let pendingRecords = null; // {fileName,sizeLabel,file} | null （新規アップロードの未反映分のみ）
+  let pendingRecords = null; // {fileName,sizeLabel,file} | null （確認ダイアログ表示中の選択ファイル。確定と同時にnullに戻る）
   let recordsAssetCache = null;
 
   async function loadRecordsAsset() {
@@ -2785,22 +2559,19 @@
   async function renderRecords() {
     const listEl = document.getElementById('list-records');
     recordsAssetCache = await loadRecordsAsset();
-    const isPending = pendingRecords !== null;
-    document.getElementById('recordsUpdateMsg').style.display = isPending ? 'inline' : 'none';
-    checkGlobalPending();
 
-    const display = pendingRecords || (recordsAssetCache && recordsAssetCache.file_path ? recordsAssetCache : null);
+    const display = recordsAssetCache && recordsAssetCache.file_path ? recordsAssetCache : null;
     if (!display) {
       listEl.innerHTML = '<p class="empty-row">まだファイルが登録されていません</p>';
       return;
     }
-    const fileName = display.fileName || display.file_name;
-    const sizeLabel = display.sizeLabel || display.size_label;
+    const fileName = display.file_name;
+    const sizeLabel = display.size_label;
     listEl.innerHTML = `
       <div class="file-row">
         <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
         <div class="file-info">
-          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span>${isPending ? '<span class="pending-badge">未反映</span>' : ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span></div>
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
@@ -2810,12 +2581,11 @@
       </div>
     `;
     document.getElementById('openRecordsFile').addEventListener('click', () => {
-      const path = pendingRecords ? null : (recordsAssetCache && recordsAssetCache.file_path);
+      const path = recordsAssetCache && recordsAssetCache.file_path;
       if (path) window.open(getPublicUrl(path), '_blank');
     });
     document.getElementById('removeRecords').addEventListener('click', async () => {
       if (!confirm('愛教大10傑ファイルを削除しますか？')) return;
-      pendingRecords = null;
       if (recordsAssetCache && recordsAssetCache.file_path) await removeFromBucket(recordsAssetCache.file_path);
       await sb.from('site_assets').delete().eq('key', 'records_file');
       await renderRecords();
@@ -2835,7 +2605,8 @@
       return;
     }
     pendingRecords = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
-    renderRecords();
+    document.getElementById('recordsConfirmBox').style.display = 'block';
+    document.getElementById('recordsConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   const dropRecords = document.getElementById('drop-records');
   const inputRecords = document.getElementById('input-records');
@@ -2861,46 +2632,37 @@
       return;
     }
     pendingRecords = null;
+    inputRecords.value = '';
+    document.getElementById('recordsConfirmBox').style.display = 'none';
     await renderRecords();
     showToast('愛教大10傑ファイルを更新しました');
   }
-  document.getElementById('recordsUpdateBtn').addEventListener('click', () => {
-    if (pendingRecords === null) {
-      showToast('変更がありません');
-      return;
-    }
-    document.getElementById('recordsConfirmBox').style.display = 'block';
-    document.getElementById('recordsConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
-  document.getElementById('recordsConfirmYes').addEventListener('click', () => {
-    document.getElementById('recordsConfirmBox').style.display = 'none';
-    commitRecordsUpdate();
-  });
+  document.getElementById('recordsConfirmYes').addEventListener('click', commitRecordsUpdate);
   document.getElementById('recordsConfirmNo').addEventListener('click', () => {
+    pendingRecords = null;
+    inputRecords.value = '';
     document.getElementById('recordsConfirmBox').style.display = 'none';
   });
 
   // ブラウザの「戻る」でこのページがキャッシュ（bfcache）から復元された場合、
-  // 未反映の変更（更新ボタンをまだ押していない状態）は破棄し、警告バナーも消す
+  // 確認待ちだった選択内容を破棄する
   window.addEventListener('pageshow', async (e) => {
     if (!e.persisted) return;
     pendingHero = null;
     pendingRecords = null;
-    pendingDocs = [];
-    pendingDeletedDocIds = [];
-    pendingDeletedCategoryIds = [];
-    pendingLinkCards = [];
-    pendingLinkEdits = {};
-    pendingLinkDeletes = [];
+    pendingDocs = {};
+    pendingBlocks = {};
+    pendingJoinPhotos = {};
+    pendingLinkSubmit = null;
     await renderHero();
     await renderRecords();
     await refreshCategoriesCache();
     await refreshDocsCache();
     await renderAll();
-    renderDocsUpdateUI();
+    await renderBlocksPanels();
+    await renderJoinPhotosPanels();
     renderLinkList();
-    renderLinkUpdateUI();
-    checkGlobalPending();
+    resetLinkForm();
   });
 </script>
 
