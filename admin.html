@@ -1026,7 +1026,8 @@
     if (!container || container.dataset.dragReorderSetup) return;
     container.dataset.dragReorderSetup = '1';
     let longPressTimer = null;
-    let dragRow = null;
+    let dragRow = null;   // 実際に位置を追跡・スタイルを当てる要素（[data-flip-id]がついた要素そのもの）
+    let dragUnit = null;  // DOM上の並べ替え単位（containerの直接の子。dragRowがラップされている場合はその外側の要素）
     let startY = 0;
     let startX = 0;
     let moved = false;
@@ -1035,6 +1036,13 @@
     let rowStartLeft = 0;
     let rowWidth = 0;
     let rowHeight = 0;
+
+    // containerの直接の子要素（＝並べ替えの単位）まで親をたどる
+    function toDirectChild(el) {
+      let node = el;
+      while (node && node.parentElement !== container) node = node.parentElement;
+      return node;
+    }
 
     function cancelLongPress() {
       clearTimeout(longPressTimer);
@@ -1055,6 +1063,7 @@
       if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
       placeholder = null;
       dragRow = null;
+      dragUnit = null;
       moved = false;
       document.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('pointerup', onPointerUp);
@@ -1070,13 +1079,14 @@
       const dragCenter = rowStartTop + dy + rowHeight / 2;
 
       // ドラッグ中のカードの中心が、他の行の中心より上にあれば、その行の直前に隙間（プレースホルダー）を動かす
-      const rows = Array.from(container.querySelectorAll('[data-flip-id]')).filter((r) => r !== dragRow);
+      // （比較・並べ替えは、必ずcontainerの直接の子どうしで行う）
+      const units = Array.from(container.children).filter((u) => u !== dragUnit && u !== placeholder && (u.matches('[data-flip-id]') || u.querySelector('[data-flip-id]')));
       let placed = false;
-      for (const row of rows) {
-        const rect = row.getBoundingClientRect();
+      for (const unit of units) {
+        const rect = unit.getBoundingClientRect();
         const center = rect.top + rect.height / 2;
         if (dragCenter < center) {
-          container.insertBefore(placeholder, row);
+          container.insertBefore(placeholder, unit);
           placed = true;
           break;
         }
@@ -1087,9 +1097,9 @@
     function onPointerUp() {
       if (!dragRow) { cleanupDrag(); return; }
       const wasMoved = moved;
-      const row = dragRow;
+      const unit = dragUnit;
       if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(row, placeholder);
+        placeholder.parentNode.insertBefore(unit, placeholder);
       }
       cleanupDrag();
       if (wasMoved) {
@@ -1112,6 +1122,7 @@
         rowWidth = rect.width;
         rowHeight = rect.height;
         dragRow = row;
+        dragUnit = toDirectChild(row) || row;
         row.classList.add('dragging');
         row.style.position = 'fixed';
         row.style.top = rowStartTop + 'px';
@@ -1123,7 +1134,7 @@
         placeholder = document.createElement('div');
         placeholder.className = 'drag-placeholder';
         placeholder.style.cssText = `height:${rowHeight}px;border:2px dashed var(--rust);border-radius:6px;`;
-        row.parentNode.insertBefore(placeholder, row.nextSibling);
+        container.insertBefore(placeholder, dragUnit.nextSibling);
         if (navigator.vibrate) navigator.vibrate(15);
         document.addEventListener('pointermove', onPointerMove, { passive: false });
         document.addEventListener('pointerup', onPointerUp);
