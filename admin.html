@@ -1031,7 +1031,10 @@
     let startX = 0;
     let moved = false;
     let placeholder = null;
-    let pointerId = null;
+    let rowStartTop = 0;
+    let rowStartLeft = 0;
+    let rowWidth = 0;
+    let rowHeight = 0;
 
     function cancelLongPress() {
       clearTimeout(longPressTimer);
@@ -1041,7 +1044,10 @@
     function cleanupDrag() {
       if (dragRow) {
         dragRow.classList.remove('dragging');
-        dragRow.style.transform = '';
+        dragRow.style.position = '';
+        dragRow.style.top = '';
+        dragRow.style.left = '';
+        dragRow.style.width = '';
         dragRow.style.zIndex = '';
         dragRow.style.boxShadow = '';
         dragRow.style.pointerEvents = '';
@@ -1058,35 +1064,33 @@
     function onPointerMove(e) {
       if (!dragRow) return;
       e.preventDefault();
-      const dy = e.clientY - startY;
       moved = true;
-      dragRow.style.transform = `translateY(${dy}px)`;
+      const dy = e.clientY - startY;
+      dragRow.style.top = (rowStartTop + dy) + 'px';
+      const dragCenter = rowStartTop + dy + rowHeight / 2;
 
-      // ドラッグ中の行の中心が、他の行の中心を越えたら入れ替える
+      // ドラッグ中のカードの中心が、他の行の中心より上にあれば、その行の直前に隙間（プレースホルダー）を動かす
       const rows = Array.from(container.querySelectorAll('[data-flip-id]')).filter((r) => r !== dragRow);
-      const dragRect = dragRow.getBoundingClientRect();
-      const dragCenter = dragRect.top + dragRect.height / 2;
+      let placed = false;
       for (const row of rows) {
         const rect = row.getBoundingClientRect();
         const center = rect.top + rect.height / 2;
-        if (dy < 0 && dragCenter < center) {
+        if (dragCenter < center) {
           container.insertBefore(placeholder, row);
-          container.insertBefore(dragRow, placeholder);
-          break;
-        } else if (dy > 0 && dragCenter > center) {
-          container.insertBefore(placeholder, row.nextSibling);
-          container.insertBefore(dragRow, placeholder);
+          placed = true;
           break;
         }
       }
-      startY = e.clientY;
-      dragRow.style.transform = '';
+      if (!placed) container.appendChild(placeholder);
     }
 
     function onPointerUp() {
       if (!dragRow) { cleanupDrag(); return; }
       const wasMoved = moved;
       const row = dragRow;
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(row, placeholder);
+      }
       cleanupDrag();
       if (wasMoved) {
         const orderedIds = Array.from(container.querySelectorAll('[data-flip-id]')).map((r) => r.dataset.flipId);
@@ -1102,15 +1106,23 @@
       startY = e.clientY;
       startX = e.clientX;
       longPressTimer = setTimeout(() => {
+        const rect = row.getBoundingClientRect();
+        rowStartTop = rect.top;
+        rowStartLeft = rect.left;
+        rowWidth = rect.width;
+        rowHeight = rect.height;
         dragRow = row;
-        pointerId = e.pointerId;
         row.classList.add('dragging');
-        row.style.zIndex = '10';
+        row.style.position = 'fixed';
+        row.style.top = rowStartTop + 'px';
+        row.style.left = rowStartLeft + 'px';
+        row.style.width = rowWidth + 'px';
+        row.style.zIndex = '1000';
         row.style.boxShadow = '0 8px 20px rgba(0,0,0,0.18)';
         row.style.pointerEvents = 'none';
         placeholder = document.createElement('div');
         placeholder.className = 'drag-placeholder';
-        placeholder.style.cssText = `height:${row.offsetHeight}px;border:2px dashed var(--rust);border-radius:6px;`;
+        placeholder.style.cssText = `height:${rowHeight}px;border:2px dashed var(--rust);border-radius:6px;`;
         row.parentNode.insertBefore(placeholder, row.nextSibling);
         if (navigator.vibrate) navigator.vibrate(15);
         document.addEventListener('pointermove', onPointerMove, { passive: false });
