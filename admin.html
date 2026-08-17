@@ -56,13 +56,14 @@
   .dropzone input{display:none;}
   .dropzone strong{color:var(--rust);}
 
-  .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+  .file-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .file-row{
     display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;border:1px solid var(--cream-line);border-radius:4px;padding:12px 14px;
     will-change:transform;background:#fff;
   }
   .file-row[data-flip-id]{touch-action:pan-y;cursor:grab;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
   .file-row.dragging{cursor:grabbing;opacity:0.9;background:var(--cream);}
+  .file-row[data-flip-id] *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:pan-y;}
   .file-icon{
     flex-shrink:0;width:36px;height:36px;border-radius:4px;background:var(--cream);
     display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);
@@ -1147,7 +1148,7 @@
     });
     container.addEventListener('pointermove', (e) => {
       if (dragRow) return;
-      if (Math.abs(e.clientY - startY) > 12 || Math.abs(e.clientX - startX) > 12) cancelLongPress();
+      if (Math.abs(e.clientY - startY) > 18 || Math.abs(e.clientX - startX) > 18) cancelLongPress();
     });
     container.addEventListener('pointerup', cancelLongPress);
     container.addEventListener('pointercancel', cancelLongPress);
@@ -1262,7 +1263,7 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-open-file');
         const doc = committed.find((d) => d.id === id);
-        if (doc && doc.file_path) window.open(getPublicUrl(doc.file_path), '_blank');
+        if (doc && doc.file_path) location.href = getPublicUrl(doc.file_path);
       });
     });
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
@@ -2621,7 +2622,7 @@
     `;
     document.getElementById('openRecordsFile').addEventListener('click', () => {
       const path = recordsAssetCache && recordsAssetCache.file_path;
-      if (path) window.open(getPublicUrl(path), '_blank');
+      if (path) location.href = getPublicUrl(path);
     });
     document.getElementById('removeRecords').addEventListener('click', async () => {
       if (!confirm('愛教大10傑ファイルを削除しますか？')) return;

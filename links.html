@@ -364,7 +364,7 @@
     }
     const btns = links.map((l) => {
       const type = inferLinkType(l.label);
-      return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="link-btn${type ? ' link-btn--' + type : ''}">${escapeHtml(l.label)}</a>`;
+      return `<a href="${escapeHtml(l.url)}" rel="noopener" class="link-btn${type ? ' link-btn--' + type : ''}">${escapeHtml(l.label)}</a>`;
     }).join('');
     return `
       <details class="link-card link-card--choice">
