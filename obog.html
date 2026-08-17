@@ -34,11 +34,12 @@
   nav.primary a.active{color:var(--gold);}
   nav.primary a::after{content:"";position:absolute;left:13px;right:13px;bottom:6px;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
   nav.primary a:hover::after,nav.primary a:focus-visible::after{transform:scaleX(1);}
-  .nav-cta{font-family:var(--f-display);font-size:13px;letter-spacing:0.05em;background:var(--gold);color:var(--navy);padding:10px 20px;border-radius:2px;transition:filter .2s;}
+  .nav-cta{font-family:var(--f-display);font-size:13px;letter-spacing:0.05em;background:var(--rust);color:#f5f1e8;padding:10px 20px;border-radius:4px;transition:filter .2s;}
+  .nav-cta:hover{filter:brightness(1.15);}
   .nav-cta:hover{filter:brightness(1.08);}
   .nav-social{display:flex;align-items:center;gap:8px;margin-left:10px;}
-  .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;border:1px solid var(--gold-soft);color:var(--gold);padding:9px 14px;border-radius:20px;transition:background .2s,color .2s;}
-  .nav-social-btn:hover{background:var(--gold);color:var(--navy);}
+  .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;border:1px solid var(--gold-soft);color:var(--gold);padding:9px 14px;border-radius:6px;transition:background .2s,color .2s;}
+  .nav-social-btn:hover{border-color:var(--gold);color:#fff;}
   .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;position:relative;width:40px;height:40px;align-items:center;justify-content:center;}
   .burger span{width:22px;height:2px;background:#f5f1e8;display:block;position:absolute;transition:transform .3s ease,opacity .2s ease,top .3s ease;}
   .burger span:nth-child(1){top:14px;}
@@ -60,11 +61,7 @@
   .mobile-nav-social a{padding:0;border-bottom:none;font-family:var(--f-mono);font-size:13px;letter-spacing:0.04em;color:var(--gold);}
   @media(max-width:860px){nav.primary,.nav-cta,.nav-social{display:none;}.burger{display:flex;}}
 
-  .page-hero{margin-top:76px;background:var(--rust);color:#f5f1e8;padding:64px 0 46px;position:relative;overflow:hidden;}
-  .page-hero::before{
-    content:"";position:absolute;right:-70px;top:-90px;width:220px;height:220px;
-    border:2px solid var(--gold);border-radius:50%;opacity:.35;
-  }
+  .page-hero{margin-top:76px;background:var(--rust);color:#f5f1e8;padding:64px 0 46px;}
   .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;position:relative;z-index:1;}
   .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold);}
   h1.page-title{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,52px);letter-spacing:0.005em;position:relative;z-index:1;}
@@ -73,12 +70,7 @@
   main{padding:64px 0 120px;}
 
   .prep-panel{
-    background:#fff;border:1px solid var(--cream-line);border-radius:6px;padding:70px 30px;text-align:center;
-  }
-  .prep-panel .icon-badge{
-    width:56px;height:56px;border-radius:50%;background:var(--cream);border:1px solid var(--cream-line);
-    display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-family:var(--f-mono);
-    font-size:11px;font-weight:700;color:var(--rust);
+    background:#fff;border:1px solid var(--cream-line);border-radius:8px;padding:56px 30px;text-align:center;
   }
   .prep-panel h2{font-family:var(--f-display);font-weight:700;font-size:20px;color:var(--navy);margin-bottom:12px;}
   .prep-panel p{font-size:13px;color:var(--ink-dim);max-width:50ch;margin:0 auto;line-height:1.9;}
@@ -138,8 +130,7 @@
 
 <section class="page-hero">
   <div class="wrap">
-    <span class="eyebrow">OB / OG</span>
-    <h1 class="page-title">OB・OG会</h1>
+        <h1 class="page-title">OB・OG会</h1>
     <p class="page-sub">OB・OGの皆様に向けた情報を掲載しています。</p>
   </div>
 </section>
@@ -147,9 +138,8 @@
 <main>
   <div class="wrap">
     <div class="prep-panel" data-reveal>
-      <div class="icon-badge">準備中</div>
-      <h2>このページは現在準備中です</h2>
-      <p>OB・OG会ページにどのような内容を掲載するか、まだ決まっておりません。内容が決まり次第、このページで案内いたします。今しばらくお待ちください。</p>
+      <h2>OB・OG会</h2>
+      <p>現在、ページを準備しています。掲載内容が決まり次第、こちらでご案内します。</p>
     </div>
   </div>
 </main>
