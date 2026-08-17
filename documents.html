@@ -279,7 +279,7 @@
   async function renderPage() {
     const [{ data: categories }, { data: all }] = await Promise.all([
       sb.from('document_categories').select('*').order('sort_order', { ascending: true }),
-      sb.from('documents').select('*').order('uploaded_at', { ascending: false }),
+      sb.from('documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true }),
     ]);
 
     const sectionsEl = document.getElementById('docSections');

@@ -375,8 +375,8 @@
   }
 
   Promise.all([
-    sb.from('link_categories').select('*').order('sort_order', { ascending: true }),
-    sb.from('link_cards').select('*'),
+    sb.from('link_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
+    sb.from('link_cards').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
     sb.from('link_card_urls').select('*').order('sort_order', { ascending: true }),
   ]).then(([{ data: categories, error: catErr }, { data: cards, error: cardsErr }, { data: urls, error: urlsErr }]) => {
       if (catErr || cardsErr || urlsErr) throw new Error('load failed');

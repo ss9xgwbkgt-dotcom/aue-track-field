@@ -84,6 +84,8 @@
     color:var(--ink-dim);padding:6px 10px;border-radius:20px;cursor:pointer;transition:.2s;
   }
   .icon-btn:hover{border-color:var(--rust);color:var(--rust);}
+  .icon-btn:focus{outline:none;box-shadow:0 0 0 2px rgba(184,64,43,0.25);}
+  .icon-btn:focus:not(:focus-visible){box-shadow:none;}
   .empty-row{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:6px 2px;}
   #linkListDetails summary::-webkit-details-marker{display:none;}
   #linkListDetails summary{outline:none;}
@@ -694,12 +696,12 @@
   let docsCache = [];
 
   async function refreshCategoriesCache() {
-    const { data, error } = await sb.from('document_categories').select('*').order('sort_order', { ascending: true });
+    const { data, error } = await sb.from('document_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
     if (error) { showToast('見出しの取得に失敗しました'); return; }
     categoriesCache = data || [];
   }
   async function refreshDocsCache() {
-    const { data, error } = await sb.from('documents').select('*').order('sort_order', { ascending: true });
+    const { data, error } = await sb.from('documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true });
     if (error) { showToast('資料の取得に失敗しました'); return; }
     docsCache = data || [];
   }
@@ -1016,6 +1018,7 @@
   }
 
   let isReordering = false;
+  let activeDragCleanup = null; // ドラッグ操作中に一覧が再描画される場合に備え、古いドラッグ状態を安全に片付けるための参照
 
   /* ---- 長押しドラッグでの並べ替え（共通ヘルパー） ----
      container: 行（[data-flip-id]）を含む親要素
@@ -1068,6 +1071,7 @@
       document.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('pointerup', onPointerUp);
       document.removeEventListener('pointercancel', onPointerUp);
+      if (activeDragCleanup === cleanupDrag) activeDragCleanup = null;
     }
 
     function onPointerMove(e) {
@@ -1327,13 +1331,13 @@
   let editingLinkId = null;
 
   async function refreshLinkCategoriesCache() {
-    const { data, error } = await sb.from('link_categories').select('*').order('sort_order', { ascending: true });
+    const { data, error } = await sb.from('link_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
     if (error) { showToast('カテゴリーの取得に失敗しました'); return; }
     linkCategoriesCache = data || [];
   }
   async function refreshLinkCardsCache() {
     const [{ data: cards, error: cardsErr }, { data: urls, error: urlsErr }] = await Promise.all([
-      sb.from('link_cards').select('*').order('sort_order', { ascending: true }),
+      sb.from('link_cards').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
       sb.from('link_card_urls').select('*').order('sort_order', { ascending: true }),
     ]);
     if (cardsErr || urlsErr) { showToast('カードの取得に失敗しました'); return; }
