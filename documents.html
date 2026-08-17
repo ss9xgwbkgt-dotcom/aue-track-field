@@ -132,21 +132,29 @@
 </style>
 </head>
 <body>
+<script>
+  // 通常のページ遷移では、必ずページの一番上から表示されるようにする
+  // （URLに#が付いた特定箇所へのジャンプなど、意図した場合は除く）
+  if (!location.hash) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }
+</script>
 
 <header>
   <div class="nav-inner">
-    <a href="admin.html" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
       <a href="records.html" class="records-link">愛教大10傑</a>
+      <a href="join.html">入部案内</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html" class="active">各種資料</a>
       <a href="obog.html">OB・OG会</a>
     </nav>
-    <a href="join.html" class="nav-cta">入部案内</a>
     <div class="nav-social">
       <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
       <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
@@ -180,7 +188,7 @@
 <main>
   <div class="wrap">
 
-    <div class="notice-panel">
+    <div class="notice-panel" id="noticePanel" style="display:none;">
       <p>ファイルがアップロードされると、ダウンロードリンクが表示されます。</p>
     </div>
 
@@ -278,6 +286,11 @@
       sb.from('document_categories').select('*').order('sort_order', { ascending: true }),
       sb.from('documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true }),
     ]);
+
+    const noticePanel = document.getElementById('noticePanel');
+    if (noticePanel) {
+      noticePanel.style.display = ((categories || []).length === 0 && (all || []).length === 0) ? 'block' : 'none';
+    }
 
     const sectionsEl = document.getElementById('docSections');
     sectionsEl.innerHTML = (categories || []).map((c) => `

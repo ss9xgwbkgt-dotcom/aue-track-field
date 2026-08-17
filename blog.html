@@ -96,6 +96,11 @@
   .filter-list a.active,.filter-list a:hover{color:var(--navy);background:var(--gold);border-color:var(--gold);}
 
   main{padding:80px 0 100px;}
+  .filter-select{
+    font-family:var(--f-body);font-size:14px;color:var(--ink);background:#fff;
+    border:1px solid var(--cream-line);border-radius:6px;padding:10px 14px;margin-bottom:24px;
+    appearance:auto;
+  }
   .post-list{display:flex;flex-direction:column;border-top:1px solid var(--cream-line);}
   .post-card{border-bottom:1px solid var(--cream-line);position:relative;}
   .post-card::before{content:"";position:absolute;left:-4px;top:0;bottom:0;width:0;background:var(--rust);transition:width .25s;}
@@ -140,21 +145,29 @@
 </style>
 </head>
 <body>
+<script>
+  // 通常のページ遷移では、必ずページの一番上から表示されるようにする
+  // （URLに#が付いた特定箇所へのジャンプなど、意図した場合は除く）
+  if (!location.hash) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }
+</script>
 
 <header>
   <div class="nav-inner">
-    <a href="admin.html" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html" class="active">ブログ</a>
       <a href="records.html" class="records-link">愛教大10傑</a>
+      <a href="join.html">入部案内</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
     </nav>
-    <a href="join.html" class="nav-cta">入部案内</a>
     <div class="nav-social">
       <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
       <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
@@ -185,19 +198,11 @@
   </div>
 </section>
 
-<div class="filters">
-  <div class="wrap filter-list" id="filterList">
-    <a href="#" class="active" data-filter="すべて">すべて</a>
-    <a href="#" data-filter="大会">大会</a>
-    <a href="#" data-filter="練習日誌">練習日誌</a>
-    <a href="#" data-filter="お知らせ">お知らせ</a>
-    <a href="#" data-filter="行事">行事</a>
-    <a href="#" data-filter="その他">その他</a>
-  </div>
-</div>
-
 <main>
   <div class="wrap">
+    <select id="tagFilter" class="filter-select">
+      <option value="">すべてのタグ</option>
+    </select>
     <div class="post-list" id="postList">
       <p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">読み込み中…</p>
     </div>
@@ -310,11 +315,28 @@
 
   // ブログ一覧：Supabaseの blog_posts テーブルから取得して見出しカードを生成。クリックで本文を開閉
   let sortedPosts = [];
-  sb.from('blog_posts').select('*').order('post_date', { ascending: false })
-    .then(({ data, error }) => {
+  Promise.all([
+    sb.from('blog_posts').select('*').order('post_date', { ascending: false }),
+    sb.from('blog_tags').select('*').order('sort_order', { ascending: true }),
+  ])
+    .then(([{ data, error }, { data: tags }]) => {
       if (error) throw error;
       sortedPosts = data || [];
       const listEl = document.getElementById('postList');
+
+      const tagFilter = document.getElementById('tagFilter');
+      (tags || []).forEach((t) => {
+        const opt = document.createElement('option');
+        opt.value = t.label;
+        opt.textContent = t.label;
+        tagFilter.appendChild(opt);
+      });
+      tagFilter.addEventListener('change', () => {
+        const val = tagFilter.value;
+        listEl.querySelectorAll('.post-card').forEach((card) => {
+          card.style.display = (!val || card.dataset.category === val) ? '' : 'none';
+        });
+      });
 
       if (sortedPosts.length === 0) {
         listEl.innerHTML = '<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">まだ記事がありません。</p>';
@@ -366,20 +388,6 @@
       document.getElementById('postList').innerHTML =
         `<p style="padding:30px 4px;color:var(--ink-dim);font-family:var(--f-mono);font-size:13px;">記事を読み込めませんでした。（詳細：${escapeHtml(err && err.message ? err.message : String(err))}）</p>`;
     });
-
-  // カテゴリフィルター（カードは動的生成のためクリック時に都度取得）
-  const filterButtons = document.querySelectorAll('#filterList a');
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.dataset.filter;
-      document.querySelectorAll('.post-card').forEach(card => {
-        card.style.display = (filter === 'すべて' || card.dataset.category === filter) ? '' : 'none';
-      });
-    });
-  });
 </script>
 
 </body>

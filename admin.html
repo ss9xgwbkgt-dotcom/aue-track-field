@@ -129,6 +129,11 @@
 </style>
 </head>
 <body>
+<script>
+  // このURLにアクセスしたときは、どのような状況でも必ずページの一番上から表示する
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+</script>
 
 <header>
   <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
@@ -466,13 +471,6 @@
         <div class="cat-title-row">
           <div class="cat-title">リンク集</div>
         </div>
-        <div id="linkConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p id="linkConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="linkConfirmYes" type="button">登録を確定</button>
-            <button class="icon-btn" id="linkConfirmNo" type="button">キャンセル</button>
-          </div>
-        </div>
         <p class="lead" style="margin-bottom:14px;">カテゴリー・カード名・リンク（ラベルとURL）を入力して追加します。追加したカードは、下の一覧からいつでも再編集・削除できます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
@@ -532,6 +530,13 @@
           <div style="display:flex;gap:10px;">
             <button class="btn" id="linkSubmit" type="button">カードを追加</button>
             <button class="icon-btn" id="linkCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+          </div>
+          <div id="linkConfirmBox" style="display:none;margin-top:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+            <p id="linkConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" id="linkConfirmYes" type="button">登録を確定</button>
+              <button class="icon-btn" id="linkConfirmNo" type="button">キャンセル</button>
+            </div>
           </div>
         </div>
 

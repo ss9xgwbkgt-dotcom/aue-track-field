@@ -118,54 +118,44 @@
   }
 
   main{padding:64px 0 100px;}
-  .link-section{margin-bottom:64px;scroll-margin-top:150px;}
+  .link-section{margin-bottom:56px;scroll-margin-top:150px;}
   .link-section-title{
-    font-family:var(--f-display);font-weight:700;font-size:clamp(22px,2.6vw,30px);
-    color:var(--navy);padding-bottom:14px;margin-bottom:28px;border-bottom:2px solid var(--rust);
+    font-family:var(--f-display);font-weight:700;font-size:clamp(20px,2.4vw,26px);
+    color:var(--navy);padding-bottom:12px;margin-bottom:4px;border-bottom:2px solid var(--rust);
   }
-  .link-card-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));gap:14px;}
-  .link-card{
-    background:#fff;border:1px solid var(--cream-line);border-radius:4px;padding:18px 20px;
-    display:flex;flex-direction:column;gap:12px;
+  .filter-select{
+    font-family:var(--f-body);font-size:14px;color:var(--ink);background:#fff;
+    border:1px solid var(--cream-line);border-radius:6px;padding:10px 14px;margin-bottom:32px;
   }
-  .link-card-name{font-family:var(--f-display);font-size:15px;font-weight:600;color:var(--navy);line-height:1.5;overflow-wrap:break-word;word-break:break-word;}
-  .link-card-btns{display:flex;flex-wrap:wrap;gap:8px;}
-  @media(max-width:480px){
-    .link-card-btns{flex-direction:column;align-items:stretch;}
-    .link-btn{text-align:center;}
+  .link-list{display:flex;flex-direction:column;}
+  .link-row{border-bottom:1px solid var(--cream-line);}
+  .link-row-toggle{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:20px 2px;cursor:pointer;list-style:none;background:none;border:0;text-align:left;
+    font-family:var(--f-display);font-size:16px;font-weight:600;color:var(--navy);transition:color .2s;
+    overflow-wrap:break-word;word-break:break-word;
   }
-  .link-card--wide{grid-column:1 / -1;}
-  .link-card-none{font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);}
-
-  /* single-link card: whole card is the link */
-  a.link-card--single{transition:border-color .2s;}
-  a.link-card--single:hover{border-color:var(--rust);}
-  a.link-card--single:hover .link-card-name{color:var(--rust);}
-  a.link-card--single .link-card-name{transition:color .2s;}
-
-  /* multi-link card: clicking the name reveals a choice of links */
-  details.link-card--choice{padding:0;overflow:hidden;transition:border-color .2s;}
-  details.link-card--choice[open]{border-color:var(--gold-soft);}
-  details.link-card--choice summary.link-card-name{
-    cursor:pointer;padding:18px 20px;list-style:none;display:flex;align-items:center;
-    justify-content:space-between;gap:10px;transition:color .2s;
+  .link-row-toggle::-webkit-details-marker{display:none;}
+  .link-row-toggle::after{
+    content:"＋";font-family:var(--f-mono);font-size:16px;color:var(--ink-dim);
+    flex-shrink:0;margin-left:16px;transition:color .2s;
   }
-  details.link-card--choice summary.link-card-name:hover{color:var(--rust);}
-  details.link-card--choice summary.link-card-name::-webkit-details-marker{display:none;}
-  details.link-card--choice summary.link-card-name::after{
-    content:"選択 ▾";font-family:var(--f-mono);font-size:10px;letter-spacing:0.05em;
-    color:var(--ink-dim);flex-shrink:0;transition:transform .2s;
+  .link-row[open] .link-row-toggle,.link-row[open] .link-row-toggle::after{color:var(--rust);}
+  .link-row[open] .link-row-toggle::after{content:"－";}
+  .link-sublist{padding:0 2px 18px;display:flex;flex-direction:column;}
+  .link-subitem{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 0;font-family:var(--f-mono);font-size:13px;color:var(--ink-dim);
+    border-top:1px solid var(--cream-line);transition:color .2s;
   }
-  details.link-card--choice[open] summary.link-card-name::after{content:"選択 ▴";}
-  details.link-card--choice .link-card-btns{padding:0 20px 18px;}
-  .link-btn{
-    font-family:var(--f-mono);font-size:11px;letter-spacing:0.03em;padding:7px 12px;border-radius:6px;
-    border:1px solid var(--cream-line);color:var(--ink-dim);transition:.2s;
+  .link-subitem:hover{color:var(--rust);}
+  .link-none-row{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:20px 2px;border-bottom:0;
   }
-  .link-btn:hover{border-color:var(--rust);color:var(--rust);}
-  .link-btn--x:hover{border-color:var(--navy);color:var(--navy);}
-  .link-btn--instagram:hover{border-color:#c1467d;color:#c1467d;}
-  .link-btn--hp:hover{border-color:var(--olive);color:var(--olive);}
+  .link-none-row .name{font-family:var(--f-display);font-size:16px;font-weight:600;color:var(--navy);}
+  .link-none-row .note{font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);flex-shrink:0;}
+  .link-card-none{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:8px 2px;}
 
   [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
   [data-reveal].in{opacity:1;transform:translateY(0);}
@@ -193,21 +183,29 @@
 </style>
 </head>
 <body>
+<script>
+  // 通常のページ遷移では、必ずページの一番上から表示されるようにする
+  // （URLに#が付いた特定箇所へのジャンプなど、意図した場合は除く）
+  if (!location.hash) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }
+</script>
 
 <header>
   <div class="nav-inner">
-    <a href="admin.html" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
       <a href="records.html" class="records-link">愛教大10傑</a>
+      <a href="join.html">入部案内</a>
       <a href="links.html" class="active">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
     </nav>
-    <a href="join.html" class="nav-cta">入部案内</a>
     <div class="nav-social">
       <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
       <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
@@ -238,17 +236,11 @@
   </div>
 </section>
 
-<nav class="jumpnav" aria-label="カテゴリー内リンク">
-  <div class="wrap jumpnav-wrap">
-    <span class="jumpnav-arrow jumpnav-arrow-left" id="jumpnavArrowLeft">‹‹</span>
-    <div class="jumpnav-inner" id="jumpnavInner"></div>
-    <span class="jumpnav-arrow jumpnav-arrow-right" id="jumpnavArrowRight">››</span>
-  </div>
-</nav>
-<div class="jumpnav-toast" id="jumpnavToast">← → バーをスクロールしてください</div>
-
 <main>
   <div class="wrap">
+    <select id="categoryFilter" class="filter-select">
+      <option value="">すべてのカテゴリー</option>
+    </select>
     <div id="linkSections"></div>
   </div>
 </main>
@@ -346,26 +338,18 @@
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
   }
-  function inferLinkType(label) {
-    const l = String(label);
-    if (l.toLowerCase().includes('instagram')) return 'instagram';
-    if (l.toUpperCase().startsWith('X') || l.toLowerCase().includes('twitter')) return 'x';
-    if (l.includes('ホームページ') || l.toLowerCase().includes('hp')) return 'hp';
-    return '';
-  }
   function renderLinkCard(c) {
     const links = (c.links || []).filter((l) => l && l.url);
     if (links.length === 0) {
-      return `<div class="link-card"><div class="link-card-name">${escapeHtml(c.name)}</div><p class="link-card-none">リンク未設定</p></div>`;
+      return `<div class="link-none-row"><span class="name">${escapeHtml(c.name)}</span><span class="note">リンク未設定</span></div>`;
     }
-    const btns = links.map((l) => {
-      const type = inferLinkType(l.label);
-      return `<a href="${escapeHtml(l.url)}" rel="noopener" class="link-btn${type ? ' link-btn--' + type : ''}">${escapeHtml(l.label)}</a>`;
+    const items = links.map((l) => {
+      return `<a href="${escapeHtml(l.url)}" rel="noopener" class="link-subitem"><span>${escapeHtml(l.label)}</span><span>→</span></a>`;
     }).join('');
     return `
-      <details class="link-card link-card--choice">
-        <summary class="link-card-name">${escapeHtml(c.name)}</summary>
-        <div class="link-card-btns">${btns}</div>
+      <details class="link-row">
+        <summary class="link-row-toggle">${escapeHtml(c.name)}</summary>
+        <div class="link-sublist">${items}</div>
       </details>
     `;
   }
@@ -383,18 +367,28 @@
         links: (urls || []).filter((u) => u.card_id === c.id).map((u) => ({ label: u.label, url: u.url })),
       }));
 
-      // ジャンプナビを生成
-      const jumpnavEl = document.getElementById('jumpnavInner');
-      jumpnavEl.innerHTML = (categories || []).map((cat) => `<a href="#${escapeHtml(cat.id)}">${escapeHtml(cat.label)}</a>`).join('');
-
       // セクションを生成
       const sectionsEl = document.getElementById('linkSections');
       sectionsEl.innerHTML = (categories || []).map((cat) => `
         <div class="link-section" id="${escapeHtml(cat.id)}" data-reveal>
           <h2 class="link-section-title">${escapeHtml(cat.label)}</h2>
-          <div class="link-card-grid" id="grid-${escapeHtml(cat.id)}"></div>
+          <div class="link-list" id="grid-${escapeHtml(cat.id)}"></div>
         </div>
       `).join('');
+
+      const categoryFilter = document.getElementById('categoryFilter');
+      (categories || []).forEach((cat) => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.label;
+        categoryFilter.appendChild(opt);
+      });
+      categoryFilter.addEventListener('change', () => {
+        const val = categoryFilter.value;
+        sectionsEl.querySelectorAll('.link-section').forEach((section) => {
+          section.style.display = (!val || section.id === val) ? '' : 'none';
+        });
+      });
 
       const LOCKED_LINK_CATEGORY_LABELS = ['東国体参加校', 'その他東海学連所属大学'];
       (categories || []).forEach((cat) => {

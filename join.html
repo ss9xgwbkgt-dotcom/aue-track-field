@@ -173,21 +173,29 @@
 </style>
 </head>
 <body>
+<script>
+  // 通常のページ遷移では、必ずページの一番上から表示されるようにする
+  // （URLに#が付いた特定箇所へのジャンプなど、意図した場合は除く）
+  if (!location.hash) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }
+</script>
 
 <header>
   <div class="nav-inner">
-    <a href="admin.html" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部<small>AUE TRACK &amp; FIELD</small></span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
       <a href="index.html">ホーム</a>
       <a href="blog.html">ブログ</a>
       <a href="records.html" class="records-link">愛教大10傑</a>
+      <a href="join.html" class="active">入部案内</a>
       <a href="links.html">リンク集</a>
       <a href="documents.html">各種資料</a>
       <a href="obog.html">OB・OG会</a>
     </nav>
-    <a href="join.html" class="nav-cta active">入部案内</a>
     <div class="nav-social">
       <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
       <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="nav-social-btn" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a>
