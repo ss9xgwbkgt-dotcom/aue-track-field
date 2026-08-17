@@ -38,9 +38,9 @@
   .nav-cta{font-family:var(--f-display);font-size:13px;letter-spacing:0.05em;background:var(--rust);color:#f5f1e8;padding:10px 20px;border-radius:4px;transition:filter .2s;}
   .nav-cta:hover{filter:brightness(1.15);}
   .nav-cta:hover{filter:brightness(1.08);}
-  .nav-social{display:flex;align-items:center;gap:8px;margin-left:10px;}
-  .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;border:1px solid var(--gold-soft);color:var(--gold);padding:9px 14px;border-radius:6px;transition:background .2s,color .2s;}
-  .nav-social-btn:hover{border-color:var(--gold);color:#fff;}
+  .nav-social{display:flex;align-items:center;gap:4px;margin-left:10px;}
+  .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;color:var(--gold);padding:10px 6px;transition:color .2s;}
+  .nav-social-btn:hover{color:#fff;}
   .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;position:relative;width:40px;height:40px;align-items:center;justify-content:center;}
   .burger span{width:22px;height:2px;background:#f5f1e8;display:block;position:absolute;transition:transform .3s ease,opacity .2s ease,top .3s ease;}
   .burger span:nth-child(1){top:14px;}
@@ -85,23 +85,29 @@
   @media(prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}}
 
   footer{padding:48px 0 32px;background:var(--navy-soft);color:#f5f1e8;}
-  .footer-main{display:flex;justify-content:space-between;flex-wrap:wrap;gap:28px;align-items:flex-start;}
+  .footer-top{margin-bottom:36px;}
   .footer-name{font-family:var(--f-display);font-weight:700;font-size:16px;}
   .footer-address{margin-top:6px;font-family:var(--f-body);font-size:12px;color:var(--paper-dim);line-height:1.7;}
-  .footer-links{display:flex;flex-wrap:wrap;gap:10px 22px;font-family:var(--f-body);font-size:13px;}
-  .footer-links a{color:#f5f1e8;transition:color .2s;}
-  .footer-links a:hover{color:var(--gold);}
-  .footer-sns{margin-top:14px;display:flex;gap:18px;font-family:var(--f-mono);font-size:12px;}
-  .footer-sns a{color:var(--paper-dim);transition:color .2s;}
-  .footer-sns a:hover{color:var(--gold);}
+  .footer-sections{display:flex;flex-direction:column;gap:32px;}
+  .footer-heading{font-family:var(--f-mono);font-size:11px;letter-spacing:0.1em;color:var(--paper-dim);margin-bottom:14px;}
+  .footer-links,.footer-sns{display:flex;flex-direction:column;gap:14px;}
+  .footer-links a,.footer-sns a{
+    color:#f5f1e8;font-family:var(--f-body);font-size:14px;transition:color .2s;
+  }
+  .footer-links a:hover,.footer-sns a:hover{color:var(--gold);}
   .footer-bottom{
-    margin-top:28px;padding-top:18px;border-top:1px solid var(--line-on-dark);
+    margin-top:32px;padding-top:18px;border-top:1px solid var(--line-on-dark);
     font-family:var(--f-mono);font-size:11px;color:var(--paper-dim);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .footer-bottom a{color:var(--paper-dim);transition:color .2s;}
+  .footer-bottom a:hover{color:var(--gold);}
+  @media(min-width:700px){
+    .footer-sections{flex-direction:row;gap:64px;}
+    .footer-sections .footer-section{flex:1;max-width:260px;}
   }
   @media(max-width:700px){
     footer{padding:36px 0 26px;}
-    .footer-main{gap:20px;}
-    .footer-links{gap:8px 18px;}
   }
 </style>
 </head>
@@ -170,26 +176,35 @@
 
 <footer>
   <div class="wrap">
-    <div class="footer-main">
-      <div>
-        <p class="footer-name">愛知教育大学 陸上競技部</p>
-        <p class="footer-address">〒448-8542 愛知県刈谷市井ケ谷町広沢1</p>
+    <div class="footer-top">
+      <p class="footer-name">愛知教育大学 陸上競技部</p>
+      <p class="footer-address">〒448-8542 愛知県刈谷市井ケ谷町広沢1</p>
+    </div>
+    <div class="footer-sections">
+      <div class="footer-section">
+        <p class="footer-heading">公式SNS</p>
         <div class="footer-sns">
           <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
           <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
         </div>
       </div>
-      <nav class="footer-links">
-        <a href="index.html">ホーム</a>
-        <a href="blog.html">ブログ</a>
-        <a href="records.html">愛教大10傑</a>
-        <a href="join.html">入部案内</a>
-        <a href="documents.html">各種資料</a>
-        <a href="links.html">リンク集</a>
-        <a href="obog.html">OB・OG会</a>
-      </nav>
+      <div class="footer-section">
+        <p class="footer-heading">サイトメニュー</p>
+        <nav class="footer-links">
+          <a href="index.html">ホーム</a>
+          <a href="blog.html">ブログ</a>
+          <a href="records.html" >愛教大10傑</a>
+          <a href="join.html">入部案内</a>
+          <a href="documents.html">各種資料</a>
+          <a href="links.html">リンク集</a>
+          <a href="obog.html">OB・OG会</a>
+        </nav>
+      </div>
     </div>
-    <div class="footer-bottom">© 愛知教育大学陸上競技部</div>
+    <div class="footer-bottom">
+      <span>© 愛知教育大学陸上競技部</span>
+      <a href="admin.html">編集者ページ</a>
+    </div>
   </div>
 </footer>
 
