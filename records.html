@@ -73,18 +73,13 @@
   .records-panel{
     background:#fff;border:1px solid var(--cream-line);border-radius:6px;padding:60px 30px;text-align:center;
   }
-  .records-panel .icon-badge{
-    width:56px;height:56px;border-radius:50%;background:var(--cream);border:1px solid var(--cream-line);
-    display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-family:var(--f-mono);
-    font-size:11px;font-weight:700;color:var(--rust);
-  }
   .records-panel h2{font-family:var(--f-display);font-weight:700;font-size:20px;color:var(--navy);margin-bottom:12px;overflow-wrap:break-word;word-break:break-word;}
   .records-panel p{font-size:13px;color:var(--ink-dim);max-width:50ch;margin:0 auto 22px;line-height:1.9;}
   .records-open-btn{
-    font-family:var(--f-display);font-size:14px;letter-spacing:0.04em;background:var(--rust);color:#fff;
-    border:0;padding:13px 28px;border-radius:4px;cursor:pointer;transition:filter .2s;
+    font-family:var(--f-display);font-size:14px;letter-spacing:0.04em;background:#fff;color:var(--navy);
+    border:1px solid var(--navy);padding:13px 28px;border-radius:4px;cursor:pointer;transition:background .2s,color .2s;
   }
-  .records-open-btn:hover{filter:brightness(1.08);}
+  .records-open-btn:hover{background:var(--navy);color:#fff;}
 
   [data-reveal]{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
   [data-reveal].in{opacity:1;transform:translateY(0);}
@@ -149,9 +144,7 @@
 <main>
   <div class="wrap">
     <div class="records-panel" data-reveal>
-      <div class="icon-badge">PDF</div>
       <h2 id="recordsPanelTitle">記録表を読み込み中です</h2>
-      <p id="recordsPanelText">少々お待ちください。</p>
       <button class="records-open-btn" id="recordsOpenBtn">記録表を開く</button>
     </div>
   </div>
@@ -223,27 +216,23 @@
   }
 
   const panelTitle = document.getElementById('recordsPanelTitle');
-  const panelText = document.getElementById('recordsPanelText');
   const openBtn = document.getElementById('recordsOpenBtn');
 
   sb.from('site_assets').select('*').eq('key', 'records_file').maybeSingle()
     .then(({ data: rec }) => {
       if (rec && rec.file_path) {
         panelTitle.textContent = rec.file_name;
-        panelText.textContent = 'クリックすると記録表（PDF）が開きます。';
         openBtn.addEventListener('click', () => {
           // 同じタブで開く（iOS Safariでの互換性のため）
           location.href = getPublicUrl(rec.file_path);
         });
       } else {
         panelTitle.textContent = '記録表は現在準備中です。';
-        panelText.textContent = '';
         openBtn.style.display = 'none';
       }
     })
     .catch(() => {
-      panelTitle.textContent = '記録表を読み込めませんでした。';
-      panelText.textContent = 'しばらくしてから再度お試しください。';
+      panelTitle.textContent = '記録表を読み込めませんでした。しばらくしてから再度お試しください。';
       openBtn.style.display = 'none';
     });
 </script>
