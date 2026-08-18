@@ -249,28 +249,6 @@
   @media(max-width:860px){.about-grid{grid-template-columns:1fr;}}
   @media(max-width:520px){.about-visual-photo{min-height:180px;}.about-visual-footer{padding:20px 22px;}.about-visual .quote{font-size:18px;}}
 
-  /* ---------- 8 lanes navigation (signature, cream / "WHERE TO GO") ---------- */
-  .lanes{background:#fff;border-bottom:1px solid var(--cream-line);}
-  .lane-list{display:flex;flex-direction:column;border-top:1px solid var(--cream-line);}
-  .lane-card{
-    display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;
-    padding:28px 22px;border-bottom:1px solid var(--cream-line);position:relative;
-    transition:background .2s;
-  }
-  .lane-card:hover{background:rgba(184,64,43,0.06);}
-  .lane-card::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--rust);transition:width .25s;
-  }
-  .lane-card:hover::before{width:4px;}
-  .lane-name{font-family:var(--f-display);font-size:clamp(20px,2.6vw,28px);font-weight:600;letter-spacing:0.005em;color:var(--navy);}
-  .lane-desc{display:block;margin-top:6px;font-family:var(--f-body);font-size:13px;color:var(--ink-dim);font-weight:400;}
-  .lane-arrow{font-family:var(--f-mono);font-size:20px;color:var(--ink-dim);opacity:0;transition:opacity .2s ease;}
-  .lane-card:hover .lane-arrow{opacity:1;color:var(--rust);}
-  @media(max-width:700px){
-    .lane-card{grid-template-columns:1fr;gap:8px;padding:22px 18px;}
-    .lane-arrow{display:none;}
-  }
-
   /* ---------- news ---------- */
   .news{background:var(--navy-soft);color:#f5f1e8;padding:40px 0;}
   @media(max-width:700px){.news{padding:32px 0;}}
@@ -451,49 +429,6 @@
     </div>
   </section>
 
-  <!-- 8 LANES NAVIGATION -->
-  <section class="lanes" id="pages">
-    <div class="wrap">
-      <div class="lane-list">
-        <a class="lane-card" href="index.html" data-reveal>
-          <span class="lane-name">ホーム<span class="lane-desc">部の紹介と最新情報</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="blog.html" data-reveal>
-          <span class="lane-name">ブログ<span class="lane-desc">日々の活動の様子を発信</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card records-link" href="records.html" data-reveal>
-          <span class="lane-name">愛教大10傑<span class="lane-desc">種目別・歴代トップ10を掲載</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="join.html" data-reveal>
-          <span class="lane-name">入部案内<span class="lane-desc">入部を考えている方へ</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="documents.html" data-reveal>
-          <span class="lane-name">各種資料<span class="lane-desc">部則・競技場利用申請などの各種資料</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="links.html" data-reveal>
-          <span class="lane-name">リンク集<span class="lane-desc">関連団体などの外部サイト</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="obog.html" data-reveal>
-          <span class="lane-name">OB・OG会サイト<span class="lane-desc">卒部生ネットワーク</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener" data-reveal>
-          <span class="lane-name">X(旧Twitter)<span class="lane-desc">大会結果や最新情報を発信</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-        <a class="lane-card" href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener" data-reveal>
-          <span class="lane-name">Instagram<span class="lane-desc">練習や大会の様子を発信</span></span>
-          <span class="lane-arrow">→</span>
-        </a>
-      </div>
-    </div>
-  </section>
 
 </main>
 
