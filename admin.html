@@ -512,16 +512,19 @@
           <label class="form-field">
             <span>①カテゴリー</span>
             <select id="linkCategory" style="font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;"></select>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-              <button class="icon-btn" id="showNewLinkCategoryBtn" type="button">＋ カテゴリーを追加</button>
-              <button class="icon-btn" id="showDeleteLinkCategoryBtn" type="button">－ カテゴリーを削除</button>
-            </div>
-            <div id="newLinkCategoryRow" style="display:none;gap:10px;margin-top:8px;flex-wrap:wrap;">
-              <input type="text" id="newLinkCategoryInput" placeholder="新しいカテゴリー名（例：他大学サークル）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:13px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
-              <button class="icon-btn" id="addLinkCategoryBtn" type="button">追加する</button>
-            </div>
-            <p id="newLinkCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
-            <div id="linkCategoryManager" class="file-list" style="margin-top:10px;display:none;"></div>
+            <details class="example-details" style="margin-top:8px;">
+              <summary>カテゴリーの追加・削除</summary>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                <button class="icon-btn" id="showNewLinkCategoryBtn" type="button">＋ カテゴリーを追加</button>
+                <button class="icon-btn" id="showDeleteLinkCategoryBtn" type="button">－ カテゴリーを削除</button>
+              </div>
+              <div id="newLinkCategoryRow" style="display:none;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                <input type="text" id="newLinkCategoryInput" placeholder="新しいカテゴリー名（例：他大学サークル）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:13px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
+                <button class="icon-btn" id="addLinkCategoryBtn" type="button">追加する</button>
+              </div>
+              <p id="newLinkCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
+              <div id="linkCategoryManager" class="file-list" style="margin-top:10px;display:none;"></div>
+            </details>
           </label>
 
           <label class="form-field">
