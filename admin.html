@@ -129,9 +129,19 @@
 </head>
 <body>
 <script>
-  // このURLにアクセスしたときは、どのような状況でも必ずページの一番上から表示する
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
+  // 新規にこのURLへアクセスしたときは、ページの一番上から表示する。
+  // ただし「閲覧」ボタン等でファイルを開いたあと、戻るボタンで
+  // このページに戻ってきた場合は、元にいた位置へ復元する。
+  (function () {
+    const navEntries = performance.getEntriesByType('navigation');
+    const navType = navEntries.length ? navEntries[0].type : '';
+    if (navType === 'back_forward') {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'auto';
+    } else {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+    }
+  })();
 </script>
 
 <header>
@@ -242,10 +252,9 @@
         <details class="example-details" style="margin-bottom:22px;">
           <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、トップページの最初の写真が変わります。スマホ表示では文字の上、パソコン表示だと文字の右に表示されます。</p>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、トップページの最初の写真が変わります。</p>
 
-            <p style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-bottom:8px;">スマホ表示の例</p>
-            <div style="position:relative;padding-top:24px;margin-bottom:26px;">
+            <div style="position:relative;padding-top:24px;">
               <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ここが差し替わる</span>
               <div style="display:flex;flex-direction:column;gap:14px;background:var(--rust);border-radius:6px;padding:20px;max-width:280px;">
                 <div style="width:100%;aspect-ratio:3/2;border-radius:4px;background:var(--rust-dark);display:flex;align-items:center;justify-content:center;">
@@ -253,19 +262,6 @@
                 </div>
                 <div style="color:#f5f1e8;">
                   <div style="font-family:var(--f-display);font-weight:700;font-size:17px;line-height:1.4;">その本気が、<br>自分を変える。</div>
-                </div>
-              </div>
-            </div>
-
-            <p style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-bottom:8px;">パソコン表示の例</p>
-            <div style="position:relative;padding-top:24px;">
-              <span style="position:absolute;top:0;right:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">ここが差し替わる ↓</span>
-              <div style="display:flex;align-items:center;gap:16px;background:var(--rust);border-radius:6px;padding:20px;">
-                <div style="flex:1.1;min-width:0;color:#f5f1e8;">
-                  <div style="font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.4;">その本気が、<br>自分を変える。</div>
-                </div>
-                <div style="flex:0.9;min-width:0;aspect-ratio:3/2;border-radius:4px;background:var(--rust-dark);display:flex;align-items:center;justify-content:center;">
-                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--gold);text-align:center;">この写真枠</span>
                 </div>
               </div>
             </div>
@@ -277,6 +273,44 @@
           <input type="file" id="input-hero" accept="image/*">
         </label>
         <div class="file-list" id="list-hero"></div>
+      </div>
+
+      <div class="cat-section">
+        <div class="cat-title-row">
+          <div class="cat-title">紹介文の写真</div>
+        </div>
+        <div id="aboutConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="aboutConfirmYes" type="button">差し替えを確定</button>
+            <button class="icon-btn" id="aboutConfirmNo" type="button">キャンセル</button>
+          </div>
+        </div>
+        <p class="lead" style="margin-bottom:14px;">トップページの「自分史上、最高へ。」の隣に表示する写真です。上半分に写真、下半分は黒い帯に「仲間と競い、限界に挑む。」という文字とInstagramへのリンクが表示される、写真とセットになったブロックです。※挿入可能数:1</p>
+
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>具体的な説明を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">差し替えると、トップページのこの部分の上半分の写真が変わります。下半分の文字・リンクはデザインの一部として固定されており、写真からは変更できません。</p>
+            <div style="position:relative;padding-top:24px;max-width:320px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ここが差し替わる</span>
+              <div style="border-radius:6px;overflow:hidden;">
+                <div style="width:100%;aspect-ratio:4/3;background:var(--navy-soft);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:var(--f-mono);font-size:11px;color:var(--paper-dim);">この写真枠</span>
+                </div>
+                <div style="background:var(--navy);color:#f5f1e8;padding:16px 18px;">
+                  <div style="font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.5;">仲間と競い、<br>限界に挑む。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <label class="dropzone" id="drop-about">
+          <div><strong>クリックして選択</strong> または ここに画像をドラッグ＆ドロップ</div>
+          <input type="file" id="input-about" accept="image/*">
+        </label>
+        <div class="file-list" id="list-about"></div>
       </div>
 
       <div class="cat-section">
@@ -623,6 +657,7 @@
     await renderCategoryManager();
     await renderCategoryDropzones();
     await renderHero();
+    await renderAbout();
     await initBlogAdmin();
     await renderRecords();
     initLinksAdmin();
@@ -1253,7 +1288,7 @@
           <div class="file-actions">
             ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
             ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
-            <button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">DL</button>
+            <button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">閲覧</button>
             <button class="icon-btn" data-remove="${escapeHtml(d.id)}">削除</button>
           </div>
         </div>
@@ -2236,6 +2271,96 @@
     document.getElementById('heroConfirmBox').style.display = 'none';
   });
 
+  /* ---- 紹介文の写真（Supabase: site_assets key='about_photo' ＋ Storage） ---- */
+
+  let pendingAbout = null;
+  let aboutAssetCache = null;
+
+  async function loadAboutAsset() {
+    const { data, error } = await sb.from('site_assets').select('*').eq('key', 'about_photo').maybeSingle();
+    if (error) { showToast('写真の取得に失敗しました'); return null; }
+    return data;
+  }
+
+  async function renderAbout() {
+    const listEl = document.getElementById('list-about');
+    aboutAssetCache = await loadAboutAsset();
+
+    const display = aboutAssetCache && aboutAssetCache.file_path ? aboutAssetCache : null;
+    if (!display) {
+      listEl.innerHTML = '<p class="empty-row">まだ差し替えられていません。</p>';
+      return;
+    }
+    const fileName = display.file_name;
+    const sizeLabel = display.size_label;
+    listEl.innerHTML = `
+      <div class="file-row">
+        <span class="file-icon">${escapeHtml(getExtLabel(fileName))}</span>
+        <div class="file-info">
+          <div class="file-name"><span class="file-name-text">${escapeHtml(fileName)}</span></div>
+          <div class="file-meta">${sizeLabel || ''}</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" id="removeAbout">削除</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('removeAbout').addEventListener('click', async () => {
+      if (!confirm('この写真を削除しますか？')) return;
+      if (aboutAssetCache && aboutAssetCache.file_path) await removeFromBucket(aboutAssetCache.file_path);
+      const r = await sb.from('site_assets').delete().eq('key', 'about_photo');
+      if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
+      await renderAbout();
+      showToast('削除しました');
+    });
+  }
+  function handleAboutFile(fileList) {
+    const file = fileList[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('画像は8MB以下にしてください');
+      return;
+    }
+    pendingAbout = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+    document.getElementById('aboutConfirmBox').style.display = 'block';
+    document.getElementById('aboutConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  const dropAbout = document.getElementById('drop-about');
+  const inputAbout = document.getElementById('input-about');
+  inputAbout.addEventListener('change', () => handleAboutFile(inputAbout.files));
+  dropAbout.addEventListener('dragover', (e) => { e.preventDefault(); dropAbout.classList.add('drag'); });
+  dropAbout.addEventListener('dragleave', () => dropAbout.classList.remove('drag'));
+  dropAbout.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropAbout.classList.remove('drag');
+    handleAboutFile(e.dataTransfer.files);
+  });
+  async function commitAboutUpdate() {
+    try {
+      const path = await uploadToBucket('site-assets/about_photo', pendingAbout.file);
+      if (aboutAssetCache && aboutAssetCache.file_path) await removeFromBucket(aboutAssetCache.file_path);
+      const { error } = await sb.from('site_assets').upsert({
+        key: 'about_photo', file_name: pendingAbout.fileName, file_path: path, size_label: pendingAbout.sizeLabel,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    } catch (err) {
+      showToast('更新に失敗しました： ' + err.message);
+      return;
+    }
+    pendingAbout = null;
+    inputAbout.value = '';
+    document.getElementById('aboutConfirmBox').style.display = 'none';
+    await renderAbout();
+    showToast('写真を更新しました');
+  }
+  document.getElementById('aboutConfirmYes').addEventListener('click', commitAboutUpdate);
+  document.getElementById('aboutConfirmNo').addEventListener('click', () => {
+    pendingAbout = null;
+    inputAbout.value = '';
+    document.getElementById('aboutConfirmBox').style.display = 'none';
+  });
+
   /* ---- ブログ記事（Supabase: blog_tags / blog_posts テーブル） ---- */
   let blogTagsCache = [];     // [{id,label,sort_order}]
   let blogPostsCache = [];    // [{id,title,tag,post_date,body,image_path,image_name}]
@@ -2657,7 +2782,7 @@
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
-          <button class="icon-btn" type="button" id="openRecordsFile">DL</button>
+          <button class="icon-btn" type="button" id="openRecordsFile">閲覧</button>
           <button class="icon-btn" id="removeRecords">削除</button>
         </div>
       </div>
@@ -2732,12 +2857,14 @@
   window.addEventListener('pageshow', async (e) => {
     if (!e.persisted) return;
     pendingHero = null;
+    pendingAbout = null;
     pendingRecords = null;
     pendingDocs = {};
     pendingBlocks = {};
     pendingJoinPhotos = {};
     pendingLinkSubmit = null;
     await renderHero();
+    await renderAbout();
     await renderRecords();
     await refreshCategoriesCache();
     await refreshDocsCache();
