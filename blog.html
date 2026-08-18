@@ -113,6 +113,7 @@
   .post-card.open .post-body{max-height:1400px;padding:0 4px 26px;}
   .post-meta{display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
   .post-date{font-family:var(--f-mono);font-size:12px;color:var(--rust);}
+  .post-date-preview{font-family:var(--f-mono);font-size:12px;color:var(--rust);flex-shrink:0;}
   .post-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.06em;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:6px;}
   .post-excerpt{font-size:13px;color:var(--ink-dim);max-width:60ch;line-height:1.85;}
   .post-image{width:100%;max-width:520px;border-radius:6px;display:block;margin-bottom:14px;}
@@ -216,7 +217,7 @@
 
 <main>
   <div class="wrap">
-    <p style="font-size:14px;color:var(--ink-dim);margin-bottom:20px;">日々の活動を通して、部員たちの「今」を発信しています。</p>
+    <p style="font-size:14px;color:var(--ink-dim);margin-bottom:20px;">日々の活動を通して、部員たちの「今」を発信しています。練習や大会、チームの日常など、陸上競技に向き合う部員たちの姿をお届けします。</p>
     <select id="tagFilter" class="filter-select">
       <option value="">すべてのタグ</option>
     </select>
@@ -363,7 +364,10 @@
       listEl.innerHTML = sortedPosts.map(p => `
         <div class="post-card" id="${escapeHtml(p.id)}" data-category="${escapeHtml(p.tag)}">
           <button class="post-toggle" aria-expanded="false">
-            <h2 class="post-title">${escapeHtml(p.title)}</h2>
+            <span style="min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+              <h2 class="post-title">${escapeHtml(p.title)}</h2>
+              <span class="post-date-preview">${formatDate(p.post_date)}</span>
+            </span>
             <span class="post-arrow">→</span>
           </button>
           <div class="post-body">
