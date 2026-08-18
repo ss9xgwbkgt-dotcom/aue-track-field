@@ -225,15 +225,26 @@
     .about-list li span{white-space:normal;font-size:12px;}
   }
   .about-visual{
-    background:var(--navy);color:#f5f1e8;border-radius:4px;
-    padding:40px 34px;display:flex;flex-direction:column;justify-content:center;
-    min-height:280px;
+    position:relative;overflow:hidden;background:var(--navy-soft);color:#f5f1e8;border-radius:4px;
+    padding:40px 34px;display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:20px;
+    min-height:340px;
   }
-  .about-visual .quote{font-family:var(--f-display);font-size:22px;line-height:1.6;}
+  .about-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+  .about-visual::after{
+    content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(0deg, rgba(15,17,24,0.82) 0%, rgba(15,17,24,0.25) 65%, rgba(15,17,24,0.1) 100%);
+  }
+  .about-visual .quote{font-family:var(--f-display);font-size:22px;line-height:1.6;position:relative;z-index:2;}
   .about-visual .quote .quote-gap{display:block;height:0.55em;}
-  .about-visual .quote-by{margin-top:18px;font-family:var(--f-mono);font-size:12px;color:var(--gold);position:relative;z-index:1;}
+  .about-visual .about-photo-placeholder{font-family:var(--f-mono);font-size:12px;color:var(--paper-dim);position:absolute;top:20px;left:20px;z-index:2;}
+  .about-visual-link{
+    position:relative;z-index:2;flex-shrink:0;
+    font-family:var(--f-mono);font-size:12px;letter-spacing:0.04em;color:#f5f1e8;
+    border:1px solid rgba(245,241,232,0.5);border-radius:4px;padding:9px 16px;transition:border-color .2s,color .2s;
+  }
+  .about-visual-link:hover{border-color:var(--gold);color:var(--gold);}
   @media(max-width:860px){.about-grid{grid-template-columns:1fr;}}
-  @media(max-width:520px){.about-visual{padding:32px 26px;min-height:0;}.about-visual .quote{font-size:19px;}}
+  @media(max-width:520px){.about-visual{padding:26px 22px;min-height:300px;}.about-visual .quote{font-size:19px;}}
 
   /* ---------- 8 lanes navigation (signature, cream / "WHERE TO GO") ---------- */
   .lanes{background:#fff;border-bottom:1px solid var(--cream-line);}
@@ -408,8 +419,10 @@
           <li><b>活動日</b><span>火・水・木・土・日</span></li>
         </ul>
       </div>
-      <div class="about-visual" data-reveal>
-        <p class="quote">「今」を<br>積み重ねるということ。<span class="quote-gap"></span>仲間と競い、<br>限界に挑む。</p>
+      <div class="about-visual" id="aboutVisual" data-reveal>
+        <span class="about-photo-placeholder" id="aboutPhotoPlaceholder">写真は準備中です。</span>
+        <p class="quote">仲間と競い、<br>限界に挑む。</p>
+        <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="about-visual-link" target="_blank" rel="noopener">お問い合わせはこちら</a>
       </div>
     </div>
   </section>
@@ -558,6 +571,20 @@
       placeholder.className = 'hero-photo-placeholder';
       placeholder.textContent = '写真は準備中です。';
       container.appendChild(placeholder);
+    }
+  })();
+
+  // aboutセクションの写真：Supabaseの site_assets（key='about_photo'）に登録されていればそちらを表示
+  (async function applyAboutPhoto() {
+    const { data: about } = await sb.from('site_assets').select('*').eq('key', 'about_photo').maybeSingle();
+    const container = document.getElementById('aboutVisual');
+    const placeholder = document.getElementById('aboutPhotoPlaceholder');
+    if (about && about.file_path && container) {
+      const img = document.createElement('img');
+      img.src = getPublicUrl(about.file_path);
+      img.alt = '';
+      container.prepend(img);
+      if (placeholder) placeholder.remove();
     }
   })();
 
