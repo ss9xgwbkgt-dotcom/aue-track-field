@@ -298,7 +298,7 @@
                 <div style="width:100%;aspect-ratio:4/3;background:var(--navy-soft);display:flex;align-items:center;justify-content:center;">
                   <span style="font-family:var(--f-mono);font-size:11px;color:var(--paper-dim);">この写真枠</span>
                 </div>
-                <div style="background:var(--navy);color:#f5f1e8;padding:16px 18px;">
+                <div style="background:var(--navy-soft);color:#f5f1e8;padding:16px 18px;">
                   <div style="font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.5;">仲間と競い、<br>限界に挑む。</div>
                 </div>
               </div>
@@ -598,6 +598,42 @@
           <div class="file-list" id="list-links-all"></div>
         </details>
       </div>
+
+      <div class="cat-section">
+        <div class="cat-title-row">
+          <div class="cat-title">Q&amp;A</div>
+        </div>
+        <div id="faqConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p id="faqConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="faqConfirmYes" type="button">登録を確定</button>
+            <button class="icon-btn" id="faqConfirmNo" type="button">キャンセル</button>
+          </div>
+        </div>
+        <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する「Q&amp;A」を追加・編集・削除できます。追加した質問は、下の一覧からいつでも再編集・削除でき、並べ替えもできます。</p>
+
+        <label class="form-field" style="display:block;margin-bottom:14px;">
+          <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">質問</span>
+          <input type="text" id="faqQuestion" placeholder="例：部活の雰囲気はどんな感じですか？" style="width:100%;font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+        </label>
+        <label class="form-field" style="display:block;margin-bottom:14px;">
+          <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">回答</span>
+          <textarea id="faqAnswer" rows="3" placeholder="回答の本文を入力してください" style="width:100%;font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;resize:vertical;"></textarea>
+        </label>
+        <p id="faqFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;margin-bottom:14px;"></p>
+        <div style="display:flex;gap:10px;margin-bottom:26px;">
+          <button class="btn" id="faqSubmit" type="button">質問を追加</button>
+          <button class="icon-btn" id="faqCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+        </div>
+
+        <details class="example-details" open>
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 12px;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">登録済みの質問一覧（<span id="faqListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
+          </summary>
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:10px;">↓ 質問の順番は、↑↓ボタンでも、カードを長押ししてそのままドラッグしても入れ替えられます。</p>
+          <div class="file-list" id="list-faqs"></div>
+        </details>
+      </div>
     </div>
 
   </div>
@@ -661,6 +697,7 @@
     await initBlogAdmin();
     await renderRecords();
     initLinksAdmin();
+    await initFaqAdmin();
     await renderBlocksPanels();
     await renderJoinPhotosPanels();
     updateStorageUsage();
@@ -2181,6 +2218,179 @@
     renderLinkList();
   }
 
+  /* ---- Q&A（Supabase: faqs テーブル） ---- */
+  let faqsCache = [];
+  let editingFaqId = null;
+  let pendingFaqSubmit = null;
+
+  async function refreshFaqsCache() {
+    const { data, error } = await sb.from('faqs').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    if (error) { showToast('Q&Aの取得に失敗しました'); return; }
+    faqsCache = data || [];
+  }
+
+  function renderFaqList() {
+    const listEl = document.getElementById('list-faqs');
+    const countEl = document.getElementById('faqListCount');
+    if (countEl) countEl.textContent = String(faqsCache.length);
+    if (faqsCache.length === 0) {
+      listEl.innerHTML = '<p class="empty-row">まだ質問がありません。上のフォームから追加してください。</p>';
+      return;
+    }
+    listEl.innerHTML = faqsCache.map((f, i) => `
+      <div class="file-row" data-flip-id="${escapeHtml(f.id)}"${faqsCache.length > 1 ? ' data-draggable="true"' : ''}>
+        <div class="file-info">
+          <div class="file-name"><span class="file-name-text">Q${i + 1}. ${escapeHtml(f.question)}</span></div>
+          <div class="file-meta">${escapeHtml((f.answer || '').slice(0, 40))}${(f.answer || '').length > 40 ? '…' : ''}</div>
+        </div>
+        <div class="file-actions">
+          ${faqsCache.length > 1 ? `<button class="icon-btn" data-faq-move-up="${escapeHtml(f.id)}" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
+          ${faqsCache.length > 1 ? `<button class="icon-btn" data-faq-move-down="${escapeHtml(f.id)}" ${i === faqsCache.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
+          <button class="icon-btn" data-faq-edit="${escapeHtml(f.id)}">編集</button>
+          <button class="icon-btn" data-faq-remove="${escapeHtml(f.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-faq-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => moveFaq(btn.getAttribute('data-faq-move-up'), -1));
+    });
+    listEl.querySelectorAll('[data-faq-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => moveFaq(btn.getAttribute('data-faq-move-down'), 1));
+    });
+    listEl.querySelectorAll('[data-faq-edit]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-faq-edit');
+        const f = faqsCache.find((x) => x.id === id);
+        if (!f) return;
+        editingFaqId = id;
+        document.getElementById('faqQuestion').value = f.question;
+        document.getElementById('faqAnswer').value = f.answer;
+        document.getElementById('faqSubmit').textContent = '変更を保存';
+        document.getElementById('faqCancelEdit').style.display = 'inline-block';
+        document.getElementById('faqQuestion').closest('.cat-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    listEl.querySelectorAll('[data-faq-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-faq-remove');
+        if (!confirm('この質問を削除しますか？')) return;
+        const { error } = await sb.from('faqs').delete().eq('id', id);
+        if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+        await refreshFaqsCache();
+        if (editingFaqId === id) resetFaqForm();
+        renderFaqList();
+        showToast('削除しました');
+      });
+    });
+
+    if (faqsCache.length > 1) {
+      setupDragReorder(listEl, async (orderedIds) => {
+        if (isReordering) return;
+        isReordering = true;
+        try {
+          const results = await Promise.all(orderedIds.map((id, i) => sb.from('faqs').update({ sort_order: i }).eq('id', id)));
+          const failed = results.find((r) => r.error);
+          if (failed) throw failed.error;
+          await refreshFaqsCache();
+          renderFaqList();
+        } catch (err) {
+          showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+        } finally {
+          isReordering = false;
+        }
+      });
+    }
+  }
+
+  async function moveFaq(id, direction) {
+    if (isReordering) return;
+    const idx = faqsCache.findIndex((f) => f.id === id);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= faqsCache.length) return;
+    isReordering = true;
+    document.querySelectorAll('[data-faq-move-up],[data-faq-move-down]').forEach((b) => { b.disabled = true; });
+    try {
+      const a = faqsCache[idx], b = faqsCache[targetIdx];
+      const r1 = await sb.from('faqs').update({ sort_order: b.sort_order }).eq('id', a.id);
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('faqs').update({ sort_order: a.sort_order }).eq('id', b.id);
+      if (r2.error) throw r2.error;
+      await refreshFaqsCache();
+      renderFaqList();
+    } catch (err) {
+      showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+    } finally {
+      isReordering = false;
+    }
+  }
+
+  function resetFaqForm() {
+    editingFaqId = null;
+    document.getElementById('faqQuestion').value = '';
+    document.getElementById('faqAnswer').value = '';
+    document.getElementById('faqSubmit').textContent = '質問を追加';
+    document.getElementById('faqCancelEdit').style.display = 'none';
+    document.getElementById('faqFormError').style.display = 'none';
+    document.getElementById('faqConfirmBox').style.display = 'none';
+  }
+  document.getElementById('faqCancelEdit').addEventListener('click', resetFaqForm);
+
+  async function commitFaqSubmit() {
+    if (!pendingFaqSubmit) return;
+    const { editingId, question, answer } = pendingFaqSubmit;
+    try {
+      if (editingId) {
+        const { error } = await sb.from('faqs').update({ question, answer }).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const maxOrder = faqsCache.reduce((max, f) => Math.max(max, f.sort_order || 0), -1);
+        const { error } = await sb.from('faqs').insert({ question, answer, sort_order: maxOrder + 1 });
+        if (error) throw error;
+      }
+    } catch (err) {
+      showToast('登録に失敗しました： ' + err.message);
+      return;
+    }
+    pendingFaqSubmit = null;
+    resetFaqForm();
+    await refreshFaqsCache();
+    renderFaqList();
+    showToast(editingId ? '質問を更新しました' : '質問を追加しました');
+  }
+
+  document.getElementById('faqSubmit').addEventListener('click', () => {
+    const question = document.getElementById('faqQuestion').value.trim();
+    const answer = document.getElementById('faqAnswer').value.trim();
+    const errorEl = document.getElementById('faqFormError');
+    const missing = [];
+    if (!question) missing.push('質問');
+    if (!answer) missing.push('回答');
+    if (missing.length > 0) {
+      errorEl.textContent = missing.join('・') + 'が入力されていません';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+    pendingFaqSubmit = { editingId: editingFaqId, question, answer };
+    document.getElementById('faqConfirmText').textContent = editingFaqId ? 'この内容に変更してもよろしいですか？' : 'この質問を追加してもよろしいですか？';
+    document.getElementById('faqConfirmYes').textContent = editingFaqId ? '変更を確定' : '追加を確定';
+    document.getElementById('faqConfirmBox').style.display = 'block';
+    document.getElementById('faqConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  document.getElementById('faqQuestion').addEventListener('input', () => { document.getElementById('faqFormError').style.display = 'none'; });
+  document.getElementById('faqAnswer').addEventListener('input', () => { document.getElementById('faqFormError').style.display = 'none'; });
+  document.getElementById('faqConfirmYes').addEventListener('click', commitFaqSubmit);
+  document.getElementById('faqConfirmNo').addEventListener('click', () => {
+    pendingFaqSubmit = null;
+    document.getElementById('faqConfirmBox').style.display = 'none';
+  });
+
+  async function initFaqAdmin() {
+    await refreshFaqsCache();
+    renderFaqList();
+  }
+
   /* ---- ホームの写真（Supabase: site_assets key='hero_photo' ＋ Storage） ---- */
 
   let pendingHero = null; // {fileName,sizeLabel,file} | null （確認ダイアログ表示中の選択ファイル。確定と同時にnullに戻る）
@@ -2863,6 +3073,7 @@
     pendingBlocks = {};
     pendingJoinPhotos = {};
     pendingLinkSubmit = null;
+    pendingFaqSubmit = null;
     await renderHero();
     await renderAbout();
     await renderRecords();
@@ -2873,6 +3084,9 @@
     await renderJoinPhotosPanels();
     renderLinkList();
     resetLinkForm();
+    await refreshFaqsCache();
+    renderFaqList();
+    resetFaqForm();
   });
 </script>
 
