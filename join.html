@@ -62,8 +62,9 @@
   @media(max-width:860px){nav.primary,.nav-cta,.nav-social{display:none;}.burger{display:flex;}}
 
   .page-hero{
-    margin-top:76px;background:var(--rust);color:#f5f1e8;padding:100px 0 90px;
+    margin-top:76px;background:var(--rust);color:#f5f1e8;padding:64px 0 56px;
   }
+  @media(max-width:800px){.page-hero{padding:44px 0 38px;}}
   .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;position:relative;z-index:1;}
   .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold);}
   .page-hero .page-title{
@@ -88,15 +89,16 @@
 
   main{padding:0;}
 
-  .story-block{padding:90px 0;background:#fff;}
-  .story-inner{display:flex;align-items:center;gap:56px;position:relative;z-index:1;}
+  .story-block{padding:56px 0;background:#fff;}
+  .story-inner{display:flex;align-items:center;gap:44px;position:relative;z-index:1;}
   .story-block.reverse .story-inner{flex-direction:row-reverse;}
   .story-text{flex:1;min-width:0;}
   .story-index{
-    font-family:var(--f-display);font-weight:700;font-size:74px;color:var(--rust);opacity:.14;
-    line-height:1;margin-bottom:-30px;letter-spacing:0.02em;
+    font-family:var(--f-display);font-weight:700;font-size:64px;
+    color:var(--cream);-webkit-text-stroke:1.5px var(--rust);
+    line-height:1;margin-bottom:-22px;letter-spacing:0.02em;
   }
-  .story-message{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4vw,40px);color:var(--navy);line-height:1.5;position:relative;}
+  .story-message{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.4vw,32px);color:var(--navy);line-height:1.5;position:relative;}
   .story-photo{
     flex:0.9;min-width:0;aspect-ratio:4/3;border-radius:8px;overflow:hidden;
     background:var(--navy-soft);display:flex;align-items:center;justify-content:center;
@@ -107,22 +109,26 @@
   .story-photo:hover img{transform:scale(1.04);}
   @media(max-width:800px){
     .story-inner,.story-block.reverse .story-inner{flex-direction:column;}
-    .story-block{padding:64px 0;}
-    .story-photo{width:100%;}
-    .story-index{font-size:52px;margin-bottom:-18px;}
+    .story-block{padding:40px 0;}
+    .story-inner{gap:22px;}
+    .story-photo{width:100%;aspect-ratio:3/2;}
+    .story-index{font-size:44px;margin-bottom:-14px;-webkit-text-stroke:1.2px var(--rust);}
+    .story-message{font-size:20px;}
   }
 
   .closing{
-    background:var(--navy-soft);color:#f5f1e8;padding:110px 0;text-align:center;
+    background:var(--navy-soft);color:#f5f1e8;padding:64px 0;text-align:center;
   }
   .closing-note{margin-top:18px;font-family:var(--f-body);font-size:13px;color:var(--paper-dim);max-width:46ch;margin-left:auto;margin-right:auto;line-height:1.9;}
+  @media(max-width:800px){.closing{padding:44px 0;}}
 
-  .blocks-section{padding:100px 0;background:#fff;}
-  .blocks-heading{text-align:center;margin-bottom:48px;}
+  .blocks-section{padding:64px 0;background:#fff;}
+  .blocks-heading{text-align:center;margin-bottom:32px;}
   .blocks-heading .eyebrow{justify-content:center;color:var(--rust);}
   .blocks-heading .eyebrow::before{background:var(--rust);}
-  .blocks-heading h2{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,4vw,34px);color:var(--navy);}
+  .blocks-heading h2{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.4vw,30px);color:var(--navy);}
   .blocks-heading p{margin-top:12px;font-size:13px;color:var(--ink-dim);}
+  @media(max-width:800px){.blocks-section{padding:44px 0;}.blocks-heading{margin-bottom:24px;}}
 
   .blocks-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
   .block-card{
@@ -240,7 +246,7 @@
     <h1 class="hero-headline">入部案内</h1>
     <p class="page-sub">「本気」で挑み、仲間と共に成長できる環境がここにあります。</p>
     <div class="hero-cta-row">
-      <a href="#blocks" class="hero-cta primary">活動ブロックへ</a>
+      <a href="#blocks" class="hero-cta primary">活動ブロック紹介へ</a>
       <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="hero-cta secondary" target="_blank" rel="noopener">見学・体験の相談をする</a>
     </div>
   </div>
