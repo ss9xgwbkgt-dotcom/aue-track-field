@@ -255,16 +255,9 @@
   .news h2.section-title{color:#f5f1e8;}
   .news .section-note{color:var(--paper-dim);}
   .news-grid{
-    display:flex;gap:1px;background:var(--line-on-dark);border:1px solid var(--line-on-dark);margin-top:52px;
-    overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
-    scrollbar-width:thin;scrollbar-color:var(--gold) var(--navy-soft);
+    display:flex;flex-direction:column;gap:1px;background:var(--line-on-dark);border:1px solid var(--line-on-dark);margin-top:52px;
   }
-  .news-grid::-webkit-scrollbar{height:6px;}
-  .news-grid::-webkit-scrollbar-track{background:var(--navy-soft);}
-  .news-grid::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:3px;}
-  .news-card{flex:0 0 calc((100% - 2px) / 3);scroll-snap-align:start;background:var(--navy);padding:30px 26px;display:flex;flex-direction:column;gap:14px;transition:background .2s;min-height:180px;}
-  @media(max-width:860px){.news-card{flex-basis:calc((100% - 1px) / 2);}}
-  @media(max-width:560px){.news-card{flex-basis:88%;}}
+  .news-card{background:var(--navy);padding:26px 26px;display:flex;flex-direction:column;gap:12px;transition:background .2s;}
   .news-card:hover{background:#252a37;}
   .news-date{font-family:var(--f-mono);font-size:12px;color:var(--paper-dim);}
   .news-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.08em;color:var(--paper-dim);border:1px solid var(--line-on-dark);padding:3px 9px;border-radius:6px;width:fit-content;}
@@ -377,8 +370,7 @@
           愛知教育大学陸上競技部の公式サイトです。挑戦し続ける部員たちの活動を発信しています。
         </p>
         <div class="hero-actions">
-          <a href="join.html" class="btn btn-gold">入部案内を見る →</a>
-          <a href="blog.html" class="btn btn-outline">活動ブログへ</a>
+          <a href="join.html#blocks" class="btn btn-gold">入部案内 →</a>
         </div>
       </div>
       <div class="hero-photo" id="heroPhotoContainer">
@@ -407,7 +399,7 @@
         </div>
         <div class="about-visual-footer">
           <p class="quote">仲間と競い、<br>限界に挑む。</p>
-          <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" class="about-visual-link" target="_blank" rel="noopener">お問い合わせはこちら</a>
+          <a href="join.html#blocks" class="about-visual-link">入部案内を見る</a>
         </div>
       </div>
     </div>
@@ -423,9 +415,8 @@
         <a href="blog.html" class="btn btn-outline">ブログ一覧へ →</a>
       </div>
       <div class="news-grid" id="newsGrid">
-        <p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">読み込み中…</p>
+        <p style="color:var(--paper-dim);font-size:13px;">読み込み中…</p>
       </div>
-      <p style="margin-top:14px;font-family:var(--f-mono);font-size:10px;letter-spacing:0.04em;color:rgba(245,241,232,0.4);text-align:center;">←スクロールできます→</p>
     </div>
   </section>
 
@@ -531,14 +522,14 @@
     }
   })();
 
-  // 最新の活動報告：Supabaseの blog_posts テーブルから最新3件を取得
-  sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(5)
+  // 最新の活動報告：Supabaseの blog_posts テーブルから最新4件を取得
+  sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(4)
     .then(({ data, error }) => {
       if (error) throw error;
       const posts = data || [];
       const grid = document.getElementById('newsGrid');
       if (posts.length === 0) {
-        grid.innerHTML = '<p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">まだ記事がありません。</p>';
+        grid.innerHTML = '<p style="color:var(--paper-dim);font-size:13px;">まだ記事がありません。</p>';
         return;
       }
       grid.innerHTML = posts.map(p => `
@@ -555,7 +546,7 @@
     })
     .catch(() => {
       document.getElementById('newsGrid').innerHTML =
-        '<p style="color:var(--paper-dim);font-size:13px;grid-column:1/-1;">記事を読み込めませんでした。しばらくしてから再度お試しください。</p>';
+        '<p style="color:var(--paper-dim);font-size:13px;">記事を読み込めませんでした。しばらくしてから再度お試しください。</p>';
     });
 </script>
 
