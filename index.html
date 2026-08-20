@@ -9,13 +9,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
+    /* ジャージのえんじ色に合わせた配色。ネイビーは背景・ヘッダー用 */
     --navy:#181c26;
-    --navy-soft:#20242f;
+    --navy-soft:#20242f; /* 真っ黒すぎると重いので少し起こした色 */
     --rust:#b8402b;
     --rust-dark:#8c2f1f;
     --olive:#3e5233;
     --olive-dark:#333f2a;
-    --gold:#d3a548;
+    --gold:#d3a548; /* アクセント用、使いすぎ注意 */
     --gold-soft:rgba(211,165,72,0.4);
     --cream:#f8f5ef;
     --cream-line:rgba(24,28,38,0.12);
@@ -44,7 +45,7 @@
   .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
   @media(max-width:640px){.wrap{padding:0 20px;}}
 
-  /* ---------- header ---------- */
+  /* header */
   header{
     position:fixed;top:0;left:0;right:0;z-index:100;
     background:rgba(24,28,38,0.94);
@@ -127,7 +128,7 @@
     .burger{display:flex;}
   }
 
-  /* ---------- hero (rust directory block) ---------- */
+  /* hero */
   .hero{
     margin-top:76px;
     background:var(--rust);
@@ -196,7 +197,7 @@
   .directory-cell .desc{margin-top:10px;font-size:12px;color:var(--paper-dim);line-height:1.7;}
   @media(max-width:520px){.directory-row{grid-template-columns:1fr;}}
 
-  /* ---------- notice ---------- */
+  /* notice */
   .notice{background:var(--olive);color:#f5f1e8;padding:34px 0;}
   .notice-inner{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;}
   .notice-badge{
@@ -205,14 +206,13 @@
   }
   .notice-text{font-size:14px;color:rgba(245,241,232,0.9);line-height:1.8;max-width:60ch;}
 
-  /* ---------- section shared (cream) ---------- */
   section{padding:100px 0;}
   .section-head{margin-bottom:52px;}
   .section-tag{font-family:var(--f-mono);font-size:12px;letter-spacing:0.2em;color:var(--rust);margin-bottom:16px;display:block;}
   h2.section-title{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4.4vw,50px);letter-spacing:0.005em;color:var(--navy);max-width:14ch;}
   .section-note{margin-top:18px;max-width:44ch;color:var(--ink-dim);font-size:14px;line-height:1.8;}
 
-  /* ---------- about ---------- */
+  /* about */
   .about{background:#fff;border-bottom:1px solid var(--cream-line);}
   .about-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:64px;}
   .about-lead{font-size:18px;line-height:2;color:var(--navy);}
@@ -250,7 +250,7 @@
   @media(max-width:860px){.about-grid{grid-template-columns:1fr;}}
   @media(max-width:520px){.about-visual-photo{min-height:180px;}.about-visual-footer{padding:20px 22px;}.about-visual .quote{font-size:18px;}}
 
-  /* ---------- news ---------- */
+  /* news */
   .news{background:var(--navy-soft);color:#f5f1e8;padding:40px 0;}
   @media(max-width:700px){.news{padding:32px 0;}}
   .news h2.section-title{color:#f5f1e8;}
@@ -266,7 +266,7 @@
   .news-title{font-family:var(--f-display);font-size:15px;font-weight:600;line-height:1.5;overflow-wrap:break-word;word-break:break-word;}
   .news-more{font-family:var(--f-mono);font-size:11px;color:var(--paper-dim);}
 
-  /* ---------- footer ---------- */
+  /* footer */
   footer{padding:48px 0 32px;background:var(--navy-soft);color:#f5f1e8;}
   .footer-top{margin-bottom:36px;}
   .footer-name{font-family:var(--f-display);font-weight:700;font-size:16px;}
@@ -314,8 +314,27 @@
 </head>
 <body>
 <script>
-  // 通常のページ遷移では、必ずページの一番上から表示されるようにする
-  // （URLに#が付いた特定箇所へのジャンプなど、意図した場合は除く）
+  // 右クリック禁止（完全には防げないけど一応）
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  // F12とかのショートカットも塞いでおく
+  document.addEventListener('keydown', (e) => {
+    const k = e.key;
+    if (k === 'F12') { e.preventDefault(); return; }
+    const combo = (e.ctrlKey || e.metaKey);
+    if (combo && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(k)) { e.preventDefault(); return; }
+    if (combo && (k === 'u' || k === 'U')) { e.preventDefault(); return; }
+  });
+</script>
+
+<script>
+  // コピペも禁止
+  document.addEventListener('copy', (e) => e.preventDefault());
+  document.addEventListener('cut', (e) => e.preventDefault());
+  document.addEventListener('paste', (e) => e.preventDefault());
+</script>
+
+<script>
+  // ページ移動時は上から表示（#付きのリンクの場合はそのまま）
   if (!location.hash) {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
@@ -324,17 +343,17 @@
 
 <header>
   <div class="nav-inner">
-    <a href="index.html" class="brand">
+    <a href="." class="brand">
       <span class="brand-text">愛知教育大学 陸上競技部</span>
     </a>
     <nav class="primary" aria-label="メインナビゲーション">
-      <a href="index.html">ホーム</a>
-      <a href="blog.html">ブログ</a>
-      <a href="records.html" class="records-link">愛教大10傑</a>
-      <a href="join.html">入部案内</a>
-      <a href="documents.html">各種資料</a>
-      <a href="links.html">リンク集</a>
-      <a href="obog.html">OB・OG会</a>
+      <a href=".">ホーム</a>
+      <a href="blog">ブログ</a>
+      <a href="records" class="records-link">愛教大10傑</a>
+      <a href="join">入部案内</a>
+      <a href="documents">各種資料</a>
+      <a href="links">リンク集</a>
+      <a href="obog">OB・OG会</a>
     </nav>
     <div class="nav-social">
       <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" class="nav-social-btn" aria-label="X" target="_blank" rel="noopener">X(旧Twitter)</a>
@@ -347,13 +366,13 @@
 </header>
 
 <div id="mobile-nav">
-  <a href="index.html">ホーム</a>
-  <a href="blog.html">ブログ</a>
-  <a href="records.html" class="records-link">愛教大10傑</a>
-  <a href="join.html">入部案内</a>
-  <a href="documents.html">各種資料</a>
-  <a href="links.html">リンク集</a>
-  <a href="obog.html">OB・OG会サイト</a>
+  <a href=".">ホーム</a>
+  <a href="blog">ブログ</a>
+  <a href="records" class="records-link">愛教大10傑</a>
+  <a href="join">入部案内</a>
+  <a href="documents">各種資料</a>
+  <a href="links">リンク集</a>
+  <a href="obog">OB・OG会サイト</a>
   <div class="mobile-nav-social">
     <a href="https://x.com/aue_tandf?s=11&amp;t=Yb0vXUHYXYa6Z20msfXRMQ" target="_blank" rel="noopener">X(旧Twitter)</a>
     <a href="https://www.instagram.com/aue_tandf?igsh=MTh2ZW1lOW81c2t4Yg==" target="_blank" rel="noopener">Instagram</a>
@@ -372,7 +391,7 @@
           愛知教育大学陸上競技部の公式サイトです。挑戦し続ける部員たちの活動を発信しています。
         </p>
         <div class="hero-actions">
-          <a href="join.html" class="btn btn-gold">入部案内へ →</a>
+          <a href="join" class="btn btn-gold">入部案内へ →</a>
         </div>
       </div>
       <div class="hero-photo" id="heroPhotoContainer">
@@ -401,7 +420,7 @@
         </div>
         <div class="about-visual-footer">
           <p class="quote">仲間と競い、<br>限界に挑む。</p>
-          <a href="join.html" class="about-visual-link">入部案内を見る</a>
+          <a href="join" class="about-visual-link">入部案内を見る</a>
         </div>
       </div>
     </div>
@@ -414,7 +433,7 @@
         <div>
           <h2 class="section-title" style="white-space:nowrap;">最新記事</h2>
         </div>
-        <a href="blog.html" class="btn btn-outline">ブログ一覧へ →</a>
+        <a href="blog" class="btn btn-outline">ブログ一覧へ →</a>
       </div>
       <div class="news-grid" id="newsGrid">
         <p style="color:var(--paper-dim);font-size:13px;">読み込み中…</p>
@@ -442,19 +461,19 @@
       <div class="footer-section">
         <p class="footer-heading">メニュー</p>
         <nav class="footer-links">
-          <a href="index.html">ホーム</a>
-          <a href="blog.html">ブログ</a>
-          <a href="records.html" class="records-link">愛教大10傑</a>
-          <a href="join.html">入部案内</a>
-          <a href="documents.html">各種資料</a>
-          <a href="links.html">リンク集</a>
-          <a href="obog.html">OB・OG会</a>
+          <a href=".">ホーム</a>
+          <a href="blog">ブログ</a>
+          <a href="records" class="records-link">愛教大10傑</a>
+          <a href="join">入部案内</a>
+          <a href="documents">各種資料</a>
+          <a href="links">リンク集</a>
+          <a href="obog">OB・OG会</a>
         </nav>
       </div>
     </div>
     <div class="footer-bottom">
       <span>© 愛知教育大学陸上競技部</span>
-      <a href="admin.html">編集者ページ</a>
+      <a href="admin">編集者ページ</a>
     </div>
   </div>
 </footer>
@@ -481,7 +500,7 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ---- Supabase クライアント ---- */
+  // supabase設定
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -491,7 +510,7 @@
     return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
   }
 
-  // ホームの写真：Supabaseの site_assets（key='hero_photo'）に登録されていればそちらを表示。未登録の場合は「準備中」を表示
+  // ホーム写真。site_assetsのhero_photoに入ってればそれを出す
   (async function applyHeroPhoto() {
     const { data: hero } = await sb.from('site_assets').select('*').eq('key', 'hero_photo').maybeSingle();
     const container = document.getElementById('heroPhotoContainer');
@@ -510,7 +529,7 @@
     }
   })();
 
-  // aboutセクションの写真：Supabaseの site_assets（key='about_photo'）に登録されていればそちらを表示
+  // aboutの写真も同じ要領
   (async function applyAboutPhoto() {
     const { data: about } = await sb.from('site_assets').select('*').eq('key', 'about_photo').maybeSingle();
     const container = document.getElementById('aboutVisualPhoto');
@@ -524,7 +543,7 @@
     }
   })();
 
-  // 最新の活動報告：Supabaseの blog_posts テーブルから最新4件を取得
+  // 最新記事を4件だけ拾ってくる
   sb.from('blog_posts').select('*').order('post_date', { ascending: false }).limit(4)
     .then(({ data, error }) => {
       if (error) throw error;
@@ -535,7 +554,7 @@
         return;
       }
       grid.innerHTML = posts.map(p => `
-        <a class="news-card" href="blog.html#${p.id}" data-reveal>
+        <a class="news-card" href="blog#${p.id}" data-reveal>
           <span class="news-meta"><span class="news-cat">${p.tag}</span><span class="news-date">${p.post_date.replace(/-/g, '.')}</span></span>
           <h3 class="news-title">${p.title}</h3>
           <span class="news-more">続きを読む →</span>
