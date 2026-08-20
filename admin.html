@@ -1132,6 +1132,7 @@
     let rowStartLeft = 0;
     let rowWidth = 0;
     let rowHeight = 0;
+    let activePointerId = null;
 
     // containerの直接の子要素（＝並べ替えの単位）まで親をたどる
     function toDirectChild(el) {
@@ -1146,6 +1147,7 @@
     }
 
     function cleanupDrag() {
+      stopAutoScroll();
       if (dragRow) {
         dragRow.classList.remove('dragging');
         dragRow.style.position = '';
@@ -1155,6 +1157,7 @@
         dragRow.style.zIndex = '';
         dragRow.style.boxShadow = '';
         dragRow.style.pointerEvents = '';
+        try { dragRow.releasePointerCapture && dragRow.releasePointerCapture(activePointerId); } catch (err) {}
       }
       if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
       placeholder = null;
@@ -1167,6 +1170,17 @@
       if (activeDragCleanup === cleanupDrag) activeDragCleanup = null;
     }
 
+    let autoScrollTimer = null;
+    function stopAutoScroll() {
+      if (autoScrollTimer) { clearInterval(autoScrollTimer); autoScrollTimer = null; }
+    }
+    function startAutoScroll(direction) {
+      if (autoScrollTimer) return;
+      autoScrollTimer = setInterval(() => {
+        window.scrollBy(0, direction * 14);
+      }, 16);
+    }
+
     function onPointerMove(e) {
       if (!dragRow) return;
       e.preventDefault();
@@ -1174,6 +1188,16 @@
       const dy = e.clientY - startY;
       dragRow.style.top = (rowStartTop + dy) + 'px';
       const dragCenter = rowStartTop + dy + rowHeight / 2;
+
+      // 画面の上端・下端に近づいたら自動スクロール（ドラッグ中は指自体でのスクロールができない代わりに）
+      const edgeZone = 70;
+      if (e.clientY < edgeZone) {
+        startAutoScroll(-1);
+      } else if (e.clientY > window.innerHeight - edgeZone) {
+        startAutoScroll(1);
+      } else {
+        stopAutoScroll();
+      }
 
       // ドラッグ中のカードの中心が、他の行の中心より上にあれば、その行の直前に隙間（プレースホルダー）を動かす
       // （比較・並べ替えは、必ずcontainerの直接の子どうしで行う）
@@ -1209,6 +1233,7 @@
       if (e.target.closest('button,a,input,select,textarea')) return;
       const row = e.target.closest('[data-flip-id]');
       if (!row || !container.contains(row)) return;
+      const pointerId = e.pointerId;
       if (row.dataset.locked === 'true') {
         startY = e.clientY;
         startX = e.clientX;
@@ -1236,7 +1261,7 @@
         row.style.width = rowWidth + 'px';
         row.style.zIndex = '1000';
         row.style.boxShadow = '0 8px 20px rgba(0,0,0,0.18)';
-        row.style.pointerEvents = 'none';
+        try { row.setPointerCapture(pointerId); activePointerId = pointerId; } catch (err) {}
         placeholder = document.createElement('div');
         placeholder.className = 'drag-placeholder';
         placeholder.style.cssText = `height:${rowHeight}px;border:2px dashed var(--rust);border-radius:6px;`;
