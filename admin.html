@@ -36,9 +36,10 @@
   .gate input{width:100%;padding:11px 12px;border:1px solid var(--cream-line);border-radius:4px;font-family:var(--f-mono);font-size:14px;margin-bottom:12px;}
   .gate button, .btn{
     font-family:var(--f-display);font-size:13px;letter-spacing:0.04em;background:var(--rust);color:#fff;
-    border:0;padding:11px 20px;border-radius:4px;cursor:pointer;transition:filter .2s;
+    border:0;padding:11px 20px;border-radius:4px;cursor:pointer;transition:filter .2s,background .2s,color .2s;
   }
   .gate button:hover, .btn:hover{filter:brightness(1.08);}
+  .btn:disabled{background:var(--cream-line);color:var(--ink-dim);cursor:default;filter:none;}
   .gate .err{color:var(--rust-dark);font-size:12px;margin-top:-4px;margin-bottom:10px;display:none;}
 
   .cat-section{margin-bottom:56px;}
@@ -603,13 +604,6 @@
         <div class="cat-title-row">
           <div class="cat-title">Q&amp;A</div>
         </div>
-        <div id="faqConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-          <p id="faqConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="faqConfirmYes" type="button">登録を確定</button>
-            <button class="icon-btn" id="faqConfirmNo" type="button">キャンセル</button>
-          </div>
-        </div>
         <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する「Q&amp;A」を追加・編集・削除できます。追加した質問は、下の一覧からいつでも再編集・削除でき、並べ替えもできます。</p>
 
         <label class="form-field" style="display:block;margin-bottom:14px;">
@@ -624,6 +618,13 @@
         <div style="display:flex;gap:10px;margin-bottom:26px;">
           <button class="btn" id="faqSubmit" type="button">質問を追加</button>
           <button class="icon-btn" id="faqCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+        </div>
+        <div id="faqConfirmBox" style="display:none;margin-top:-12px;margin-bottom:26px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p id="faqConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="faqConfirmYes" type="button">登録を確定</button>
+            <button class="icon-btn" id="faqConfirmNo" type="button">キャンセル</button>
+          </div>
         </div>
 
         <details class="example-details" open>
@@ -1806,6 +1807,7 @@
     if (getAllLinkCategories().length) document.getElementById('linkCategory').value = getAllLinkCategories()[0].id;
     renderLinkEntries([{ label: '', url: '' }]);
     document.getElementById('linkSubmit').textContent = 'カードを追加';
+    document.getElementById('linkSubmit').disabled = false;
     document.getElementById('linkEditingNote').style.display = 'none';
     document.getElementById('linkCancelEdit').style.display = 'none';
     document.getElementById('linkFormError').style.display = 'none';
@@ -1877,6 +1879,7 @@
       : 'このカードを追加してもよろしいですか？';
     document.getElementById('linkConfirmYes').textContent = editingLinkId ? '変更を確定' : '追加を確定';
     document.getElementById('linkConfirmBox').style.display = 'block';
+    document.getElementById('linkSubmit').disabled = true;
     document.getElementById('linkConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
@@ -1891,6 +1894,7 @@
   document.getElementById('linkConfirmNo').addEventListener('click', () => {
     pendingLinkSubmit = null;
     document.getElementById('linkConfirmBox').style.display = 'none';
+    document.getElementById('linkSubmit').disabled = false;
   });
 
   /* ---- 入部案内ページの写真（Supabase: site_assets key='join_photo_{msgId}' ＋ Storage） ---- */
@@ -2330,6 +2334,7 @@
     document.getElementById('faqQuestion').value = '';
     document.getElementById('faqAnswer').value = '';
     document.getElementById('faqSubmit').textContent = '質問を追加';
+    document.getElementById('faqSubmit').disabled = false;
     document.getElementById('faqCancelEdit').style.display = 'none';
     document.getElementById('faqFormError').style.display = 'none';
     document.getElementById('faqConfirmBox').style.display = 'none';
@@ -2376,6 +2381,7 @@
     document.getElementById('faqConfirmText').textContent = editingFaqId ? 'この内容に変更してもよろしいですか？' : 'この質問を追加してもよろしいですか？';
     document.getElementById('faqConfirmYes').textContent = editingFaqId ? '変更を確定' : '追加を確定';
     document.getElementById('faqConfirmBox').style.display = 'block';
+    document.getElementById('faqSubmit').disabled = true;
     document.getElementById('faqConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   document.getElementById('faqQuestion').addEventListener('input', () => { document.getElementById('faqFormError').style.display = 'none'; });
@@ -2384,6 +2390,7 @@
   document.getElementById('faqConfirmNo').addEventListener('click', () => {
     pendingFaqSubmit = null;
     document.getElementById('faqConfirmBox').style.display = 'none';
+    document.getElementById('faqSubmit').disabled = false;
   });
 
   async function initFaqAdmin() {
@@ -2806,6 +2813,7 @@
     document.getElementById('input-blog-image').value = '';
     renderBlogImagePreview();
     document.getElementById('blogSubmit').textContent = '投稿する';
+    document.getElementById('blogSubmit').disabled = false;
     document.getElementById('blogEditingNote').style.display = 'none';
     document.getElementById('blogCancelEdit').style.display = 'none';
     document.getElementById('blogConfirmBox').style.display = 'none';
@@ -2945,6 +2953,7 @@
     const isEditing = !!editingPostId;
     document.getElementById('blogConfirmYes').textContent = isEditing ? '変更を確定' : '投稿を確定';
     confirmBox.style.display = 'block';
+    document.getElementById('blogSubmit').disabled = true;
     confirmBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
@@ -2961,6 +2970,7 @@
 
   document.getElementById('blogConfirmNo').addEventListener('click', () => {
     document.getElementById('blogConfirmBox').style.display = 'none';
+    document.getElementById('blogSubmit').disabled = false;
   });
 
   /* ---- 愛教大10傑ファイル（Supabase: site_assets key='records_file' ＋ Storage） ---- */
