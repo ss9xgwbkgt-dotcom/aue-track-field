@@ -58,6 +58,7 @@
   .dropzone strong{color:var(--rust);}
 
   .file-list{margin-top:16px;display:flex;flex-direction:column;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  #blocksPanels .file-list .file-row{flex:1;}
   .file-row{
     display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;border-bottom:1px solid var(--cream-line);padding:14px 2px;
     will-change:transform;background:none;
@@ -239,7 +240,7 @@
 
       <div class="cat-section">
         <div class="cat-title-row">
-          <div class="cat-title">トップページの写真</div>
+          <div class="cat-title">トップページの写真①</div>
         </div>
         <div id="heroConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
           <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
@@ -278,7 +279,7 @@
 
       <div class="cat-section">
         <div class="cat-title-row">
-          <div class="cat-title">紹介文の写真</div>
+          <div class="cat-title">紹介文の写真②</div>
         </div>
         <div id="aboutConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
           <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
@@ -287,7 +288,7 @@
             <button class="icon-btn" id="aboutConfirmNo" type="button">キャンセル</button>
           </div>
         </div>
-        <p class="lead" style="margin-bottom:14px;">トップページの「自分史上、最高へ。」の隣に表示する写真です。上半分に写真、下半分は黒い帯に「仲間と競い、限界に挑む。」という文字とInstagramへのリンクが表示される、写真とセットになったブロックです。※挿入可能数:1</p>
+        <p class="lead" style="margin-bottom:14px;">上半分に写真、下半分は黒い帯に「仲間と競い、限界に挑む。」という文字とInstagramへのリンクが表示される、写真とセットになったブロックです。※挿入可能数:1</p>
 
         <details class="example-details" style="margin-bottom:22px;">
           <summary>具体的な説明を見る</summary>
@@ -324,7 +325,7 @@
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、このように反映されます。</p>
 
             <div style="position:relative;padding-top:24px;margin-bottom:20px;">
-              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルのみが並びます）</span>
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルと日付が並びます）</span>
               <div style="font-family:var(--f-display);font-weight:600;font-size:17px;color:var(--navy);border-bottom:1px solid var(--cream-line);padding-bottom:14px;">800m愛教大記録更新！！</div>
             </div>
 
@@ -335,10 +336,10 @@
                   <span style="font-family:var(--f-mono);font-size:11px;color:var(--rust);">2026.08.01</span>
                   <span style="font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:6px;">お知らせ</span>
                 </div>
-                <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;margin-bottom:14px;">本文がここに表示されます。</p>
+                <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;">
                   <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);text-align:center;padding:0 12px;">写真を添付した場合、ここに表示される</span>
                 </div>
-                <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;">本文がここに表示されます。</p>
               </div>
             </div>
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.9;">写真を添付しなかった場合、その部分は表示されません。</p>
@@ -349,7 +350,7 @@
           <p id="blogEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">この記事を編集しています</p>
           <label class="form-field">
             <span>タイトル</span>
-            <input type="text" id="blogTitle" placeholder="">
+            <input type="text" id="blogTitle" placeholder="タイトルを記入してください。">
           </label>
           <label class="form-field">
             <span>タグ</span>
@@ -442,7 +443,7 @@
           <div class="cat-title">各種資料</div>
         </div>
 
-        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料を追加・削除・並べ替えができます。</p>
+        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料の追加・削除・並べ替えができます。カテゴリーの追加・削除・並べ替えは「カテゴリーの編集」から行えます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
           <summary>具体的な説明を見る</summary>
@@ -492,7 +493,7 @@
         <div class="cat-title-row">
           <div class="cat-title">入部案内ページの写真</div>
         </div>
-        <p class="lead" style="margin-bottom:14px;">入部案内ページにある4つのメッセージそれぞれの背景に表示する写真です。</p>
+        <p class="lead" style="margin-bottom:14px;">入部案内ページの4つのメッセージとともに表示する写真です。</p>
         <div id="joinPhotosPanels"></div>
       </div>
 
@@ -500,7 +501,7 @@
         <div class="cat-title-row">
           <div class="cat-title">活動ブロック紹介</div>
         </div>
-        <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する、短距離・中長距離・フィールド・マネージャーの4つの紹介カードです。各ブロックに写真とPDF（部門紹介資料など）を1つずつ登録できます。カードをクリックするとPDFが開きます。</p>
+        <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する4つの紹介カードです。短距離・中長距離・フィールド・マネージャーの各カードに、写真とPDFを1つずつ挿入できます。カードをクリックするとPDFが開く仕様になっています。</p>
         <div id="blocksPanels"></div>
       </div>
 
@@ -513,7 +514,7 @@
         <details class="example-details" style="margin-bottom:22px;">
           <summary>具体的な説明を見る</summary>
           <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存すると、実際のリンク集ページにはこのように表示されます（どの入力欄が画面のどこに出るかの見本です）</p>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存すると、実際のリンク集ページにはこのように表示されます。</p>
 
             <div style="position:relative;padding-top:24px;margin-bottom:22px;">
               <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
@@ -2067,8 +2068,8 @@
     container.innerHTML = BLOCK_ORDER.map((b) => `
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:18px;margin-bottom:16px;">
         <p style="font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">${b.label}</p>
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;">
-          <div style="min-width:0;">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch;">
+          <div style="min-width:0;display:flex;flex-direction:column;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:8px;">写真</p>
             <label class="dropzone" id="drop-block-photo-${b.id}" style="padding:16px;">
               <div style="font-size:12px;"><strong>クリックして選択</strong> または画像をドロップ</div>
@@ -2081,9 +2082,9 @@
                 <button class="icon-btn" type="button" data-confirm-no-block="${b.id}" data-kind="photo">キャンセル</button>
               </div>
             </div>
-            <div class="file-list" id="list-block-photo-${b.id}" style="margin-top:8px;"></div>
+            <div class="file-list" id="list-block-photo-${b.id}" style="margin-top:8px;flex:1;"></div>
           </div>
-          <div style="min-width:0;">
+          <div style="min-width:0;display:flex;flex-direction:column;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:8px;">PDF</p>
             <label class="dropzone" id="drop-block-pdf-${b.id}" style="padding:16px;">
               <div style="font-size:12px;"><strong>クリックして選択</strong> またはPDFをドロップ</div>
