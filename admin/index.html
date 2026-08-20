@@ -774,6 +774,49 @@
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
+
+  // 写真アップロード時の自動圧縮。長辺1920pxを超える場合は縮小し、JPEGとして再圧縮する。
+  // 圧縮後の方が大きくなった場合（もともと小さい画像だった場合など）は元のファイルをそのまま使う。
+  async function compressImage(file, maxDimension = 1920, quality = 0.82) {
+    if (!file.type || !file.type.startsWith('image/')) return file;
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+        reader.readAsDataURL(file);
+      });
+      const img = await new Promise((resolve, reject) => {
+        const im = new Image();
+        im.onload = () => resolve(im);
+        im.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+        im.src = dataUrl;
+      });
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width >= height) {
+          height = Math.round(height * (maxDimension / width));
+          width = maxDimension;
+        } else {
+          width = Math.round(width * (maxDimension / height));
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (!blob || blob.size >= file.size) return file;
+      const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+      return new File([blob], newName, { type: 'image/jpeg' });
+    } catch (err) {
+      // 圧縮に失敗した場合は元のファイルをそのままアップロードする
+      return file;
+    }
+  }
+
   function getExtLabel(fileName) {
     const parts = fileName.split('.');
     if (parts.length < 2) return 'FILE';
@@ -1804,11 +1847,13 @@
   function setupJoinPhotoDropzone(msgId) {
     const drop = document.getElementById(`drop-join-photo-${msgId}`);
     const input = document.getElementById(`input-join-photo-${msgId}`);
-    function handle(fileList) {
+    async function handle(fileList) {
       const file = fileList[0];
       if (!file) return;
-      if (file.size > 8 * 1024 * 1024) { showToast('画像は8MB以下にしてください'); return; }
-      pendingJoinPhotos[msgId] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+      if (file.size > 30 * 1024 * 1024) { showToast('画像は30MB以下にしてください'); return; }
+      showToast('画像を圧縮しています…');
+      const compressed = await compressImage(file);
+      pendingJoinPhotos[msgId] = { fileName: compressed.name, sizeLabel: formatSize(compressed.size), file: compressed };
       const box = document.getElementById(`confirm-join-photo-${msgId}`);
       box.style.display = 'block';
       box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1971,16 +2016,22 @@
   function setupBlockDropzone(blockId, kind) {
     const drop = document.getElementById(`drop-block-${kind}-${blockId}`);
     const input = document.getElementById(`input-block-${kind}-${blockId}`);
-    function handle(fileList) {
+    async function handle(fileList) {
       const file = fileList[0];
       if (!file) return;
       if (kind === 'pdf') {
         const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
         if (!isPdf) { showToast('PDFファイルのみアップロードできます'); return; }
+        if (file.size > 8 * 1024 * 1024) { showToast('ファイルは8MB以下にしてください'); return; }
+        if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
+        pendingBlocks[blockId][kind] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+      } else {
+        if (file.size > 30 * 1024 * 1024) { showToast('画像は30MB以下にしてください'); return; }
+        showToast('画像を圧縮しています…');
+        const compressed = await compressImage(file);
+        if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
+        pendingBlocks[blockId][kind] = { fileName: compressed.name, sizeLabel: formatSize(compressed.size), file: compressed };
       }
-      if (file.size > 8 * 1024 * 1024) { showToast('ファイルは8MB以下にしてください'); return; }
-      if (!pendingBlocks[blockId]) pendingBlocks[blockId] = {};
-      pendingBlocks[blockId][kind] = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
       const box = document.getElementById(`confirm-block-${kind}-${blockId}`);
       box.style.display = 'block';
       box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2230,14 +2281,16 @@
       showToast('既定の写真に戻しました');
     });
   }
-  function handleHeroFile(fileList) {
+  async function handleHeroFile(fileList) {
     const file = fileList[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      showToast('画像は8MB以下にしてください');
+    if (file.size > 30 * 1024 * 1024) {
+      showToast('画像は30MB以下にしてください');
       return;
     }
-    pendingHero = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+    showToast('画像を圧縮しています…');
+    const compressed = await compressImage(file);
+    pendingHero = { fileName: compressed.name, sizeLabel: formatSize(compressed.size), file: compressed };
     document.getElementById('heroConfirmBox').style.display = 'block';
     document.getElementById('heroConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -2320,14 +2373,16 @@
       showToast('削除しました');
     });
   }
-  function handleAboutFile(fileList) {
+  async function handleAboutFile(fileList) {
     const file = fileList[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      showToast('画像は8MB以下にしてください');
+    if (file.size > 30 * 1024 * 1024) {
+      showToast('画像は30MB以下にしてください');
       return;
     }
-    pendingAbout = { fileName: file.name, sizeLabel: formatSize(file.size), file: file };
+    showToast('画像を圧縮しています…');
+    const compressed = await compressImage(file);
+    pendingAbout = { fileName: compressed.name, sizeLabel: formatSize(compressed.size), file: compressed };
     document.getElementById('aboutConfirmBox').style.display = 'block';
     document.getElementById('aboutConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -2638,17 +2693,19 @@
     });
   }
 
-  function handleBlogImageFile(fileList) {
+  async function handleBlogImageFile(fileList) {
     const file = fileList[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      showToast('ファイルは8MB以下にしてください');
+    if (file.size > 30 * 1024 * 1024) {
+      showToast('ファイルは30MB以下にしてください');
       return;
     }
+    if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
+    const compressed = await compressImage(file);
     pendingBlogImage = {
-      fileName: file.name,
-      sizeLabel: formatSize(file.size),
-      file: file,
+      fileName: compressed.name,
+      sizeLabel: formatSize(compressed.size),
+      file: compressed,
     };
     renderBlogImagePreview();
   }
