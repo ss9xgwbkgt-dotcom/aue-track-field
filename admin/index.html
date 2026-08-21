@@ -30,7 +30,7 @@
     padding:26px 0;color:#f5f1e8;
   }
   header .wrap{max-width:1180px;}
-  .brand-text{font-family:var(--f-display);font-weight:600;letter-spacing:0.03em;font-size:15px;}
+  .brand-text{font-family:var(--f-display);font-weight:600;letter-spacing:0.03em;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .brand-text small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.14em;color:var(--gold);font-weight:400;margin-top:3px;}
 
   main{padding:150px 0 100px;}
@@ -47,6 +47,15 @@
     white-space:nowrap;
   }
   .gate button:hover, .btn:hover{filter:brightness(1.08);}
+  .header-back-btn{flex-shrink:0;}
+  @media(max-width:480px){
+    .brand-text{font-size:13px;}
+    .header-back-btn{font-size:11px;padding:8px 12px;}
+  }
+  @media(max-width:360px){
+    .brand-text{font-size:11px;}
+    .header-back-btn{font-size:10px;padding:7px 9px;}
+  }
   .btn:disabled{background:var(--cream-line);color:var(--ink-dim);cursor:default;filter:none;}
   .gate .err{color:var(--rust-dark);font-size:12px;margin-top:-4px;margin-bottom:10px;display:none;}
 
@@ -171,9 +180,9 @@
 </script>
 
 <header>
-  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap;">
     <span class="brand-text">愛知教育大学 陸上競技部</span>
-    <a href=".." class="btn" style="text-decoration:none;display:inline-block;">トップページへ戻る</a>
+    <a href=".." class="btn header-back-btn" style="text-decoration:none;display:inline-block;">トップページへ戻る</a>
   </div>
 </header>
 
