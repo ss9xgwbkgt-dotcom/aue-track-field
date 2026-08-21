@@ -160,7 +160,7 @@
   }
   .faq-row[open] .faq-toggle{color:var(--rust);}
   .faq-row[open] .faq-toggle::after{content:"－";color:var(--rust);}
-  .faq-answer{padding:0 2px 22px;font-size:14px;color:var(--ink-dim);line-height:1.9;}
+  .faq-answer{padding:0 2px 22px;font-size:14px;color:var(--ink-dim);line-height:1.9;overflow:hidden;transition:height .25s ease;}
   @media(max-width:800px){.faq-section{padding:44px 0;}.faq-heading{margin-bottom:24px;}}
   .closing-message{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,5vw,44px);line-height:1.4;}
   .closing-cta{
@@ -491,6 +491,32 @@
         <p class="faq-answer">${escapeHtml(f.answer)}</p>
       </details>
     `).join('');
+
+    // クリックしたときに一瞬で開閉するのではなく、高さをなめらかにアニメーションさせる
+    listEl.querySelectorAll('.faq-row').forEach((row) => {
+      const answer = row.querySelector('.faq-answer');
+      row.querySelector('.faq-toggle').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (row.open) {
+          answer.style.height = answer.offsetHeight + 'px';
+          requestAnimationFrame(() => { answer.style.height = '0px'; });
+          answer.addEventListener('transitionend', function onEnd() {
+            row.open = false;
+            answer.style.height = '';
+            answer.removeEventListener('transitionend', onEnd);
+          }, { once: true });
+        } else {
+          row.open = true;
+          const endHeight = answer.scrollHeight;
+          answer.style.height = '0px';
+          requestAnimationFrame(() => { answer.style.height = endHeight + 'px'; });
+          answer.addEventListener('transitionend', function onEnd() {
+            answer.style.height = '';
+            answer.removeEventListener('transitionend', onEnd);
+          }, { once: true });
+        }
+      });
+    });
   })();
 </script>
 
