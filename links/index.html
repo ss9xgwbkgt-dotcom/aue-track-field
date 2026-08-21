@@ -9,9 +9,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;--rust-dark:#8c2f1f;
-    --olive:#3e5233;--gold:#d3a548;--gold-soft:rgba(211,165,72,0.4);
-    --cream:#f8f5ef;--cream-line:rgba(24,28,38,0.12);--ink:#181c26;--ink-dim:rgba(24,28,38,0.6);
+    --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;
+    --gold:#d3a548;--gold-soft:rgba(211,165,72,0.4);
+    --cream-line:rgba(24,28,38,0.12);--ink:#181c26;--ink-dim:rgba(24,28,38,0.6);
     --paper-dim:rgba(245,241,232,0.68);--line-on-dark:rgba(245,241,232,0.22);
     --f-display:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
     --f-body:'Noto Sans JP','Zen Kaku Gothic New',sans-serif;
@@ -35,9 +35,6 @@
   nav.primary a.active{color:var(--gold);}
   nav.primary a::after{content:"";position:absolute;left:13px;right:13px;bottom:6px;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
   nav.primary a:hover::after,nav.primary a:focus-visible::after{transform:scaleX(1);}
-  .nav-cta{font-family:var(--f-display);font-size:13px;letter-spacing:0.05em;background:var(--rust);color:#f5f1e8;padding:10px 20px;border-radius:4px;transition:filter .2s;}
-  .nav-cta:hover{filter:brightness(1.15);}
-  .nav-cta:hover{filter:brightness(1.08);}
   .nav-social{display:flex;align-items:center;gap:4px;margin-left:10px;}
   .nav-social-btn{font-family:var(--f-mono);font-size:11px;letter-spacing:0.05em;color:var(--gold);padding:10px 6px;transition:color .2s;}
   .nav-social-btn:hover{color:#fff;}
@@ -59,62 +56,11 @@
   #mobile-nav a{display:flex;align-items:baseline;gap:14px;padding:18px 4px;color:#f5f1e8;border-bottom:1px solid var(--line-on-dark);font-family:var(--f-display);font-size:20px;letter-spacing:0.03em;}
   .mobile-nav-social{display:flex;gap:18px;padding:20px 4px;}
   .mobile-nav-social a{padding:0;border-bottom:none;font-family:var(--f-mono);font-size:13px;letter-spacing:0.04em;color:var(--gold);}
-  @media(max-width:860px){nav.primary,.nav-cta,.nav-social{display:none;}.burger{display:flex;}}
+  @media(max-width:860px){nav.primary,.nav-social{display:none;}.burger{display:flex;}}
 
   .page-hero{margin-top:76px;background:var(--rust);color:#f5f1e8;padding:64px 0 46px;}
-  .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:0.22em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;position:relative;z-index:1;}
-  .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold);}
   h1.page-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',var(--f-display);font-weight:700;font-size:clamp(32px,5vw,52px);letter-spacing:0.005em;position:relative;z-index:1;}
   .page-sub{margin-top:16px;max-width:56ch;color:var(--paper-dim);font-size:14px;line-height:1.9;position:relative;z-index:1;}
-
-  /* ジャンプナビ：横スクロールタブ */
-  .jumpnav{background:var(--navy);border-bottom:1px solid var(--line-on-dark);position:sticky;top:76px;z-index:50;}
-  .jumpnav-wrap{position:relative;padding-left:0;padding-right:0;}
-  .jumpnav-inner{
-    display:flex;gap:8px;padding:14px 28px;margin:0;
-    overflow-x:auto;overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch;scroll-behavior:smooth;
-    scrollbar-width:none;-ms-overflow-style:none;
-  }
-  .jumpnav-inner::-webkit-scrollbar{display:none;}
-  .jumpnav a{
-    font-family:var(--f-mono);font-size:11px;letter-spacing:0.04em;color:var(--paper-dim);
-    border:1px solid var(--line-on-dark);padding:7px 14px;border-radius:6px;transition:.2s;
-    white-space:nowrap;flex:0 0 auto;
-  }
-  .jumpnav a:hover,.jumpnav a:focus-visible{color:var(--navy);background:var(--gold);border-color:var(--gold);}
-  /* 右端に次のタグが少し見えるフェード（スクロール可能なヒント） */
-  .jumpnav-wrap::after{
-    content:"";position:absolute;top:0;right:0;bottom:0;width:44px;
-    background:linear-gradient(to right, rgba(24,28,38,0), var(--navy) 75%);
-    pointer-events:none;
-  }
-  /* 左右にスクロール可能であることを示すヒント（スマホのみ・シェブロン記号＋揺れる動き） */
-  .jumpnav-arrow{
-    position:absolute;top:50%;transform:translateY(-50%);
-    z-index:2;font-family:var(--f-mono);font-size:15px;line-height:1;letter-spacing:-5px;
-    color:rgba(245,241,232,0.5);pointer-events:auto;cursor:default;
-    padding:14px 6px;
-  }
-  .jumpnav-arrow-left{left:3px;}
-  .jumpnav-arrow-right{right:3px;}
-  .jumpnav-toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(12px);
-    background:var(--navy);color:#f5f1e8;border:1px solid var(--gold-soft);
-    font-family:var(--f-mono);font-size:12px;letter-spacing:0.02em;
-    padding:12px 18px;border-radius:6px;z-index:200;
-    opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;
-    white-space:nowrap;
-  }
-  .jumpnav-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  /* タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示 */
-  .jumpnav-wrap.no-scroll .jumpnav-arrow{display:none;}
-  .jumpnav-wrap.no-scroll::after{display:none;}
-  @media(min-width:860px){
-    .jumpnav-inner{flex-wrap:wrap;overflow-x:visible;justify-content:center;padding:14px 28px;}
-    .jumpnav-wrap::after{display:none;}
-    .jumpnav-arrow{display:none;}
-  }
 
   main{padding:64px 0 100px;}
   .link-section{margin-bottom:56px;scroll-margin-top:150px;}
@@ -190,17 +136,6 @@
   @media(max-width:700px){
     footer{padding:36px 0 26px;}
   }
-
-  .records-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .records-modal[hidden]{display:none;}
-  .records-modal-backdrop{position:absolute;inset:0;background:rgba(24,28,38,0.72);}
-  .records-modal-box{position:relative;background:#fff;border-radius:6px;max-width:900px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);}
-  .records-modal-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:1px solid var(--cream-line);background:#fff;font-size:18px;line-height:1;cursor:pointer;z-index:2;}
-  .records-modal-body{flex:1;overflow:auto;}
-  .records-modal-body iframe{width:100%;height:80vh;border:0;display:block;}
-  .records-modal-body img{width:100%;display:block;}
-  .records-modal-fallback{padding:50px 30px;text-align:center;font-family:var(--f-mono);font-size:13px;color:var(--ink-dim);}
-  .records-modal-fallback .btn{display:inline-block;margin-top:16px;font-family:var(--f-display);font-size:13px;background:var(--rust);color:#fff;padding:11px 22px;border-radius:4px;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -215,16 +150,11 @@
     if (combo && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(k)) { e.preventDefault(); return; }
     if (combo && (k === 'u' || k === 'U')) { e.preventDefault(); return; }
   });
-</script>
-
-<script>
   // コピペも禁止
   document.addEventListener('copy', (e) => e.preventDefault());
   document.addEventListener('cut', (e) => e.preventDefault());
   document.addEventListener('paste', (e) => e.preventDefault());
-</script>
 
-<script>
   // ページ移動時は上から表示（#付きのリンクの場合はそのまま）
   if (!location.hash) {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -340,33 +270,6 @@
   } else {
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
-
-  // タグがすべて画面内に収まりスクロール不要な場合は矢印・フェードを非表示にする
-  function updateJumpnavScrollHint() {
-    const wrap = document.querySelector('.jumpnav-wrap');
-    const inner = document.querySelector('.jumpnav-inner');
-    if (!wrap || !inner) return;
-    const needsScroll = inner.scrollWidth > inner.clientWidth + 1;
-    wrap.classList.toggle('no-scroll', !needsScroll);
-  }
-  updateJumpnavScrollHint();
-  window.addEventListener('resize', updateJumpnavScrollHint);
-  window.addEventListener('load', updateJumpnavScrollHint);
-
-  // 矢印は装飾（スクロールできる旨のヒント）であり、ボタンではない。
-  // 誤ってタップした人向けに、短い時間だけ案内メッセージを表示する
-  let jumpnavToastTimer = null;
-  function showJumpnavToast() {
-    const toast = document.getElementById('jumpnavToast');
-    if (!toast) return;
-    toast.classList.add('show');
-    clearTimeout(jumpnavToastTimer);
-    jumpnavToastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
-  }
-  const jumpnavArrowLeft = document.getElementById('jumpnavArrowLeft');
-  const jumpnavArrowRight = document.getElementById('jumpnavArrowRight');
-  if (jumpnavArrowLeft) jumpnavArrowLeft.addEventListener('click', showJumpnavToast);
-  if (jumpnavArrowRight) jumpnavArrowRight.addEventListener('click', showJumpnavToast);
 
   /* ===== リンク集：Supabase(link_categories / link_cards / link_card_urls)から取得して表示 ===== */
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
