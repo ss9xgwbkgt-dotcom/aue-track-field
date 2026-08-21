@@ -191,9 +191,8 @@
 
     <div id="gate" class="gate">
       <h2>編集者ログイン</h2>
-      <input type="email" id="loginEmail" placeholder="メールアドレス" autocomplete="username">
-      <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password" style="margin-top:10px;">
-      <p class="err" id="gateErr" style="display:none;">ログインに失敗しました。メールアドレスとパスワードをご確認ください。</p>
+      <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password">
+      <p class="err" id="gateErr" style="display:none;">ログインに失敗しました。パスワードをご確認ください。</p>
       <button class="btn" id="gateBtn">ログイン</button>
     </div>
 
@@ -709,20 +708,20 @@
   }
 
   // ログイン処理
+  const ADMIN_EMAIL = 'yamato.iwai.0719@gmail.com';
   const gate = document.getElementById('gate');
   const panel = document.getElementById('panel');
-  const loginEmail = document.getElementById('loginEmail');
   const loginPassword = document.getElementById('loginPassword');
   const gateErr = document.getElementById('gateErr');
 
   async function tryEnter() {
     gateErr.style.display = 'none';
     const { error } = await sb.auth.signInWithPassword({
-      email: loginEmail.value.trim(),
+      email: ADMIN_EMAIL,
       password: loginPassword.value,
     });
     if (error) {
-      gateErr.textContent = 'ログインに失敗しました。メールアドレスとパスワードをご確認ください。';
+      gateErr.textContent = 'ログインに失敗しました。パスワードをご確認ください。';
       gateErr.style.display = 'block';
       return;
     }
@@ -750,12 +749,10 @@
 
   document.getElementById('gateBtn').addEventListener('click', tryEnter);
   loginPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
-  loginEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
     panel.style.display = 'none';
     gate.style.display = 'block';
-    loginEmail.value = '';
     loginPassword.value = '';
   });
 
