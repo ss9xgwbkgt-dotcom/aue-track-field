@@ -46,6 +46,18 @@
   .cat-title{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row .cat-title{margin-bottom:0;padding-bottom:0;border-bottom:0;}
+  summary.cat-title-row,summary.cat-title{cursor:pointer;list-style:none;}
+  summary.cat-title-row::-webkit-details-marker,summary.cat-title::-webkit-details-marker{display:none;}
+  summary.cat-title-row::after,summary.cat-title::after{
+    content:"＋";font-family:var(--f-mono);font-size:18px;font-weight:400;
+    color:var(--ink-dim);margin-left:auto;flex-shrink:0;transition:color .2s;
+  }
+  details.cat-section[open] summary.cat-title-row::after,
+  details.cat-section[open] summary.cat-title::after{content:"－";color:var(--rust);}
+  details.cat-section[open] summary.cat-title-row .cat-title,
+  details.cat-section[open] summary.cat-title{color:var(--rust);}
+  .doc-category{margin-bottom:40px;}
+  .doc-category-title{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--ink-dim);letter-spacing:0.04em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--cream-line);}
 
   .dropzone{
     border:2px dashed var(--cream-line);border-radius:8px;padding:38px 20px;text-align:center;
@@ -175,7 +187,7 @@
       <h1>編集画面の概要</h1>
 
       <details class="example-details" style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
-        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">この画面で編集できること</summary>
+        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">編集できる項目</summary>
         <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">①</span>
@@ -225,7 +237,7 @@
       </details>
 
       <details class="example-details" style="border:1px solid var(--cream-line);border-radius:8px;padding:22px;margin-bottom:24px;background:#fff;">
-        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">更新・削除の操作方法</summary>
+        <summary style="font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--navy);">更新・削除の方法</summary>
         <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
           <div>
             <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;font-size:14px;">追加・変更するとき</div>
@@ -248,12 +260,12 @@
         <span id="storageUsage" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);"></span>
       </div>
 
-      <h1>サイトの編集</h1>
+      <h1>サイトを編集する</h1>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">トップページの写真①</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">トップページの写真①</span>
+        </summary>
         <div id="heroConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
           <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
@@ -287,12 +299,12 @@
           <input type="file" id="input-hero" accept="image/*">
         </label>
         <div class="file-list" id="list-hero"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">トップページの写真②</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">トップページの写真②</span>
+        </summary>
         <div id="aboutConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
           <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">この写真に差し替えてもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
@@ -325,10 +337,10 @@
           <input type="file" id="input-about" accept="image/*">
         </label>
         <div class="file-list" id="list-about"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title">ブログ記事</div>
+      <details class="cat-section">
+        <summary class="cat-title">ブログ記事</summary>
         <p class="lead" style="margin-bottom:14px;">タイトル・タグ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。投稿した記事は、下の一覧からいつでも再編集・削除できます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
@@ -429,12 +441,12 @@
           <p id="blogOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
           <div class="file-list" id="list-blog-all"></div>
         </details>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">愛教大10傑ファイル</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">愛教大10傑ファイル</span>
+        </summary>
         <div id="recordsConfirmBox" style="display:none;margin-bottom:14px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
           <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">このファイルに差し替えてもよろしいですか？</p>
           <div style="display:flex;gap:10px;">
@@ -448,12 +460,12 @@
           <input type="file" id="input-records" accept="application/pdf,.pdf">
         </label>
         <div class="file-list" id="list-records"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">各種資料</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">各種資料</span>
+        </summary>
 
         <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">各種資料の追加・削除・並べ替えができます。カテゴリーの追加・削除・並べ替えは「カテゴリーの編集」から行えます。</p>
 
@@ -499,28 +511,28 @@
         <div id="uncategorizedDocsBox" style="display:none;margin-bottom:22px;"></div>
 
         <div id="categories"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">入部案内ページの写真</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">入部案内ページの写真</span>
+        </summary>
         <p class="lead" style="margin-bottom:14px;">入部案内ページの4つのメッセージとともに表示する写真です。</p>
         <div id="joinPhotosPanels"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">活動ブロック紹介</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">活動ブロック紹介</span>
+        </summary>
         <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する4つの紹介カードです。短距離・中長距離・フィールド・マネージャーの各カードに、写真とPDFを1つずつ挿入できます。カードをクリックするとPDFが開く仕様になっています。</p>
         <div id="blocksPanels"></div>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">リンク集</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">リンク集</span>
+        </summary>
         <p class="lead" style="margin-bottom:14px;">カテゴリー・カード名・リンク（ラベルとURL）を入力して追加します。追加したカードは、下の一覧からいつでも再編集・削除できます。</p>
 
         <details class="example-details" style="margin-bottom:22px;">
@@ -611,12 +623,12 @@
           <p id="linkOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
           <div class="file-list" id="list-links-all"></div>
         </details>
-      </div>
+      </details>
 
-      <div class="cat-section">
-        <div class="cat-title-row">
-          <div class="cat-title">Q&amp;A</div>
-        </div>
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">Q&amp;A</span>
+        </summary>
         <p class="lead" style="margin-bottom:14px;">入部案内ページに表示する「Q&amp;A」を追加・編集・削除できます。追加した質問は、下の一覧からいつでも再編集・削除でき、並べ替えもできます。</p>
 
         <label class="form-field" style="display:block;margin-bottom:14px;">
@@ -647,7 +659,7 @@
           <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:10px;">↓ 質問の順番は、↑↓ボタンで入れ替えられます。</p>
           <div class="file-list" id="list-faqs"></div>
         </details>
-      </div>
+      </details>
     </div>
 
   </div>
@@ -1051,9 +1063,9 @@
     categoriesEl.innerHTML = '';
     cats.forEach((cat) => {
       const section = document.createElement('div');
-      section.className = 'cat-section';
+      section.className = 'doc-category';
       section.innerHTML = `
-        <div class="cat-title">${escapeHtml(cat.label)}</div>
+        <div class="doc-category-title">${escapeHtml(cat.label)}</div>
         <label class="dropzone" id="drop-${cat.id}">
           <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
           <input type="file" id="input-${cat.id}" multiple>
