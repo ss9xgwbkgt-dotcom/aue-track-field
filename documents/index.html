@@ -266,7 +266,7 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== 各種資料：Supabase(document_categories / documents)から取得して表示 ===== */
+  // supabase設定
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -338,7 +338,6 @@
     });
   }
 
-  /* ---- ファイルは同じタブで直接開く（Storageの公開URLへ遷移） ---- */
   function openFileFullScreen(d) {
     location.href = getPublicUrl(d.file_path);
   }

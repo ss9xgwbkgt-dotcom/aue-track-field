@@ -295,7 +295,7 @@
     return parts.pop().slice(0, 4).toUpperCase();
   }
 
-  /* ---- Supabase クライアント ---- */
+  // supabase設定
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -322,7 +322,7 @@
     `;
   }
 
-  // ブログ一覧：Supabaseの blog_posts テーブルから取得して見出しカードを生成。クリックで本文を開閉
+  // 記事一覧を取得
   let sortedPosts = [];
   Promise.all([
     sb.from('blog_posts').select('*').order('post_date', { ascending: false }),

@@ -271,7 +271,7 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ===== リンク集：Supabase(link_categories / link_cards / link_card_urls)から取得して表示 ===== */
+  // supabase設定
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -310,7 +310,6 @@
         links: (urls || []).filter((u) => u.card_id === c.id).map((u) => ({ label: u.label, url: u.url })),
       }));
 
-      // セクションを生成
       const sectionsEl = document.getElementById('linkSections');
       sectionsEl.innerHTML = (categories || []).map((cat) => `
         <div class="link-section" id="${escapeHtml(cat.id)}" data-reveal>
@@ -348,7 +347,7 @@
         grid.innerHTML = cardsInCat.map(renderLinkCard).join('');
       });
 
-      // アニメーション対象を、動的生成後の要素に対して再実行
+      // 動的に追加した要素にもreveal用のobserverを付け直す
       sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           revealObserver.observe(el);

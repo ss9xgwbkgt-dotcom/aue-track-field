@@ -402,7 +402,7 @@
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
 
-  /* ---- Supabase クライアント ---- */
+  // supabase設定
   const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -412,7 +412,7 @@
     return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
   }
 
-  /* ===== 入部案内メッセージの写真：Supabase(site_assets key='join_photo_msgN')から取得して表示 ===== */
+  // 各メッセージの写真
   (async function applyJoinStoryPhotos() {
     const { data } = await sb.from('site_assets').select('*').like('key', 'join_photo_%');
     const rows = data || [];
@@ -426,7 +426,7 @@
     });
   })();
 
-  /* ===== 活動ブロック紹介：Supabase(site_assets key='block_{id}_photo'/'block_{id}_pdf')から取得して表示 ===== */
+  // 活動ブロック紹介の写真・PDF
   const BLOCK_ORDER = [
     { id: 'short', label: '短距離' },
     { id: 'mid', label: '中長距離' },
@@ -477,7 +477,7 @@
     }[c]));
   }
 
-  // Q&A：Supabaseの faqs テーブルから取得して表示
+  // Q&A
   (async function loadFaqs() {
     const listEl = document.getElementById('faqList');
     const { data, error } = await sb.from('faqs').select('*').order('sort_order', { ascending: true });
