@@ -348,7 +348,7 @@
         grid.innerHTML = cardsInCat.map(renderLinkCard).join('');
       });
 
-      // アニメーション対象・ジャンプナビの矢印判定を、動的生成後の要素に対して再実行
+      // アニメーション対象を、動的生成後の要素に対して再実行
       sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           revealObserver.observe(el);
@@ -356,7 +356,6 @@
           el.classList.add('in');
         }
       });
-      updateJumpnavScrollHint();
     })
     .catch(() => {
       document.getElementById('linkSections').innerHTML =
