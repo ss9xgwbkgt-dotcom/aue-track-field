@@ -316,18 +316,22 @@
   function isImageFile(fileName) {
     return /\.(jpe?g|png|gif|webp|svg)$/i.test(fileName || '');
   }
-  function renderAttachment(post) {
-    if (!post.image_path) return '';
-    const url = getPublicUrl(post.image_path);
-    if (isImageFile(post.image_name)) {
-      return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
-    }
-    return `
-      <a class="post-attachment" href="${url}" target="_blank" rel="noopener">
-        <span class="post-attachment-icon">${escapeHtml(getExtLabel(post.image_name))}</span>
-        <span class="post-attachment-name">${escapeHtml(post.image_name)}</span>
-      </a>
-    `;
+  function renderAttachment(post, images) {
+    const files = (images && images.length)
+      ? images.map((img) => ({ path: img.file_path, name: img.file_name }))
+      : (post.image_path ? [{ path: post.image_path, name: post.image_name }] : []);
+    return files.map((f) => {
+      const url = getPublicUrl(f.path);
+      if (isImageFile(f.name)) {
+        return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
+      }
+      return `
+        <a class="post-attachment" href="${url}" target="_blank" rel="noopener">
+          <span class="post-attachment-icon">${escapeHtml(getExtLabel(f.name))}</span>
+          <span class="post-attachment-name">${escapeHtml(f.name)}</span>
+        </a>
+      `;
+    }).join('');
   }
 
   // 記事一覧を取得
@@ -335,10 +339,16 @@
   Promise.all([
     sb.from('blog_posts').select('*').order('post_date', { ascending: false }),
     sb.from('blog_tags').select('*').order('sort_order', { ascending: true }),
+    sb.from('blog_post_images').select('*').order('sort_order', { ascending: true }),
   ])
-    .then(([{ data, error }, { data: tags }]) => {
+    .then(([{ data, error }, { data: tags }, { data: images }]) => {
       if (error) throw error;
       sortedPosts = data || [];
+      const imagesByPost = {};
+      (images || []).forEach((img) => {
+        if (!imagesByPost[img.post_id]) imagesByPost[img.post_id] = [];
+        imagesByPost[img.post_id].push(img);
+      });
       const listEl = document.getElementById('postList');
 
       const tagFilter = document.getElementById('tagFilter');
@@ -375,7 +385,7 @@
               <span class="post-cat">${escapeHtml(p.tag)}</span>
             </div>
             <p class="post-excerpt">${escapeHtml(p.body || '')}</p>
-            ${renderAttachment(p)}
+            ${renderAttachment(p, imagesByPost[p.id])}
           </div>
         </div>
       `).join('');
