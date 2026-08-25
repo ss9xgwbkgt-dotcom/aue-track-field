@@ -427,10 +427,10 @@
           </label>
           <label class="form-field">
             <span>添付ファイル</span>
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※挿入可能数：1</p>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※挿入可能数：5（並び順は↑↓ボタンで変更できます）</p>
             <label class="dropzone" id="drop-blog-image">
               <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
-              <input type="file" id="input-blog-image">
+              <input type="file" id="input-blog-image" accept="image/*" multiple>
             </label>
             <div class="file-list" id="blogImagePreview"></div>
           </label>
@@ -2458,6 +2458,7 @@
   // ブログ記事
   let blogTagsCache = [];     // [{id,label,sort_order}]
   let blogPostsCache = [];    // [{id,title,tag,post_date,body,image_path,image_name}]
+  let blogPostImagesCache = {}; // { postId: [{id,file_path,file_name,sort_order}, ...] }
   let editingPostId = null;   // 編集中の記事id（null=新規投稿モード）
 
   async function initBlogAdmin() {
@@ -2476,6 +2477,13 @@
     const { data, error } = await sb.from('blog_posts').select('*').order('post_date', { ascending: false });
     if (error) { showToast('記事の取得に失敗しました'); return; }
     blogPostsCache = data || [];
+
+    const { data: images } = await sb.from('blog_post_images').select('*').order('sort_order', { ascending: true });
+    blogPostImagesCache = {};
+    (images || []).forEach((img) => {
+      if (!blogPostImagesCache[img.post_id]) blogPostImagesCache[img.post_id] = [];
+      blogPostImagesCache[img.post_id].push(img);
+    });
   }
 
   function getAllBlogCategories() {
@@ -2617,9 +2625,12 @@
         if (isOpen) return;
         const post = posts.find((p) => p.id === id);
         if (!post) return;
+        const images = blogPostImagesCache[id] && blogPostImagesCache[id].length
+          ? blogPostImagesCache[id]
+          : (post.image_path ? [{ file_path: post.image_path }] : []);
         detailEl.innerHTML = `
           ${post.body ? escapeHtml(post.body).replace(/\n/g, '<br>') : '（本文なし）'}
-          ${post.image_path ? `<img src="${getPublicUrl(post.image_path)}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">` : ''}
+          ${images.map((img) => `<img src="${getPublicUrl(img.file_path)}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">`).join('')}
         `;
         detailEl.style.display = 'block';
       });
@@ -2635,7 +2646,10 @@
         document.getElementById('blogCategory').value = post.tag || '';
         document.getElementById('blogDate').value = post.post_date || '';
         document.getElementById('blogBody').value = post.body || '';
-        pendingBlogImage = post.image_path ? { fileName: post.image_name, existingPath: post.image_path } : null;
+        const existingImages = blogPostImagesCache[id] && blogPostImagesCache[id].length
+          ? blogPostImagesCache[id].map((img) => ({ fileName: img.file_name, existingPath: img.file_path }))
+          : (post.image_path ? [{ fileName: post.image_name, existingPath: post.image_path }] : []);
+        pendingBlogImages = existingImages;
         renderBlogImagePreview();
         document.getElementById('blogSubmit').textContent = '変更を保存';
         document.getElementById('blogEditingNote').style.display = 'block';
@@ -2649,9 +2663,14 @@
         const id = btn.getAttribute('data-remove-post');
         if (!confirm('この記事を削除しますか？')) return;
         const post = posts.find((p) => p.id === id);
+        const images = blogPostImagesCache[id] || [];
         const { error } = await sb.from('blog_posts').delete().eq('id', id);
         if (error) { showToast('削除に失敗しました： ' + error.message); return; }
-        if (post && post.image_path) await removeFromBucket(post.image_path);
+        if (images.length) {
+          await Promise.all(images.map((img) => removeFromBucket(img.file_path)));
+        } else if (post && post.image_path) {
+          await removeFromBucket(post.image_path);
+        }
         if (editingPostId === id) resetBlogForm();
         await refreshBlogPosts();
         renderBlogList();
@@ -2661,13 +2680,14 @@
   }
 
   function renderBlogPostRow(p, allTags) {
+    const imgCount = blogPostImagesCache[p.id] ? blogPostImagesCache[p.id].length : (p.image_path ? 1 : 0);
     return `
       <div>
         <div class="file-row">
-          <span class="file-icon">${p.image_path ? escapeHtml(getExtLabel(p.image_name || '')) : 'TXT'}</span>
+          <span class="file-icon">${imgCount ? escapeHtml(getExtLabel(p.image_name || '')) : 'TXT'}</span>
           <div class="file-info">
             <div class="file-name"><span class="file-name-text">${escapeHtml(p.title)}</span></div>
-            <div class="file-meta">${allTags.includes(p.tag) ? escapeHtml(p.tag) : 'なし'} ・ ${p.post_date}${p.image_path ? ' ・ 添付あり' : ''}</div>
+            <div class="file-meta">${allTags.includes(p.tag) ? escapeHtml(p.tag) : 'なし'} ・ ${p.post_date}${imgCount ? ` ・ 添付${imgCount}枚` : ''}</div>
           </div>
           <div class="file-actions">
             <button class="icon-btn" data-view-post="${escapeHtml(p.id)}">閲覧</button>
@@ -2686,7 +2706,7 @@
     document.getElementById('blogCategory').value = '';
     document.getElementById('blogDate').value = '';
     document.getElementById('blogBody').value = '';
-    pendingBlogImage = null;
+    pendingBlogImages = [];
     document.getElementById('input-blog-image').value = '';
     renderBlogImagePreview();
     document.getElementById('blogSubmit').textContent = '投稿する';
@@ -2699,47 +2719,76 @@
 
   document.getElementById('blogCancelEdit').addEventListener('click', resetBlogForm);
 
-  let pendingBlogImage = null; // 新規: { fileName, sizeLabel, file } ／ 既存編集時: { fileName, existingPath }
+  let pendingBlogImages = []; // [{fileName, sizeLabel, file}] 新規分 ／ [{fileName, existingPath}] 既存分（混在可）
 
   function renderBlogImagePreview() {
     const el = document.getElementById('blogImagePreview');
-    if (!pendingBlogImage) {
+    if (!pendingBlogImages.length) {
       el.innerHTML = '';
       return;
     }
-    el.innerHTML = `
+    el.innerHTML = pendingBlogImages.map((img, i) => `
       <div class="file-row">
-        <span class="file-icon">${escapeHtml(getExtLabel(pendingBlogImage.fileName))}</span>
+        <span class="file-icon">${escapeHtml(getExtLabel(img.fileName))}</span>
         <div class="file-info">
-          <div class="file-name"><span class="file-name-text">${escapeHtml(pendingBlogImage.fileName)}</span></div>
-          <div class="file-meta">${pendingBlogImage.sizeLabel || ''}</div>
+          <div class="file-name"><span class="file-name-text">${escapeHtml(img.fileName)}</span></div>
+          <div class="file-meta">${img.sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
-          <button class="icon-btn" id="clearBlogImage">削除</button>
+          <button class="icon-btn" data-blog-img-up="${i}" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button class="icon-btn" data-blog-img-down="${i}" ${i === pendingBlogImages.length - 1 ? 'disabled' : ''}>↓</button>
+          <button class="icon-btn" data-blog-img-remove="${i}">削除</button>
         </div>
       </div>
-    `;
-    document.getElementById('clearBlogImage').addEventListener('click', () => {
-      pendingBlogImage = null;
-      document.getElementById('input-blog-image').value = '';
-      renderBlogImagePreview();
+    `).join('');
+
+    el.querySelectorAll('[data-blog-img-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-blog-img-up'));
+        [pendingBlogImages[i - 1], pendingBlogImages[i]] = [pendingBlogImages[i], pendingBlogImages[i - 1]];
+        renderBlogImagePreview();
+      });
+    });
+    el.querySelectorAll('[data-blog-img-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-blog-img-down'));
+        [pendingBlogImages[i], pendingBlogImages[i + 1]] = [pendingBlogImages[i + 1], pendingBlogImages[i]];
+        renderBlogImagePreview();
+      });
+    });
+    el.querySelectorAll('[data-blog-img-remove]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-blog-img-remove'));
+        pendingBlogImages.splice(i, 1);
+        document.getElementById('input-blog-image').value = '';
+        renderBlogImagePreview();
+      });
     });
   }
 
   async function handleBlogImageFile(fileList) {
-    const file = fileList[0];
-    if (!file) return;
-    if (file.size > 30 * 1024 * 1024) {
-      showToast('ファイルは30MB以下にしてください');
+    const files = Array.from(fileList);
+    if (!files.length) return;
+    const remaining = 5 - pendingBlogImages.length;
+    if (remaining <= 0) {
+      showToast('添付ファイルは5枚までです');
       return;
     }
-    if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
-    const compressed = await compressImage(file);
-    pendingBlogImage = {
-      fileName: compressed.name,
-      sizeLabel: formatSize(compressed.size),
-      file: compressed,
-    };
+    const toAdd = files.slice(0, remaining);
+    if (files.length > remaining) showToast('添付ファイルは5枚までです。先頭の' + remaining + '枚のみ追加します');
+    for (const file of toAdd) {
+      if (file.size > 30 * 1024 * 1024) {
+        showToast(file.name + ' は30MBを超えているためスキップしました');
+        continue;
+      }
+      if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
+      const compressed = await compressImage(file);
+      pendingBlogImages.push({
+        fileName: compressed.name,
+        sizeLabel: formatSize(compressed.size),
+        file: compressed,
+      });
+    }
     renderBlogImagePreview();
   }
 
@@ -2760,29 +2809,16 @@
     const post_date = document.getElementById('blogDate').value;
     const body = document.getElementById('blogBody').value.trim();
 
-    let image_path;
-    let image_name;
+    let uploadedPaths;
     try {
-      if (pendingBlogImage && pendingBlogImage.file) {
-        // 新しい画像がアップロードされた
-        image_path = await uploadToBucket('blog', pendingBlogImage.file);
-        image_name = pendingBlogImage.fileName;
-        // 編集時、以前の画像を消していたら古いファイルを削除
-        if (editingPostId) {
-          const prev = blogPostsCache.find((p) => p.id === editingPostId);
-          if (prev && prev.image_path && prev.image_path !== image_path) await removeFromBucket(prev.image_path);
-        }
-      } else if (pendingBlogImage && pendingBlogImage.existingPath) {
-        // 編集中で画像はそのまま
-        image_path = pendingBlogImage.existingPath;
-        image_name = pendingBlogImage.fileName;
-      } else {
-        // 画像なし。編集時に既存画像を削除した場合は消す
-        image_path = null;
-        image_name = null;
-        if (editingPostId) {
-          const prev = blogPostsCache.find((p) => p.id === editingPostId);
-          if (prev && prev.image_path) await removeFromBucket(prev.image_path);
+      // 現在残っている画像を、新規アップロード分はStorageへ上げてfile_pathを確定させる
+      uploadedPaths = [];
+      for (const img of pendingBlogImages) {
+        if (img.file) {
+          const path = await uploadToBucket('blog', img.file);
+          uploadedPaths.push({ file_path: path, file_name: img.fileName });
+        } else {
+          uploadedPaths.push({ file_path: img.existingPath, file_name: img.fileName });
         }
       }
     } catch (err) {
@@ -2790,18 +2826,38 @@
       return;
     }
 
+    // 後方互換：blog_posts.image_path/image_nameには1枚目を入れておく
+    const image_path = uploadedPaths[0] ? uploadedPaths[0].file_path : null;
+    const image_name = uploadedPaths[0] ? uploadedPaths[0].file_name : null;
+
+    let postId = editingPostId;
     if (editingPostId) {
       const { error } = await sb.from('blog_posts').update({
         title, tag, post_date, body, image_path, image_name, updated_at: new Date().toISOString(),
       }).eq('id', editingPostId);
       if (error) { showToast('更新に失敗しました： ' + error.message); return; }
-      showToast('記事を更新しました');
     } else {
-      const { error } = await sb.from('blog_posts').insert({ title, tag, post_date, body, image_path, image_name });
+      const { data, error } = await sb.from('blog_posts').insert({ title, tag, post_date, body, image_path, image_name }).select().single();
       if (error) { showToast('投稿に失敗しました： ' + error.message); return; }
-      showToast('記事を投稿しました');
+      postId = data.id;
     }
 
+    // blog_post_imagesは一旦全部消してから、今の並び順で入れ直す（既存ファイルは使い回すので削除しない）
+    const prevImages = blogPostImagesCache[postId] || [];
+    const keptPaths = new Set(uploadedPaths.map((u) => u.file_path));
+    const removedImages = prevImages.filter((img) => !keptPaths.has(img.file_path));
+    await Promise.all(removedImages.map((img) => removeFromBucket(img.file_path)));
+
+    await sb.from('blog_post_images').delete().eq('post_id', postId);
+    if (uploadedPaths.length) {
+      const rows = uploadedPaths.map((u, i) => ({
+        post_id: postId, file_path: u.file_path, file_name: u.file_name, sort_order: i,
+      }));
+      const { error: imgError } = await sb.from('blog_post_images').insert(rows);
+      if (imgError) { showToast('画像情報の保存に失敗しました： ' + imgError.message); return; }
+    }
+
+    showToast(editingPostId ? '記事を更新しました' : '記事を投稿しました');
     resetBlogForm();
     await refreshBlogPosts();
     renderBlogList();
@@ -2963,6 +3019,7 @@
     pendingJoinPhotos = {};
     pendingLinkSubmit = null;
     pendingFaqSubmit = null;
+    pendingBlogImages = [];
     await renderHero();
     await renderAbout();
     await renderRecords();
@@ -2976,6 +3033,9 @@
     await refreshFaqsCache();
     renderFaqList();
     resetFaqForm();
+    resetBlogForm();
+    await refreshBlogPosts();
+    renderBlogList();
   });
 </script>
 
