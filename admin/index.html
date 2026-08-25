@@ -946,11 +946,46 @@
         <div class="file-actions">
           <button class="icon-btn" data-move-up="${c.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
           <button class="icon-btn" data-move-down="${c.id}" ${i === cats.length - 1 ? 'disabled' : ''}>↓</button>
+          <button class="icon-btn" data-edit-cat="${c.id}">編集</button>
           <button class="icon-btn" data-delete-cat="${c.id}">削除</button>
         </div>
       </div>
     `).join('');
 
+    el.querySelectorAll('[data-edit-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit-cat');
+        const cat = loadCategories().find((c) => c.id === id);
+        if (!cat) return;
+        const row = btn.closest('.file-row');
+        row.querySelector('.file-name').innerHTML = `
+          <input type="text" value="${escapeHtml(cat.label)}" style="width:100%;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
+        `;
+        const actionsEl = row.querySelector('.file-actions');
+        actionsEl.innerHTML = `
+          <button class="icon-btn" data-save-cat="${id}">保存</button>
+          <button class="icon-btn" data-cancel-cat="${id}">キャンセル</button>
+        `;
+        const input = row.querySelector('input');
+        input.focus();
+        input.select();
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') actionsEl.querySelector('[data-save-cat]').click(); });
+
+        actionsEl.querySelector('[data-save-cat]').addEventListener('click', async () => {
+          const newLabel = input.value.trim();
+          if (!newLabel) { showToast('カテゴリー名を入力してください'); return; }
+          const { error } = await sb.from('document_categories').update({ label: newLabel }).eq('id', id);
+          if (error) { showToast('更新に失敗しました： ' + error.message); return; }
+          await refreshCategoriesCache();
+          await renderCategoryManager();
+          await renderCategoryDropzones();
+          showToast('カテゴリー名を更新しました');
+        });
+        actionsEl.querySelector('[data-cancel-cat]').addEventListener('click', () => {
+          renderCategoryManager();
+        });
+      });
+    });
     el.querySelectorAll('[data-move-up]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-move-up');
