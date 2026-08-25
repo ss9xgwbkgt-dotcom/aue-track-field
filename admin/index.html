@@ -1313,6 +1313,7 @@
           <div class="file-meta">見出し：なし ・ ${d.size_label || ''}</div>
         </div>
         <div class="file-actions" style="gap:8px;">
+          <button class="icon-btn" data-view-orphan="${escapeHtml(d.id)}">閲覧</button>
           <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:11px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
             ${cats.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('')}
           </select>
@@ -1320,6 +1321,13 @@
         </div>
       </div>
     `).join('');
+    listEl.querySelectorAll('[data-view-orphan]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const docId = btn.getAttribute('data-view-orphan');
+        const doc = orphaned.find((d) => d.id === docId);
+        if (doc) location.href = getPublicUrl(doc.file_path);
+      });
+    });
     listEl.querySelectorAll('[data-reassign-btn]').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const docId = btn.getAttribute('data-reassign-btn');
@@ -2301,10 +2309,14 @@
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
+          <button class="icon-btn" id="viewHero">閲覧</button>
           <button class="icon-btn" id="removeHero">削除</button>
         </div>
       </div>
     `;
+    document.getElementById('viewHero').addEventListener('click', () => {
+      if (heroAssetCache && heroAssetCache.file_path) location.href = getPublicUrl(heroAssetCache.file_path);
+    });
     document.getElementById('removeHero').addEventListener('click', async () => {
       if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
       if (heroAssetCache && heroAssetCache.file_path) await removeFromBucket(heroAssetCache.file_path);
@@ -2393,10 +2405,14 @@
           <div class="file-meta">${sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
+          <button class="icon-btn" id="viewAbout">閲覧</button>
           <button class="icon-btn" id="removeAbout">削除</button>
         </div>
       </div>
     `;
+    document.getElementById('viewAbout').addEventListener('click', () => {
+      if (aboutAssetCache && aboutAssetCache.file_path) location.href = getPublicUrl(aboutAssetCache.file_path);
+    });
     document.getElementById('removeAbout').addEventListener('click', async () => {
       if (!confirm('この写真を削除しますか？')) return;
       if (aboutAssetCache && aboutAssetCache.file_path) await removeFromBucket(aboutAssetCache.file_path);
@@ -2735,6 +2751,7 @@
           <div class="file-meta">${img.sizeLabel || ''}</div>
         </div>
         <div class="file-actions">
+          <button class="icon-btn" data-blog-img-view="${i}">閲覧</button>
           <button class="icon-btn" data-blog-img-up="${i}" ${i === 0 ? 'disabled' : ''}>↑</button>
           <button class="icon-btn" data-blog-img-down="${i}" ${i === pendingBlogImages.length - 1 ? 'disabled' : ''}>↓</button>
           <button class="icon-btn" data-blog-img-remove="${i}">削除</button>
@@ -2742,6 +2759,17 @@
       </div>
     `).join('');
 
+    el.querySelectorAll('[data-blog-img-view]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-blog-img-view'));
+        const img = pendingBlogImages[i];
+        if (img.existingPath) {
+          location.href = getPublicUrl(img.existingPath);
+        } else if (img.file) {
+          window.open(URL.createObjectURL(img.file), '_blank');
+        }
+      });
+    });
     el.querySelectorAll('[data-blog-img-up]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const i = Number(btn.getAttribute('data-blog-img-up'));
