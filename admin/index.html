@@ -291,10 +291,6 @@
 
       <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">保存範囲について：このデータはSupabase（サーバー）に保存されるため、どの端末・ブラウザからでも同じ内容が表示されます。</p>
 
-      <div class="toolbar">
-        <span id="storageUsage" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);"></span>
-      </div>
-
       <h1>サイトを編集する</h1>
       <p class="lead">各項目を開いて、サイトの内容を変更できます。</p>
 
@@ -767,7 +763,6 @@
     await initFaqAdmin();
     await renderBlocksPanels();
     await renderJoinPhotosPanels();
-    updateStorageUsage();
     checkGlobalPending();
   }
 
@@ -788,43 +783,11 @@
   });
 
   // データまわりの共通処理
-  function updateStorageUsage() {
-    const el = document.getElementById('storageUsage');
-    if (!el) return;
-    let total = 0;
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      const v = localStorage.getItem(k) || '';
-      total += k.length + v.length;
-    }
-    const mb = (total / (1024 * 1024)).toFixed(2);
-    el.textContent = `使用容量の目安：約${mb}MB（ブラウザの上限は5〜10MB程度）`;
-  }
-
-  function saveToStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-      showToast('保存容量がいっぱいです。写真やPDFを削除して空き容量を増やしてください。');
-      throw e;
-    }
-    window.dispatchEvent(new StorageEvent('storage', { key }));
-    updateStorageUsage();
-  }
-
   function checkGlobalPending() {
     // 各操作はその場で確認ダイアログが出て即座に反映されるため、
     // 「更新し忘れ」を知らせるこのグローバルな警告は不要になった（互換のため関数だけ残す）
   }
 
-  function loadFromStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
   function formatSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
