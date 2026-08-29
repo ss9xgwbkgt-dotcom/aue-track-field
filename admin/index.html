@@ -60,16 +60,11 @@
   .gate .err{color:var(--rust-dark);font-size:12px;margin-top:-4px;margin-bottom:10px;display:none;}
 
   .cat-section{margin-bottom:8px;}
-  .quick-heading,.other-heading{
+  .other-heading{
     font-family:var(--f-mono);font-size:11px;letter-spacing:0.08em;color:var(--ink-dim);
     margin:28px 0 10px;
   }
-  .quick-card{
-    background:#fdf1ee;border:1px solid rgba(184,64,43,0.25);border-radius:8px;padding:6px 16px;
-  }
-  .quick-card summary.cat-title-row{border-bottom:0;margin-bottom:0;padding:14px 0;}
   .quick-card .cat-title{font-size:20px;}
-  .quick-card[open] summary.cat-title-row{border-bottom:2px solid var(--rust);margin-bottom:16px;}
   .cat-title{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row .cat-title{margin-bottom:0;padding-bottom:0;border-bottom:0;}
@@ -248,12 +243,26 @@
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑤</span>
             <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">入部案内ページの写真</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">入部案内ページの4つのメッセージとともに表示する写真を差し替えられます。</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑥</span>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">活動ブロック紹介</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">短距離・中長距離・フィールド・マネージャーの各カードに、写真とPDFを1つずつ挿入できます。</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑦</span>
+            <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">リンク集</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しいリンクカードを追加できるほか、既存のカードを編集・削除できます。</div>
             </div>
           </div>
           <div style="display:flex;gap:12px;">
-            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑥</span>
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑧</span>
             <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">Q&amp;A</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しい質問カードを追加できるほか、既存のカードを編集・削除できます。</div>
@@ -289,7 +298,6 @@
       <h1>サイトを編集する</h1>
       <p class="lead">各項目を開いて、サイトの内容を変更できます。</p>
 
-      <p class="quick-heading">よく使う</p>
       <details class="cat-section quick-card">
         <summary class="cat-title-row">
           <span class="cat-title">📝 ブログを投稿する</span>
