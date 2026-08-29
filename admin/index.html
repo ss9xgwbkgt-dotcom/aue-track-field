@@ -60,6 +60,16 @@
   .gate .err{color:var(--rust-dark);font-size:12px;margin-top:-4px;margin-bottom:10px;display:none;}
 
   .cat-section{margin-bottom:8px;}
+  .quick-heading,.other-heading{
+    font-family:var(--f-mono);font-size:11px;letter-spacing:0.08em;color:var(--ink-dim);
+    margin:28px 0 10px;
+  }
+  .quick-card{
+    background:#fdf1ee;border:1px solid rgba(184,64,43,0.25);border-radius:8px;padding:6px 16px;
+  }
+  .quick-card summary.cat-title-row{border-bottom:0;margin-bottom:0;padding:14px 0;}
+  .quick-card .cat-title{font-size:20px;}
+  .quick-card[open] summary.cat-title-row{border-bottom:2px solid var(--rust);margin-bottom:16px;}
   .cat-title{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--rust);}
   .cat-title-row .cat-title{margin-bottom:0;padding-bottom:0;border-bottom:0;}
@@ -279,6 +289,115 @@
       <h1>サイトを編集する</h1>
       <p class="lead">各項目を開いて、サイトの内容を変更できます。</p>
 
+      <p class="quick-heading">よく使う</p>
+      <details class="cat-section quick-card">
+        <summary class="cat-title-row">
+          <span class="cat-title">📝 ブログを投稿する</span>
+        </summary>
+        <p class="lead" style="margin-bottom:14px;">タイトル・タグ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。投稿した記事は、下の一覧からいつでも再編集・削除できます。</p>
+
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>具体的な説明を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、このように反映されます。</p>
+
+            <div style="position:relative;padding-top:24px;margin-bottom:20px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルと日付が並びます）</span>
+              <div style="font-family:var(--f-display);font-weight:600;font-size:17px;color:var(--navy);border-bottom:1px solid var(--cream-line);padding-bottom:14px;">800m愛教大記録更新！！</div>
+            </div>
+
+            <div style="position:relative;padding-top:24px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ タイトルクリックして開くと、表示されます</span>
+              <div style="border:1px solid var(--cream-line);border-radius:6px;padding:16px;">
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+                  <span style="font-family:var(--f-mono);font-size:11px;color:var(--rust);">2026.08.01</span>
+                  <span style="font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:6px;">お知らせ</span>
+                </div>
+                <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;margin-bottom:14px;">本文がここに表示されます。</p>
+                <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);text-align:center;padding:0 12px;">写真を添付した場合、ここに表示される</span>
+                </div>
+              </div>
+            </div>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.9;">写真を添付しなかった場合、その部分は表示されません。</p>
+          </div>
+        </details>
+
+        <div class="blog-form">
+          <p id="blogEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">この記事を編集しています</p>
+          <label class="form-field">
+            <span>タイトル</span>
+            <input type="text" id="blogTitle" placeholder="タイトルを記入してください。">
+          </label>
+          <label class="form-field">
+            <span>タグ</span>
+            <select id="blogCategory" style="font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+              <option value="" disabled selected>タグを選択してください</option>
+              <option value="お知らせ">お知らせ</option>
+              <option value="大会">大会</option>
+              <option value="練習日誌">練習日誌</option>
+              <option value="行事">行事</option>
+              <option value="その他">その他</option>
+            </select>
+            <details class="example-details" style="margin-top:8px;">
+              <summary>タグの追加・削除</summary>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                <button class="icon-btn" id="showNewBlogCategoryBtn" type="button">＋ タグを追加</button>
+                <button class="icon-btn" id="showDeleteBlogCategoryBtn" type="button">－ タグを削除</button>
+              </div>
+              <div id="newBlogCategoryRow" style="display:none;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                <input type="text" id="newBlogCategoryInput" placeholder="新しいタグ名（例：合宿）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
+                <button class="icon-btn" id="addBlogCategoryBtn" type="button">追加する</button>
+              </div>
+              <p id="newBlogCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
+              <div id="blogCategoryManager" class="file-list" style="margin-top:10px;display:none;"></div>
+            </details>
+          </label>
+          <label class="form-field">
+            <span>日付</span>
+            <input type="date" id="blogDate">
+          </label>
+          <label class="form-field">
+            <span>本文</span>
+            <textarea id="blogBody" rows="5" placeholder="記事の本文を入力してください"></textarea>
+          </label>
+          <label class="form-field">
+            <span>添付ファイル</span>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※挿入可能数：5（並び順は↑↓ボタンで変更できます）</p>
+            <label class="dropzone" id="drop-blog-image">
+              <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
+              <input type="file" id="input-blog-image" accept="image/*" multiple>
+            </label>
+            <div class="file-list" id="blogImagePreview"></div>
+          </label>
+          <p id="blogFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;"></p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="blogSubmit" type="button">投稿する</button>
+            <button class="icon-btn" id="blogCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+          </div>
+          <div id="blogConfirmBox" style="display:none;margin-top:6px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+            <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に投稿してもよろしいですか？</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" id="blogConfirmYes" type="button">投稿を確定</button>
+              <button class="icon-btn" id="blogConfirmNo" type="button">キャンセル</button>
+            </div>
+          </div>
+        </div>
+
+        <details id="blogListDetails">
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 12px;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">投稿済みの記事一覧（<span id="blogListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
+          </summary>
+          <select id="blogListFilter" style="font-family:var(--f-mono);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
+            <option value="">すべてのタグ</option>
+          </select>
+          <p id="blogOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
+          <div class="file-list" id="list-blog-all"></div>
+        </details>
+      </details>
+
+      <p class="other-heading">その他の編集項目</p>
+
       <details class="cat-section">
         <summary class="cat-title-row">
           <span class="cat-title">トップページの写真</span>
@@ -354,111 +473,7 @@
         <div class="file-list" id="list-about"></div>
       </details>
 
-      <details class="cat-section">
-        <summary class="cat-title-row">
-          <span class="cat-title">ブログの編集・投稿</span>
-        </summary>
-        <p class="lead" style="margin-bottom:14px;">タイトル・タグ・日付・本文を入力して投稿します。必要であれば記事に添付する写真（.jpeg / .png など）をドロップしてください。投稿した記事は、下の一覧からいつでも再編集・削除できます。</p>
 
-        <details class="example-details" style="margin-bottom:22px;">
-          <summary>具体的な説明を見る</summary>
-          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">入力すると、このように反映されます。</p>
-
-            <div style="position:relative;padding-top:24px;margin-bottom:20px;">
-              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「タイトル」（一覧ではタイトルと日付が並びます）</span>
-              <div style="font-family:var(--f-display);font-weight:600;font-size:17px;color:var(--navy);border-bottom:1px solid var(--cream-line);padding-bottom:14px;">800m愛教大記録更新！！</div>
-            </div>
-
-            <div style="position:relative;padding-top:24px;">
-              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ タイトルクリックして開くと、表示されます</span>
-              <div style="border:1px solid var(--cream-line);border-radius:6px;padding:16px;">
-                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-                  <span style="font-family:var(--f-mono);font-size:11px;color:var(--rust);">2026.08.01</span>
-                  <span style="font-family:var(--f-mono);font-size:9px;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:6px;">お知らせ</span>
-                </div>
-                <p style="font-size:13px;color:var(--ink-dim);line-height:1.85;margin-bottom:14px;">本文がここに表示されます。</p>
-                <div style="width:100%;aspect-ratio:16/9;border-radius:4px;background:var(--cream);display:flex;align-items:center;justify-content:center;">
-                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);text-align:center;padding:0 12px;">写真を添付した場合、ここに表示される</span>
-                </div>
-              </div>
-            </div>
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.9;">写真を添付しなかった場合、その部分は表示されません。</p>
-          </div>
-        </details>
-
-        <div class="blog-form">
-          <p id="blogEditingNote" class="lead" style="display:none;color:var(--rust-dark);font-weight:700;margin-bottom:-4px;">この記事を編集しています</p>
-          <label class="form-field">
-            <span>タイトル</span>
-            <input type="text" id="blogTitle" placeholder="タイトルを記入してください。">
-          </label>
-          <label class="form-field">
-            <span>タグ</span>
-            <select id="blogCategory" style="font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
-              <option value="" disabled selected>タグを選択してください</option>
-              <option value="お知らせ">お知らせ</option>
-              <option value="大会">大会</option>
-              <option value="練習日誌">練習日誌</option>
-              <option value="行事">行事</option>
-              <option value="その他">その他</option>
-            </select>
-            <details class="example-details" style="margin-top:8px;">
-              <summary>タグの追加・削除</summary>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-                <button class="icon-btn" id="showNewBlogCategoryBtn" type="button">＋ タグを追加</button>
-                <button class="icon-btn" id="showDeleteBlogCategoryBtn" type="button">－ タグを削除</button>
-              </div>
-              <div id="newBlogCategoryRow" style="display:none;gap:10px;margin-top:8px;flex-wrap:wrap;">
-                <input type="text" id="newBlogCategoryInput" placeholder="新しいタグ名（例：合宿）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:13px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
-                <button class="icon-btn" id="addBlogCategoryBtn" type="button">追加する</button>
-              </div>
-              <p id="newBlogCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
-              <div id="blogCategoryManager" class="file-list" style="margin-top:10px;display:none;"></div>
-            </details>
-          </label>
-          <label class="form-field">
-            <span>日付</span>
-            <input type="date" id="blogDate">
-          </label>
-          <label class="form-field">
-            <span>本文</span>
-            <textarea id="blogBody" rows="5" placeholder="記事の本文を入力してください"></textarea>
-          </label>
-          <label class="form-field">
-            <span>添付ファイル</span>
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※挿入可能数：5（並び順は↑↓ボタンで変更できます）</p>
-            <label class="dropzone" id="drop-blog-image">
-              <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
-              <input type="file" id="input-blog-image" accept="image/*" multiple>
-            </label>
-            <div class="file-list" id="blogImagePreview"></div>
-          </label>
-          <p id="blogFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;"></p>
-          <div style="display:flex;gap:10px;">
-            <button class="btn" id="blogSubmit" type="button">投稿する</button>
-            <button class="icon-btn" id="blogCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
-          </div>
-          <div id="blogConfirmBox" style="display:none;margin-top:6px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
-            <p style="font-size:13px;color:var(--ink);margin-bottom:12px;">本当に投稿してもよろしいですか？</p>
-            <div style="display:flex;gap:10px;">
-              <button class="btn" id="blogConfirmYes" type="button">投稿を確定</button>
-              <button class="icon-btn" id="blogConfirmNo" type="button">キャンセル</button>
-            </div>
-          </div>
-        </div>
-
-        <details id="blogListDetails">
-          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 12px;cursor:pointer;list-style:none;">
-            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">投稿済みの記事一覧（<span id="blogListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
-          </summary>
-          <select id="blogListFilter" style="font-family:var(--f-mono);font-size:12px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
-            <option value="">すべてのタグ</option>
-          </select>
-          <p id="blogOrphanError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:14px;line-height:1.9;"></p>
-          <div class="file-list" id="list-blog-all"></div>
-        </details>
-      </details>
 
       <details class="cat-section">
         <summary class="cat-title-row">
@@ -516,7 +531,7 @@
           </summary>
 
           <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-            <input type="text" id="newCategoryInput" placeholder="新しいカテゴリー名（例：全教戦関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+            <input type="text" id="newCategoryInput" placeholder="新しいカテゴリー名（例：全教戦関連）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
             <button class="btn" id="addCategoryBtn" type="button">追加する</button>
           </div>
           <p id="newCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
@@ -588,7 +603,7 @@
 
           <label class="form-field">
             <span>①カテゴリー</span>
-            <select id="linkCategory" style="font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;"></select>
+            <select id="linkCategory" style="font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;"></select>
             <details class="example-details" style="margin-top:8px;">
               <summary>カテゴリーの追加・削除</summary>
               <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
@@ -596,7 +611,7 @@
                 <button class="icon-btn" id="showDeleteLinkCategoryBtn" type="button">－ カテゴリーを削除</button>
               </div>
               <div id="newLinkCategoryRow" style="display:none;gap:10px;margin-top:8px;flex-wrap:wrap;">
-                <input type="text" id="newLinkCategoryInput" placeholder="新しいカテゴリー名（例：他大学サークル）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:13px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
+                <input type="text" id="newLinkCategoryInput" placeholder="新しいカテゴリー名（例：他大学サークル）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:9px 12px;">
                 <button class="icon-btn" id="addLinkCategoryBtn" type="button">追加する</button>
               </div>
               <p id="newLinkCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
@@ -633,7 +648,7 @@
           <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 12px;cursor:pointer;list-style:none;">
             <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">公開済みのカード一覧（<span id="linkListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
           </summary>
-          <select id="linkListFilter" style="font-family:var(--f-mono);font-size:12px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
+          <select id="linkListFilter" style="font-family:var(--f-mono);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:8px 10px;margin-bottom:14px;">
             <option value="">すべてのカテゴリー</option>
           </select>
           <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:10px;">↓ カードの順番は、↑↓ボタンで入れ替えられます（同じカテゴリー内のみ）。</p>
@@ -650,11 +665,11 @@
 
         <label class="form-field" style="display:block;margin-bottom:14px;">
           <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">質問</span>
-          <input type="text" id="faqQuestion" placeholder="例：部活の雰囲気はどんな感じですか？" style="width:100%;font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+          <input type="text" id="faqQuestion" placeholder="例：部活の雰囲気はどんな感じですか？" style="width:100%;font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
         </label>
         <label class="form-field" style="display:block;margin-bottom:14px;">
           <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">回答</span>
-          <textarea id="faqAnswer" rows="3" placeholder="回答の本文を入力してください" style="width:100%;font-family:var(--f-body);font-size:14px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;resize:vertical;"></textarea>
+          <textarea id="faqAnswer" rows="3" placeholder="回答の本文を入力してください" style="width:100%;font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;resize:vertical;"></textarea>
         </label>
         <p id="faqFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;margin-bottom:14px;"></p>
         <div style="display:flex;gap:10px;margin-bottom:26px;">
@@ -959,7 +974,7 @@
         if (!cat) return;
         const row = btn.closest('.file-row');
         row.querySelector('.file-name').innerHTML = `
-          <input type="text" value="${escapeHtml(cat.label)}" style="width:100%;font-family:var(--f-body);font-size:14px;border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
+          <input type="text" value="${escapeHtml(cat.label)}" style="width:100%;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
         `;
         const actionsEl = row.querySelector('.file-actions');
         actionsEl.innerHTML = `
@@ -1349,7 +1364,7 @@
         </div>
         <div class="file-actions" style="gap:8px;">
           <button class="icon-btn" data-view-orphan="${escapeHtml(d.id)}">閲覧</button>
-          <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:11px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
+          <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
             ${cats.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('')}
           </select>
           <button class="icon-btn" data-reassign-btn="${escapeHtml(d.id)}">この見出しに移動</button>
