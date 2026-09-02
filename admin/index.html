@@ -836,6 +836,34 @@
     }
   }
 
+  // スマホのSafariは動画の最初のフレームを自動表示しないため、
+  // アップロード時に最初のフレームを画像として切り出しておく（一覧・記事ページのサムネイル用）
+  async function generateVideoThumbnail(file) {
+    try {
+      const url = URL.createObjectURL(file);
+      const video = document.createElement('video');
+      video.src = url;
+      video.muted = true;
+      video.playsInline = true;
+      await new Promise((resolve, reject) => {
+        video.onloadeddata = resolve;
+        video.onerror = () => reject(new Error('動画の読み込みに失敗しました'));
+      });
+      video.currentTime = Math.min(0.1, video.duration || 0);
+      await new Promise((resolve) => { video.onseeked = resolve; });
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+      URL.revokeObjectURL(url);
+      if (!blob) return null;
+      return new File([blob], file.name.replace(/\.[^.]+$/, '') + '-poster.jpg', { type: 'image/jpeg' });
+    } catch (err) {
+      return null;
+    }
+  }
+
   function getExtLabel(fileName) {
     const parts = fileName.split('.');
     if (parts.length < 2) return 'FILE';
@@ -2676,7 +2704,8 @@
           ${images.map((img) => {
             const url = getPublicUrl(img.file_path);
             if (isVideoFile(img.file_name)) {
-              return `<video src="${url}" controls playsinline preload="metadata" style="max-width:100%;margin-top:8px;border-radius:4px;"></video>`;
+              const poster = img.poster_path ? ` poster="${getPublicUrl(img.poster_path)}"` : '';
+              return `<video src="${url}" controls playsinline preload="metadata"${poster} style="max-width:100%;margin-top:8px;border-radius:4px;"></video>`;
             }
             return `<img src="${url}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">`;
           }).join('')}
@@ -2696,7 +2725,7 @@
         document.getElementById('blogDate').value = post.post_date || '';
         document.getElementById('blogBody').value = post.body || '';
         const existingImages = blogPostImagesCache[id] && blogPostImagesCache[id].length
-          ? blogPostImagesCache[id].map((img) => ({ fileName: img.file_name, existingPath: img.file_path }))
+          ? blogPostImagesCache[id].map((img) => ({ fileName: img.file_name, existingPath: img.file_path, existingPosterPath: img.poster_path }))
           : (post.image_path ? [{ fileName: post.image_name, existingPath: post.image_path }] : []);
         pendingBlogImages = existingImages;
         renderBlogImagePreview();
@@ -2716,7 +2745,11 @@
         const { error } = await sb.from('blog_posts').delete().eq('id', id);
         if (error) { showToast('削除に失敗しました： ' + error.message); return; }
         if (images.length) {
-          await Promise.all(images.map((img) => removeFromBucket(img.file_path)));
+          await Promise.all(images.map((img) => {
+            const jobs = [removeFromBucket(img.file_path)];
+            if (img.poster_path) jobs.push(removeFromBucket(img.poster_path));
+            return Promise.all(jobs);
+          }));
         } else if (post && post.image_path) {
           await removeFromBucket(post.image_path);
         }
@@ -2846,10 +2879,12 @@
       }
       if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
       const compressed = await compressImage(file);
+      const posterFile = isVideo ? await generateVideoThumbnail(file) : null;
       pendingBlogImages.push({
         fileName: compressed.name,
         sizeLabel: formatSize(compressed.size),
         file: compressed,
+        posterFile,
       });
     }
     renderBlogImagePreview();
@@ -2879,9 +2914,11 @@
       for (const img of pendingBlogImages) {
         if (img.file) {
           const path = await uploadToBucket('blog', img.file);
-          uploadedPaths.push({ file_path: path, file_name: img.fileName });
+          let posterPath = null;
+          if (img.posterFile) posterPath = await uploadToBucket('blog', img.posterFile);
+          uploadedPaths.push({ file_path: path, file_name: img.fileName, poster_path: posterPath });
         } else {
-          uploadedPaths.push({ file_path: img.existingPath, file_name: img.fileName });
+          uploadedPaths.push({ file_path: img.existingPath, file_name: img.fileName, poster_path: img.existingPosterPath || null });
         }
       }
     } catch (err) {
@@ -2909,12 +2946,16 @@
     const prevImages = blogPostImagesCache[postId] || [];
     const keptPaths = new Set(uploadedPaths.map((u) => u.file_path));
     const removedImages = prevImages.filter((img) => !keptPaths.has(img.file_path));
-    await Promise.all(removedImages.map((img) => removeFromBucket(img.file_path)));
+    await Promise.all(removedImages.map((img) => {
+      const jobs = [removeFromBucket(img.file_path)];
+      if (img.poster_path) jobs.push(removeFromBucket(img.poster_path));
+      return Promise.all(jobs);
+    }));
 
     await sb.from('blog_post_images').delete().eq('post_id', postId);
     if (uploadedPaths.length) {
       const rows = uploadedPaths.map((u, i) => ({
-        post_id: postId, file_path: u.file_path, file_name: u.file_name, sort_order: i,
+        post_id: postId, file_path: u.file_path, file_name: u.file_name, poster_path: u.poster_path, sort_order: i,
       }));
       const { error: imgError } = await sb.from('blog_post_images').insert(rows);
       if (imgError) { showToast('画像情報の保存に失敗しました： ' + imgError.message); return; }

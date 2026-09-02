@@ -322,7 +322,7 @@
   }
   function renderAttachment(post, images) {
     const files = (images && images.length)
-      ? images.map((img) => ({ path: img.file_path, name: img.file_name }))
+      ? images.map((img) => ({ path: img.file_path, name: img.file_name, posterPath: img.poster_path }))
       : (post.image_path ? [{ path: post.image_path, name: post.image_name }] : []);
     return files.map((f) => {
       const url = getPublicUrl(f.path);
@@ -330,7 +330,8 @@
         return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
       }
       if (isVideoFile(f.name)) {
-        return `<video class="post-video" src="${url}" controls playsinline preload="metadata"></video>`;
+        const poster = f.posterPath ? ` poster="${getPublicUrl(f.posterPath)}"` : '';
+        return `<video class="post-video" src="${url}" controls playsinline preload="metadata"${poster}></video>`;
       }
       return `
         <a class="post-attachment" href="${url}" target="_blank" rel="noopener">
