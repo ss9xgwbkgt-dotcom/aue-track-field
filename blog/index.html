@@ -330,7 +330,7 @@
         return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
       }
       if (isVideoFile(f.name)) {
-        return `<video class="post-video" src="${url}" controls playsinline></video>`;
+        return `<video class="post-video" src="${url}" controls playsinline preload="metadata"></video>`;
       }
       return `
         <a class="post-attachment" href="${url}" target="_blank" rel="noopener">

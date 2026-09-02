@@ -2676,7 +2676,7 @@
           ${images.map((img) => {
             const url = getPublicUrl(img.file_path);
             if (isVideoFile(img.file_name)) {
-              return `<video src="${url}" controls playsinline style="max-width:100%;margin-top:8px;border-radius:4px;"></video>`;
+              return `<video src="${url}" controls playsinline preload="metadata" style="max-width:100%;margin-top:8px;border-radius:4px;"></video>`;
             }
             return `<img src="${url}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">`;
           }).join('')}
