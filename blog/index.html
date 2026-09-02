@@ -112,7 +112,8 @@
   .post-date-preview{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);flex-shrink:0;}
   .post-cat{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:0.06em;color:var(--olive);border:1px solid rgba(62,82,51,0.35);padding:3px 9px;border-radius:6px;}
   .post-excerpt{font-size:13px;color:var(--ink-dim);max-width:60ch;line-height:1.85;margin-bottom:16px;}
-  .post-image{width:100%;max-width:520px;border-radius:6px;display:block;margin-bottom:14px;}
+  .post-image{max-width:min(520px,100%);max-height:480px;width:auto;height:auto;border-radius:6px;display:block;margin-bottom:14px;}
+  .post-video{max-width:min(520px,100%);max-height:480px;width:auto;height:auto;border-radius:6px;display:block;margin-bottom:14px;background:#000;}
   .post-attachment{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 14px;margin-bottom:14px;text-decoration:none;transition:border-color .2s;background:#fff;font:inherit;cursor:pointer;color:inherit;}
   .post-attachment:hover{border-color:var(--rust);}
   .post-attachment-icon{font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--olive);background:var(--cream);border:1px solid var(--cream-line);border-radius:4px;padding:4px 8px;}
@@ -316,6 +317,9 @@
   function isImageFile(fileName) {
     return /\.(jpe?g|png|gif|webp|svg)$/i.test(fileName || '');
   }
+  function isVideoFile(fileName) {
+    return /\.(mp4|mov|webm|m4v)$/i.test(fileName || '');
+  }
   function renderAttachment(post, images) {
     const files = (images && images.length)
       ? images.map((img) => ({ path: img.file_path, name: img.file_name }))
@@ -324,6 +328,9 @@
       const url = getPublicUrl(f.path);
       if (isImageFile(f.name)) {
         return `<img class="post-image" src="${url}" alt="${escapeHtml(post.title)}">`;
+      }
+      if (isVideoFile(f.name)) {
+        return `<video class="post-video" src="${url}" controls playsinline></video>`;
       }
       return `
         <a class="post-attachment" href="${url}" target="_blank" rel="noopener">

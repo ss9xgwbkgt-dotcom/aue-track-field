@@ -367,10 +367,10 @@
           </label>
           <label class="form-field">
             <span>添付ファイル</span>
-            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※挿入可能数：5（並び順は↑↓ボタンで変更できます）</p>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:2px 0 8px;">※写真・動画あわせて5つまで挿入できます（並び順は↑↓ボタンで変更できます）</p>
             <label class="dropzone" id="drop-blog-image">
               <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
-              <input type="file" id="input-blog-image" accept="image/*" multiple>
+              <input type="file" id="input-blog-image" accept="image/*,video/*" multiple>
             </label>
             <div class="file-list" id="blogImagePreview"></div>
           </label>
@@ -840,6 +840,12 @@
     const parts = fileName.split('.');
     if (parts.length < 2) return 'FILE';
     return parts.pop().slice(0, 4).toUpperCase();
+  }
+  function isImageFile(fileName) {
+    return /\.(jpe?g|png|gif|webp|svg)$/i.test(fileName || '');
+  }
+  function isVideoFile(fileName) {
+    return /\.(mp4|mov|webm|m4v)$/i.test(fileName || '');
   }
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (c) => ({
@@ -2664,10 +2670,16 @@
         if (!post) return;
         const images = blogPostImagesCache[id] && blogPostImagesCache[id].length
           ? blogPostImagesCache[id]
-          : (post.image_path ? [{ file_path: post.image_path }] : []);
+          : (post.image_path ? [{ file_path: post.image_path, file_name: post.image_name }] : []);
         detailEl.innerHTML = `
           ${post.body ? escapeHtml(post.body).replace(/\n/g, '<br>') : '（本文なし）'}
-          ${images.map((img) => `<img src="${getPublicUrl(img.file_path)}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">`).join('')}
+          ${images.map((img) => {
+            const url = getPublicUrl(img.file_path);
+            if (isVideoFile(img.file_name)) {
+              return `<video src="${url}" controls playsinline style="max-width:100%;margin-top:8px;border-radius:4px;"></video>`;
+            }
+            return `<img src="${url}" alt="" style="max-width:100%;margin-top:8px;border-radius:4px;">`;
+          }).join('')}
         `;
         detailEl.style.display = 'block';
       });
@@ -2820,14 +2832,16 @@
     if (!files.length) return;
     const remaining = 5 - pendingBlogImages.length;
     if (remaining <= 0) {
-      showToast('添付ファイルは5枚までです');
+      showToast('添付ファイルは5つまでです');
       return;
     }
     const toAdd = files.slice(0, remaining);
-    if (files.length > remaining) showToast('添付ファイルは5枚までです。先頭の' + remaining + '枚のみ追加します');
+    if (files.length > remaining) showToast('添付ファイルは5つまでです。先頭の' + remaining + 'つのみ追加します');
     for (const file of toAdd) {
-      if (file.size > 30 * 1024 * 1024) {
-        showToast(file.name + ' は30MBを超えているためスキップしました');
+      const isVideo = file.type && file.type.startsWith('video/');
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 30 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showToast(file.name + ' は' + formatSize(maxSize) + 'を超えているためスキップしました');
         continue;
       }
       if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
