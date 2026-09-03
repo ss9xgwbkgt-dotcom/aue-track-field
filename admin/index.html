@@ -839,28 +839,43 @@
   // スマホのSafariは動画の最初のフレームを自動表示しないため、
   // アップロード時に最初のフレームを画像として切り出しておく（一覧・記事ページのサムネイル用）
   async function generateVideoThumbnail(file) {
-    try {
-      const url = URL.createObjectURL(file);
-      const video = document.createElement('video');
-      video.src = url;
-      video.muted = true;
-      video.playsInline = true;
-      await new Promise((resolve, reject) => {
-        video.onloadeddata = resolve;
-        video.onerror = () => reject(new Error('動画の読み込みに失敗しました'));
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.src = url;
+    video.muted = true;
+    video.playsInline = true;
+    // iOSのSafariは、video要素が実際に画面に追加されていないと
+    // loadeddata/seekedイベントが発火しないことがあるため、見えない形で追加する
+    video.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(video);
+
+    function waitFor(eventName, timeoutMs) {
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        video[`on${eventName}`] = finish;
+        video.onerror = finish;
+        setTimeout(finish, timeoutMs); // イベントが発火しなくても、ここで必ず先へ進む
       });
+    }
+
+    try {
+      await waitFor('loadeddata', 5000);
       video.currentTime = Math.min(0.1, video.duration || 0);
-      await new Promise((resolve) => { video.onseeked = resolve; });
+      await waitFor('seeked', 5000);
+      if (!video.videoWidth || !video.videoHeight) return null;
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8));
-      URL.revokeObjectURL(url);
       if (!blob) return null;
       return new File([blob], file.name.replace(/\.[^.]+$/, '') + '-poster.jpg', { type: 'image/jpeg' });
     } catch (err) {
       return null;
+    } finally {
+      video.remove();
+      URL.revokeObjectURL(url);
     }
   }
 
@@ -2878,6 +2893,7 @@
         continue;
       }
       if (file.type && file.type.startsWith('image/')) showToast('画像を圧縮しています…');
+      if (isVideo) showToast('動画を処理しています…');
       const compressed = await compressImage(file);
       const posterFile = isVideo ? await generateVideoThumbnail(file) : null;
       pendingBlogImages.push({
