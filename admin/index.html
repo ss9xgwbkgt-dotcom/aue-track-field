@@ -726,6 +726,25 @@
     await sb.storage.from(STORAGE_BUCKET).remove([path]);
   }
 
+  // Storageのファイルは別ドメインのため、ただのリンクだと閲覧扱いになりダウンロードされない。
+  // 一度ブラウザ側に取り込んでから、その場でダウンロードリンクを作って発火させる
+  async function downloadFile(url, fileName) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = fileName || '';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      showToast('ダウンロードに失敗しました');
+    }
+  }
+
   // ログイン処理
   const ADMIN_EMAIL = 'yamato.iwai.0719@gmail.com';
   const gate = document.getElementById('gate');
@@ -861,8 +880,6 @@
 
     try {
       await waitFor('loadeddata', 5000);
-      video.currentTime = Math.min(0.1, video.duration || 0);
-      await waitFor('seeked', 5000);
       if (!video.videoWidth || !video.videoHeight) return null;
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
@@ -1322,6 +1339,7 @@
             ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
             ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
             <button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">閲覧</button>
+            <button class="icon-btn" type="button" data-download-file="${escapeHtml(d.id)}">ダウンロード</button>
             <button class="icon-btn" data-remove="${escapeHtml(d.id)}">削除</button>
           </div>
         </div>
@@ -1342,6 +1360,13 @@
         const id = btn.getAttribute('data-open-file');
         const doc = committed.find((d) => d.id === id);
         if (doc && doc.file_path) location.href = getPublicUrl(doc.file_path);
+      });
+    });
+    listEl.querySelectorAll('[data-download-file]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-download-file');
+        const doc = committed.find((d) => d.id === id);
+        if (doc && doc.file_path) downloadFile(getPublicUrl(doc.file_path), doc.file_name);
       });
     });
     listEl.querySelectorAll('[data-remove]').forEach((btn) => {
@@ -1384,6 +1409,7 @@
         </div>
         <div class="file-actions" style="gap:8px;">
           <button class="icon-btn" data-view-orphan="${escapeHtml(d.id)}">閲覧</button>
+          <button class="icon-btn" data-download-orphan="${escapeHtml(d.id)}">ダウンロード</button>
           <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
             ${cats.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('')}
           </select>
@@ -1396,6 +1422,13 @@
         const docId = btn.getAttribute('data-view-orphan');
         const doc = orphaned.find((d) => d.id === docId);
         if (doc) location.href = getPublicUrl(doc.file_path);
+      });
+    });
+    listEl.querySelectorAll('[data-download-orphan]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const docId = btn.getAttribute('data-download-orphan');
+        const doc = orphaned.find((d) => d.id === docId);
+        if (doc) downloadFile(getPublicUrl(doc.file_path), doc.file_name);
       });
     });
     listEl.querySelectorAll('[data-reassign-btn]').forEach((btn) => {
@@ -1937,12 +1970,16 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" data-view-join-photo="${msgId}">閲覧</button>
+          <button class="icon-btn" type="button" data-download-join-photo="${msgId}">ダウンロード</button>
           <button class="icon-btn" type="button" data-remove-join-photo="${msgId}">削除</button>
         </div>
       </div>
     `;
     listEl.querySelector('[data-view-join-photo]').addEventListener('click', () => {
       if (committedRow && committedRow.file_path) location.href = getPublicUrl(committedRow.file_path);
+    });
+    listEl.querySelector('[data-download-join-photo]').addEventListener('click', () => {
+      if (committedRow && committedRow.file_path) downloadFile(getPublicUrl(committedRow.file_path), fileName);
     });
     listEl.querySelector('[data-remove-join-photo]').addEventListener('click', async () => {
       if (!confirm('この写真を削除しますか？')) return;
@@ -2106,12 +2143,16 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" data-view-block="${blockId}" data-kind="${kind}">閲覧</button>
+          <button class="icon-btn" type="button" data-download-block="${blockId}" data-kind="${kind}">ダウンロード</button>
           <button class="icon-btn" type="button" data-remove-block="${blockId}" data-kind="${kind}">削除</button>
         </div>
       </div>
     `;
     listEl.querySelector('[data-view-block]').addEventListener('click', () => {
       if (committedRow && committedRow.file_path) location.href = getPublicUrl(committedRow.file_path);
+    });
+    listEl.querySelector('[data-download-block]').addEventListener('click', () => {
+      if (committedRow && committedRow.file_path) downloadFile(getPublicUrl(committedRow.file_path), fileName);
     });
     listEl.querySelector('[data-remove-block]').addEventListener('click', async () => {
       if (!confirm(`この${kind === 'photo' ? '写真' : 'PDF'}を削除しますか？`)) return;
@@ -2380,12 +2421,16 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" id="viewHero">閲覧</button>
+          <button class="icon-btn" id="downloadHero">ダウンロード</button>
           <button class="icon-btn" id="removeHero">削除</button>
         </div>
       </div>
     `;
     document.getElementById('viewHero').addEventListener('click', () => {
       if (heroAssetCache && heroAssetCache.file_path) location.href = getPublicUrl(heroAssetCache.file_path);
+    });
+    document.getElementById('downloadHero').addEventListener('click', () => {
+      if (heroAssetCache && heroAssetCache.file_path) downloadFile(getPublicUrl(heroAssetCache.file_path), fileName);
     });
     document.getElementById('removeHero').addEventListener('click', async () => {
       if (!confirm('トップページの写真を削除して既定の写真に戻しますか？')) return;
@@ -2476,12 +2521,16 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" id="viewAbout">閲覧</button>
+          <button class="icon-btn" id="downloadAbout">ダウンロード</button>
           <button class="icon-btn" id="removeAbout">削除</button>
         </div>
       </div>
     `;
     document.getElementById('viewAbout').addEventListener('click', () => {
       if (aboutAssetCache && aboutAssetCache.file_path) location.href = getPublicUrl(aboutAssetCache.file_path);
+    });
+    document.getElementById('downloadAbout').addEventListener('click', () => {
+      if (aboutAssetCache && aboutAssetCache.file_path) downloadFile(getPublicUrl(aboutAssetCache.file_path), fileName);
     });
     document.getElementById('removeAbout').addEventListener('click', async () => {
       if (!confirm('この写真を削除しますか？')) return;
@@ -2833,6 +2882,7 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" data-blog-img-view="${i}">閲覧</button>
+          <button class="icon-btn" data-blog-img-download="${i}">ダウンロード</button>
           <button class="icon-btn" data-blog-img-up="${i}" ${i === 0 ? 'disabled' : ''}>↑</button>
           <button class="icon-btn" data-blog-img-down="${i}" ${i === pendingBlogImages.length - 1 ? 'disabled' : ''}>↓</button>
           <button class="icon-btn" data-blog-img-remove="${i}">削除</button>
@@ -2848,6 +2898,22 @@
           location.href = getPublicUrl(img.existingPath);
         } else if (img.file) {
           window.open(URL.createObjectURL(img.file), '_blank');
+        }
+      });
+    });
+    el.querySelectorAll('[data-blog-img-download]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-blog-img-download'));
+        const img = pendingBlogImages[i];
+        if (img.existingPath) {
+          downloadFile(getPublicUrl(img.existingPath), img.fileName);
+        } else if (img.file) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(img.file);
+          a.download = img.fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
         }
       });
     });
@@ -3059,6 +3125,7 @@
         </div>
         <div class="file-actions">
           <button class="icon-btn" type="button" id="openRecordsFile">閲覧</button>
+          <button class="icon-btn" type="button" id="downloadRecordsFile">ダウンロード</button>
           <button class="icon-btn" id="removeRecords">削除</button>
         </div>
       </div>
@@ -3066,6 +3133,10 @@
     document.getElementById('openRecordsFile').addEventListener('click', () => {
       const path = recordsAssetCache && recordsAssetCache.file_path;
       if (path) location.href = getPublicUrl(path);
+    });
+    document.getElementById('downloadRecordsFile').addEventListener('click', () => {
+      const path = recordsAssetCache && recordsAssetCache.file_path;
+      if (path) downloadFile(getPublicUrl(path), fileName);
     });
     document.getElementById('removeRecords').addEventListener('click', async () => {
       if (!confirm('愛教大10傑を削除しますか？')) return;
