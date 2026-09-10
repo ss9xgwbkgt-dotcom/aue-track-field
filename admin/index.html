@@ -728,18 +728,33 @@
 
   // Storageのファイルは別ドメインのため、ただのリンクだと閲覧扱いになりダウンロードされない。
   // 一度ブラウザ側に取り込んでから、その場でダウンロードリンクを作って発火させる
+  // iOSのSafariはblob URLへのdownload属性をほぼ無視してしまうため、
+  // 対応していれば端末標準の共有シート（「画像を保存」「ファイルに保存」）を優先的に使う
+  async function shareOrDownloadBlob(blob, fileName) {
+    try {
+      const file = new File([blob], fileName || 'file', { type: blob.type });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // 共有シートをキャンセルしただけ
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = fileName || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
+
   async function downloadFile(url, fileName) {
     try {
       const res = await fetch(url);
       const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = fileName || '';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
+      await shareOrDownloadBlob(blob, fileName);
     } catch (err) {
       showToast('ダウンロードに失敗しました');
     }
@@ -2908,12 +2923,7 @@
         if (img.existingPath) {
           downloadFile(getPublicUrl(img.existingPath), img.fileName);
         } else if (img.file) {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(img.file);
-          a.download = img.fileName;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+          shareOrDownloadBlob(img.file, img.fileName);
         }
       });
     });
