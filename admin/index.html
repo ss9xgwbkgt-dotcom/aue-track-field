@@ -1049,12 +1049,12 @@
 
   async function refreshCategoriesCache() {
     const { data, error } = await sb.from('document_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
-    if (error) { showToast('見出しの取得に失敗しました'); return; }
+    if (error) { showToast('各種資料の見出しの取得に失敗しました： ' + error.message); return; }
     categoriesCache = data || [];
   }
   async function refreshDocsCache() {
     const { data, error } = await sb.from('documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true });
-    if (error) { showToast('資料の取得に失敗しました'); return; }
+    if (error) { showToast('各種資料の取得に失敗しました： ' + error.message); return; }
     docsCache = data || [];
   }
   function loadCategories() { return categoriesCache; }
@@ -1577,12 +1577,12 @@
 
   async function refreshObogCategoriesCache() {
     const { data, error } = await sb.from('obog_document_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
-    if (error) { showToast('見出しの取得に失敗しました'); return; }
+    if (error) { showToast('OB・OG会の見出しの取得に失敗しました： ' + error.message); return; }
     obogCategoriesCache = data || [];
   }
   async function refreshObogDocsCache() {
     const { data, error } = await sb.from('obog_documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true });
-    if (error) { showToast('資料の取得に失敗しました'); return; }
+    if (error) { showToast('OB・OG会の資料の取得に失敗しました： ' + error.message); return; }
     obogDocsCache = data || [];
   }
   function loadObogCategories() { return obogCategoriesCache; }
