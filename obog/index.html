@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --navy:#181c26;--navy-soft:#20242f;--rust:#b8402b;
@@ -70,6 +71,53 @@
   .page-sub{margin-top:16px;max-width:56ch;color:var(--paper-dim);font-size:14px;line-height:1.9;position:relative;z-index:1;}
 
   main{padding:64px 0 120px;}
+
+  .notice-panel{
+    background:#fff;border:1px solid var(--cream-line);border-radius:8px;padding:24px 30px;
+    text-align:center;margin-bottom:56px;
+  }
+  .notice-panel p{font-size:13px;color:var(--ink-dim);line-height:1.9;}
+
+  .notice-section{margin-bottom:56px;}
+  .notice-section-title{
+    font-family:var(--f-display);font-weight:700;font-size:clamp(20px,2.4vw,26px);
+    color:var(--navy);padding-bottom:12px;margin-bottom:8px;border-bottom:2px solid var(--rust);
+  }
+  .notice-list{display:flex;flex-direction:column;}
+  .notice-row{
+    display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;
+    padding:14px 2px;border-bottom:1px solid var(--cream-line);
+  }
+  .notice-date{font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);flex-shrink:0;white-space:nowrap;}
+  .notice-body{font-size:14px;color:var(--ink);line-height:1.8;min-width:0;overflow-wrap:break-word;word-break:break-word;}
+
+  .doc-section{margin-bottom:64px;scroll-margin-top:150px;}
+  .doc-section-title{
+    font-family:var(--f-display);font-weight:700;font-size:clamp(20px,2.4vw,26px);
+    color:var(--navy);padding-bottom:12px;margin-bottom:22px;border-bottom:2px solid var(--rust);
+  }
+  .doc-list{display:flex;flex-direction:column;}
+  .doc-row{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer;
+    padding:18px 2px;border-bottom:1px solid var(--cream-line);transition:color .2s;
+  }
+  .doc-row:hover{color:var(--rust);}
+  .doc-row:hover .doc-name{color:var(--rust);}
+  .doc-main{min-width:0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  .doc-name{font-family:var(--f-display);font-size:15px;font-weight:600;color:var(--navy);transition:color .2s;overflow-wrap:break-word;word-break:break-word;}
+  .doc-meta{font-family:var(--f-mono);font-size:11px;letter-spacing:0.03em;color:var(--ink-dim);white-space:nowrap;}
+  .doc-arrow{font-family:var(--f-mono);font-size:16px;color:var(--ink-dim);flex-shrink:0;opacity:0;transition:opacity .2s ease;}
+  .doc-row:hover .doc-arrow{opacity:1;color:var(--rust);}
+  @media(max-width:860px){
+    .doc-arrow{display:none;}
+  }
+  .doc-empty{
+    background:#fff;border:1px solid var(--cream-line);border-radius:8px;
+    padding:40px 24px;text-align:center;
+  }
+  .doc-empty h3{font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:8px;}
+  .doc-empty p{font-family:var(--f-body);font-size:13px;color:var(--ink-dim);}
 
   .prep-panel{
     background:#fff;border:1px solid var(--cream-line);border-radius:8px;padding:56px 30px;text-align:center;
@@ -178,10 +226,18 @@
 
 <main>
   <div class="wrap">
-    <div class="prep-panel" data-reveal>
-      <h2>OB・OG会</h2>
-      <p>現在、ページを準備しています。掲載内容が決まり次第、こちらでご案内します。</p>
+
+    <div class="notice-section" id="noticeSection" style="display:none;" data-reveal>
+      <h2 class="notice-section-title">お知らせ</h2>
+      <div class="notice-list" id="noticeList"></div>
     </div>
+
+    <div class="notice-panel" id="noticePanel" style="display:none;">
+      <p>ファイルがアップロードされると、ダウンロードリンクが表示されます。</p>
+    </div>
+
+    <div id="docSections"></div>
+
   </div>
 </main>
 
@@ -231,14 +287,111 @@
     burger.setAttribute('aria-expanded','false');
   }));
 
+  let io = null;
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const io = new IntersectionObserver((entries) => {
+    io = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
     }, { threshold: 0.08 });
     document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
   } else {
     document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('in'));
   }
+
+  // supabase設定
+  const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const STORAGE_BUCKET = 'site-files';
+  function getPublicUrl(path) {
+    if (!path) return '';
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  async function renderNotices() {
+    const { data } = await sb.from('obog_notices').select('*').order('notice_date', { ascending: false }).limit(5);
+    const section = document.getElementById('noticeSection');
+    const listEl = document.getElementById('noticeList');
+    if (!data || data.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    listEl.innerHTML = data.map((n) => `
+      <div class="notice-row">
+        <span class="notice-date">${formatDate(n.notice_date)}</span>
+        <span class="notice-body">${escapeHtml(n.body).replace(/\n/g, '<br>')}</span>
+      </div>
+    `).join('');
+  }
+
+  async function renderPage() {
+    const [{ data: categories }, { data: all }] = await Promise.all([
+      sb.from('obog_document_categories').select('*').order('sort_order', { ascending: true }),
+      sb.from('obog_documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true }),
+    ]);
+
+    const noticePanel = document.getElementById('noticePanel');
+    if (noticePanel) {
+      noticePanel.style.display = ((categories || []).length === 0 && (all || []).length === 0) ? 'block' : 'none';
+    }
+
+    const sectionsEl = document.getElementById('docSections');
+    sectionsEl.innerHTML = (categories || []).map((c) => `
+      <div class="doc-section" id="${escapeHtml(c.id)}" data-reveal>
+        <h2 class="doc-section-title">${escapeHtml(c.label)}</h2>
+        <div class="doc-list" id="grid-${escapeHtml(c.id)}"></div>
+      </div>
+    `).join('');
+
+    (categories || []).forEach((c) => {
+      const grid = document.getElementById('grid-' + c.id);
+      if (!grid) return;
+      const docs = (all || []).filter((d) => d.category_id === c.id);
+      if (docs.length === 0) {
+        grid.innerHTML = '<div class="doc-empty"><h3>準備中</h3><p>資料の準備が整い次第、こちらに掲載します。</p></div>';
+        return;
+      }
+      grid.innerHTML = docs.map((d) => `
+        <button type="button" class="doc-row" data-open="${escapeHtml(d.id)}">
+          <span class="doc-main">
+            <span class="doc-name">${escapeHtml(d.file_name)}</span>
+            <span class="doc-meta">${d.size_label || ''}${d.uploaded_at ? ' ・ ' + formatDate(d.uploaded_at) : ''}</span>
+          </span>
+          <span class="doc-arrow">→</span>
+        </button>
+      `).join('');
+
+      grid.querySelectorAll('[data-open]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const doc = docs.find((d) => d.id === btn.getAttribute('data-open'));
+          if (doc) openFileFullScreen(doc);
+        });
+      });
+    });
+
+    sectionsEl.querySelectorAll('[data-reveal]').forEach((el) => {
+      if (io) io.observe(el); else el.classList.add('in');
+    });
+  }
+
+  function openFileFullScreen(d) {
+    location.href = getPublicUrl(d.file_path);
+  }
+
+  renderNotices();
+  renderPage();
 </script>
 
 </body>

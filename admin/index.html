@@ -111,6 +111,8 @@
   }
   .file-meta{font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);margin-top:2px;}
   .file-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;margin-left:auto;}
+  .block-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch;}
+  @media(max-width:560px){.block-grid{grid-template-columns:1fr;}}
   .icon-btn{
     font-family:var(--f-mono);font-size:11px;border:1px solid var(--cream-line);background:none;
     color:var(--ink-dim);padding:8px 12px;border-radius:6px;cursor:pointer;transition:.2s;
@@ -243,26 +245,40 @@
           <div style="display:flex;gap:12px;">
             <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑤</span>
             <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">OB・OG会のお知らせ</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">OB・OG会ページの資料欄の上に表示するお知らせを追加・編集・削除できます。公開ページには最新5件だけが表示されます。</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑥</span>
+            <div>
+              <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">OB・OG会の資料</div>
+              <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">各種資料と同じように、カテゴリーを自由に追加・削除・並べ替えでき、各カテゴリーにファイルを何個でも追加できます。</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑦</span>
+            <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">入部案内ページの写真</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">入部案内ページの4つのメッセージとともに表示する写真を差し替えられます。</div>
             </div>
           </div>
           <div style="display:flex;gap:12px;">
-            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑥</span>
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑧</span>
             <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">活動ブロック紹介</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">短距離・中長距離・フィールド・マネージャーの各カードに、写真とPDFを1つずつ挿入できます。</div>
             </div>
           </div>
           <div style="display:flex;gap:12px;">
-            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑦</span>
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑨</span>
             <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">リンク集</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しいリンクカードを追加できるほか、既存のカードを編集・削除できます。</div>
             </div>
           </div>
           <div style="display:flex;gap:12px;">
-            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑧</span>
+            <span style="flex-shrink:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);">⑩</span>
             <div>
               <div style="font-family:var(--f-display);color:var(--navy);font-weight:700;">Q&amp;A</div>
               <div style="font-size:13px;color:var(--ink-dim);margin-top:2px;">新しい質問カードを追加できるほか、既存のカードを編集・削除できます。</div>
@@ -551,6 +567,94 @@
 
       <details class="cat-section">
         <summary class="cat-title-row">
+          <span class="cat-title">OB・OG会のお知らせ</span>
+        </summary>
+        <p class="lead" style="margin-bottom:14px;">OB・OG会ページの「資料」欄の上に表示するお知らせです。公開ページには、日付が新しいものから最新5件だけが表示されます。</p>
+
+        <label class="form-field" style="display:block;margin-bottom:14px;">
+          <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">日付</span>
+          <input type="date" id="obogNoticeDate" style="width:100%;font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+        </label>
+        <label class="form-field" style="display:block;margin-bottom:14px;">
+          <span style="display:block;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;">内容</span>
+          <textarea id="obogNoticeBody" rows="3" placeholder="お知らせの内容を入力してください" style="width:100%;font-family:var(--f-body);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;resize:vertical;"></textarea>
+        </label>
+        <p id="obogNoticeFormError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:-6px;margin-bottom:14px;"></p>
+        <div style="display:flex;gap:10px;margin-bottom:26px;">
+          <button class="btn" id="obogNoticeSubmit" type="button">お知らせを追加</button>
+          <button class="icon-btn" id="obogNoticeCancelEdit" type="button" style="display:none;">編集をキャンセル</button>
+        </div>
+        <div id="obogNoticeConfirmBox" style="display:none;margin-top:-12px;margin-bottom:26px;padding:16px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p id="obogNoticeConfirmText" style="font-size:13px;color:var(--ink);margin-bottom:12px;">この内容で登録してもよろしいですか？</p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" id="obogNoticeConfirmYes" type="button">登録を確定</button>
+            <button class="icon-btn" id="obogNoticeConfirmNo" type="button">キャンセル</button>
+          </div>
+        </div>
+
+        <details class="example-details">
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 12px;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">登録済みのお知らせ一覧（<span id="obogNoticeListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
+          </summary>
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:10px;">↓ 日付が新しい順に並びます。公開ページには最新5件だけが表示されます。</p>
+          <div class="file-list" id="list-obog-notices"></div>
+        </details>
+      </details>
+
+      <details class="cat-section">
+        <summary class="cat-title-row">
+          <span class="cat-title">OB・OG会の資料</span>
+        </summary>
+
+        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;">OB・OG会の資料の追加・削除・並べ替えができます。カテゴリーの追加・削除・並べ替えは「カテゴリーの編集」から行えます。</p>
+
+        <details class="example-details" style="margin-bottom:22px;">
+          <summary>具体的な説明を見る</summary>
+          <div style="border:1px solid var(--cream-line);border-radius:8px;padding:20px;margin-top:12px;background:#fff;">
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;">下で追加した見出し・ドロップしたファイルは、実際の「OB・OG会」ページではこのように表示されます</p>
+
+            <div style="position:relative;padding-top:24px;margin-bottom:22px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ これが「カテゴリー」</span>
+              <div style="font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--navy);border-bottom:2px solid var(--rust);padding-bottom:8px;">同窓会名簿</div>
+            </div>
+
+            <div style="position:relative;padding-top:24px;max-width:340px;">
+              <span style="position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:11px;color:var(--rust);font-weight:700;">↓ ドロップしたファイルはここに表示される</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--cream-line);border-bottom:1px solid var(--cream-line);padding:16px 2px;">
+                <div style="min-width:0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;">
+                  <span style="font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--navy);">同窓会名簿.pdf</span>
+                  <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-dim);">143.9 KB</span>
+                </div>
+                <span style="font-family:var(--f-mono);font-size:14px;color:var(--ink-dim);flex-shrink:0;">→</span>
+              </div>
+            </div>
+            <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-top:12px;line-height:1.9;">↑ ファイル名には、アップロードしたファイルの<b style="color:var(--rust-dark);">元のファイル名</b>がそのまま使われます。（例：「同窓会名簿.pdf」というファイルをドロップすると、一覧にも「同窓会名簿.pdf」と表示されます。）</p>
+          </div>
+        </details>
+
+        <details id="obogCategoryListDetails" style="margin-bottom:20px;">
+          <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;cursor:pointer;list-style:none;">
+            <h4 style="font-family:var(--f-mono);font-size:12px;letter-spacing:0.06em;color:var(--ink-dim);margin:0;">カテゴリーの編集（<span id="obogCategoryListCount">0</span>件）<span style="color:var(--rust);margin-left:10px;">▼ クリックで開閉</span></h4>
+          </summary>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" id="newObogCategoryInput" placeholder="新しいカテゴリー名（例：総会資料）" style="flex:1;min-width:200px;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:10px 12px;">
+            <button class="btn" id="addObogCategoryBtn" type="button">追加する</button>
+          </div>
+          <p id="newObogCategoryError" style="display:none;color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-top:6px;"></p>
+
+          <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:14px 0 8px;">↓ 現在のカテゴリー一覧です。順番は↑↓ボタンで入れ替えられます。「削除」で削除できます。</p>
+          <div id="obogCategoryManagerBox" class="file-list"></div>
+        </details>
+
+        <div id="obogUncategorizedDocsBox" style="display:none;margin-bottom:22px;"></div>
+
+        <div id="obogCategories"></div>
+      </details>
+
+
+      <details class="cat-section">
+        <summary class="cat-title-row">
           <span class="cat-title">入部案内ページの写真</span>
         </summary>
         <p class="lead" style="margin-bottom:14px;">入部案内ページの4つのメッセージとともに表示する写真です。</p>
@@ -789,12 +893,17 @@
     await refreshDocsCache();
     await renderCategoryManager();
     await renderCategoryDropzones();
+    await refreshObogCategoriesCache();
+    await refreshObogDocsCache();
+    await renderObogCategoryManager();
+    await renderObogCategoryDropzones();
     await renderHero();
     await renderAbout();
     await initBlogAdmin();
     await renderRecords();
     initLinksAdmin();
     await initFaqAdmin();
+    await initObogNoticeAdmin();
     await renderBlocksPanels();
     await renderJoinPhotosPanels();
     checkGlobalPending();
@@ -1460,6 +1569,534 @@
     });
   }
 
+
+  // OB・OG会の資料まわり（各種資料と同じ仕組みを別テーブルで独立管理）
+  // カテゴリーの追加・削除・並べ替え
+  let obogCategoriesCache = [];
+  let obogDocsCache = [];
+
+  async function refreshObogCategoriesCache() {
+    const { data, error } = await sb.from('obog_document_categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    if (error) { showToast('見出しの取得に失敗しました'); return; }
+    obogCategoriesCache = data || [];
+  }
+  async function refreshObogDocsCache() {
+    const { data, error } = await sb.from('obog_documents').select('*').order('sort_order', { ascending: true }).order('uploaded_at', { ascending: true });
+    if (error) { showToast('資料の取得に失敗しました'); return; }
+    obogDocsCache = data || [];
+  }
+  function loadObogCategories() { return obogCategoriesCache; }
+  function loadObogDocs() { return obogDocsCache; }
+
+  function obogFlipReorder(mutateFn) {
+    if (obogIsReordering) return;
+    obogIsReordering = true;
+    const container = document.getElementById('obogCategoryManagerBox');
+    container.querySelectorAll('[data-move-up],[data-move-down]').forEach((b) => { b.disabled = true; });
+    const oldRects = {};
+    container.querySelectorAll('[data-flip-id]').forEach((el) => {
+      oldRects[el.dataset.flipId] = el.getBoundingClientRect();
+    });
+
+    let hadError = false;
+    mutateFn()
+      .catch((err) => {
+        hadError = true;
+        showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      })
+      .then(async () => {
+        await renderObogCategoryManager();
+        await renderObogCategoryDropzones();
+        if (!hadError) showToast('並べ替えました。');
+
+        const newEls = container.querySelectorAll('[data-flip-id]');
+        newEls.forEach((el) => {
+          const oldRect = oldRects[el.dataset.flipId];
+          if (!oldRect) return;
+          const newRect = el.getBoundingClientRect();
+          const dx = oldRect.left - newRect.left;
+          const dy = oldRect.top - newRect.top;
+          if (dx || dy) {
+            el.style.transition = 'none';
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
+          }
+        });
+        void container.offsetHeight;
+        newEls.forEach((el) => {
+          el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+          el.style.transform = '';
+        });
+      })
+      .finally(() => {
+        obogIsReordering = false;
+      });
+  }
+
+  async function renderObogCategoryManager() {
+    const el = document.getElementById('obogCategoryManagerBox');
+    const cats = loadObogCategories();
+    const countEl = document.getElementById('obogCategoryListCount');
+    if (countEl) countEl.textContent = String(cats.length);
+    if (cats.length === 0) {
+      el.innerHTML = '<p class="empty-row">見出しがありません。下から追加してください。</p>';
+      return;
+    }
+    el.innerHTML = cats.map((c, i) => `
+      <div class="file-row" data-flip-id="${c.id}">
+        <span class="file-icon">${String(i + 1).padStart(2, '0')}</span>
+        <div class="file-info">
+          <div class="file-name"><span class="file-name-text">${escapeHtml(c.label)}</span></div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-move-up="${c.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button class="icon-btn" data-move-down="${c.id}" ${i === cats.length - 1 ? 'disabled' : ''}>↓</button>
+          <button class="icon-btn" data-edit-cat="${c.id}">編集</button>
+          <button class="icon-btn" data-delete-cat="${c.id}">削除</button>
+        </div>
+      </div>
+    `).join('');
+
+    el.querySelectorAll('[data-edit-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit-cat');
+        const cat = loadObogCategories().find((c) => c.id === id);
+        if (!cat) return;
+        const row = btn.closest('.file-row');
+        row.querySelector('.file-name').innerHTML = `
+          <input type="text" value="${escapeHtml(cat.label)}" style="width:100%;font-family:var(--f-body);font-size:16px;border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
+        `;
+        const actionsEl = row.querySelector('.file-actions');
+        actionsEl.innerHTML = `
+          <button class="icon-btn" data-save-cat="${id}">保存</button>
+          <button class="icon-btn" data-cancel-cat="${id}">キャンセル</button>
+        `;
+        const input = row.querySelector('input');
+        input.focus();
+        input.select();
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') actionsEl.querySelector('[data-save-cat]').click(); });
+
+        actionsEl.querySelector('[data-save-cat]').addEventListener('click', async () => {
+          const newLabel = input.value.trim();
+          if (!newLabel) { showToast('カテゴリー名を入力してください'); return; }
+          const { error } = await sb.from('obog_document_categories').update({ label: newLabel }).eq('id', id);
+          if (error) { showToast('更新に失敗しました： ' + error.message); return; }
+          await refreshObogCategoriesCache();
+          await renderObogCategoryManager();
+          await renderObogCategoryDropzones();
+          showToast('カテゴリー名を更新しました');
+        });
+        actionsEl.querySelector('[data-cancel-cat]').addEventListener('click', () => {
+          renderObogCategoryManager();
+        });
+      });
+    });
+    el.querySelectorAll('[data-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-move-up');
+        obogFlipReorder(async () => {
+          const list = loadObogCategories();
+          const idx = list.findIndex((c) => c.id === id);
+          if (idx > 0) {
+            const a = list[idx - 1], b = list[idx];
+            const r1 = await sb.from('obog_document_categories').update({ sort_order: idx - 1 }).eq('id', b.id);
+            if (r1.error) throw r1.error;
+            const r2 = await sb.from('obog_document_categories').update({ sort_order: idx }).eq('id', a.id);
+            if (r2.error) throw r2.error;
+            await refreshObogCategoriesCache();
+          }
+        });
+      });
+    });
+    el.querySelectorAll('[data-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-move-down');
+        obogFlipReorder(async () => {
+          const list = loadObogCategories();
+          const idx = list.findIndex((c) => c.id === id);
+          if (idx > -1 && idx < list.length - 1) {
+            const a = list[idx], b = list[idx + 1];
+            const r1 = await sb.from('obog_document_categories').update({ sort_order: idx }).eq('id', b.id);
+            if (r1.error) throw r1.error;
+            const r2 = await sb.from('obog_document_categories').update({ sort_order: idx + 1 }).eq('id', a.id);
+            if (r2.error) throw r2.error;
+            await refreshObogCategoriesCache();
+          }
+        });
+      });
+    });
+    el.querySelectorAll('[data-delete-cat]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-delete-cat');
+        const list = loadObogCategories();
+        const cat = list.find((c) => c.id === id);
+        const docsInCat = loadObogDocs().filter((d) => d.category_id === id);
+
+        if (docsInCat.length === 0) {
+          if (!confirm(`「${cat ? cat.label : ''}」を削除しますか？`)) return;
+          const r = await sb.from('obog_document_categories').delete().eq('id', id);
+          if (r.error) { showToast('削除に失敗しました： ' + r.error.message); return; }
+          await refreshObogCategoriesCache();
+          await renderObogCategoryManager();
+          await renderObogCategoryDropzones();
+          await renderObogUncategorizedDocs();
+          showToast('見出しを削除しました');
+          return;
+        }
+
+        const deleteFilesToo = confirm(
+          `「${cat ? cat.label : ''}」には資料が${docsInCat.length}件あります。\n\nOK：見出しとファイルをまとめて削除する\nキャンセル：見出しだけ削除し、ファイルは「未分類」として残す`
+        );
+
+        if (deleteFilesToo) {
+          try {
+            for (const d of docsInCat) {
+              const rd = await sb.from('obog_documents').delete().eq('id', d.id);
+              if (rd.error) throw rd.error;
+              if (d.file_path) await removeFromBucket(d.file_path);
+            }
+            const rc = await sb.from('obog_document_categories').delete().eq('id', id);
+            if (rc.error) throw rc.error;
+          } catch (err) {
+            showToast('削除に失敗しました： ' + (err && err.message ? err.message : err));
+            await refreshObogCategoriesCache();
+            await refreshObogDocsCache();
+            await renderObogCategoryManager();
+            await renderObogCategoryDropzones();
+            return;
+          }
+          await refreshObogCategoriesCache();
+          await refreshObogDocsCache();
+          await renderObogCategoryManager();
+          await renderObogCategoryDropzones();
+          showToast('見出しとファイルを削除しました');
+        } else {
+          const rc = await sb.from('obog_document_categories').delete().eq('id', id);
+          if (rc.error) { showToast('削除に失敗しました： ' + rc.error.message); return; }
+          const ru = await sb.from('obog_documents').update({ category_id: null }).eq('category_id', id);
+          if (ru.error) { showToast('見出しの解除に失敗しました： ' + ru.error.message); }
+          await refreshObogCategoriesCache();
+          await refreshObogDocsCache();
+          await renderObogCategoryManager();
+          await renderObogCategoryDropzones();
+          await renderObogUncategorizedDocs();
+          showToast('見出しを削除しました');
+        }
+      });
+    });
+
+  }
+
+  document.getElementById('addObogCategoryBtn').addEventListener('click', async () => {
+    const input = document.getElementById('newObogCategoryInput');
+    const errorEl = document.getElementById('newObogCategoryError');
+    const label = input.value.trim();
+    if (!label) {
+      errorEl.textContent = '見出し名が入力されていません';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+    const { error } = await sb.from('obog_document_categories').insert({ label, sort_order: obogCategoriesCache.length });
+    if (error) { showToast('追加に失敗しました： ' + error.message); return; }
+    await refreshObogCategoriesCache();
+    input.value = '';
+    await renderObogCategoryManager();
+    await renderObogCategoryDropzones();
+    showToast('見出しを追加しました');
+  });
+  document.getElementById('newObogCategoryInput').addEventListener('input', () => {
+    document.getElementById('newObogCategoryError').style.display = 'none';
+  });
+  document.getElementById('newObogCategoryInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('addObogCategoryBtn').click();
+  });
+
+  // 各見出しのアップロード欄
+  const obogCategoriesEl = document.getElementById('obogCategories');
+  async function renderObogCategoryDropzones() {
+    const cats = loadObogCategories();
+    obogCategoriesEl.innerHTML = '';
+    cats.forEach((cat) => {
+      const section = document.createElement('div');
+      section.className = 'doc-category';
+      section.innerHTML = `
+        <div class="doc-category-title">${escapeHtml(cat.label)}</div>
+        <label class="dropzone" id="drop-${cat.id}">
+          <div><strong>クリックして選択</strong> または ここにファイルをドラッグ＆ドロップ</div>
+          <input type="file" id="input-${cat.id}" multiple>
+        </label>
+        <div id="confirm-doc-${cat.id}" style="display:none;margin-top:10px;padding:12px;border:1px solid var(--cream-line);border-radius:6px;background:var(--cream);">
+          <p id="confirm-doc-text-${cat.id}" style="font-size:13px;color:var(--ink);margin-bottom:8px;"></p>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" type="button" data-confirm-yes-doc="${cat.id}">アップロードを確定</button>
+            <button class="icon-btn" type="button" data-confirm-no-doc="${cat.id}">キャンセル</button>
+          </div>
+        </div>
+        <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin:12px 0 4px;">↓ ファイルの順番は、↑↓ボタンで入れ替えられます。</p>
+        <div class="file-list" id="list-${cat.id}"></div>
+      `;
+      obogCategoriesEl.appendChild(section);
+
+      const drop = section.querySelector(`#drop-${cat.id}`);
+      const input = section.querySelector(`#input-${cat.id}`);
+      input.addEventListener('change', () => handleObogFiles(cat.id, input.files));
+      drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
+      drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+      drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        drop.classList.remove('drag');
+        handleObogFiles(cat.id, e.dataTransfer.files);
+      });
+      section.querySelector(`[data-confirm-yes-doc]`).addEventListener('click', () => commitObogDocUploads(cat.id));
+      section.querySelector(`[data-confirm-no-doc]`).addEventListener('click', () => {
+        delete obogPendingDocs[cat.id];
+        input.value = '';
+        section.querySelector(`#confirm-doc-${cat.id}`).style.display = 'none';
+      });
+    });
+    await renderObogAll();
+  }
+
+  let obogPendingDocs = {}; // { catId: [{fileName,sizeLabel,file}] } 確認ダイアログ表示中の選択ファイル
+
+  function handleObogFiles(catId, fileList) {
+    const files = Array.from(fileList).filter((file) => {
+      if (file.size > 8 * 1024 * 1024) {
+        showToast(`「${file.name}」は8MBを超えるため保存できません`);
+        return false;
+      }
+      return true;
+    });
+    if (files.length === 0) return;
+    obogPendingDocs[catId] = files.map((file) => ({ fileName: file.name, sizeLabel: formatSize(file.size), file }));
+    const textEl = document.getElementById(`confirm-doc-text-${catId}`);
+    textEl.textContent = files.length === 1
+      ? `「${files[0].name}」をアップロードしてもよろしいですか？`
+      : `${files.length}個のファイルをアップロードしてもよろしいですか？`;
+    const box = document.getElementById(`confirm-doc-${catId}`);
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function commitObogDocUploads(catId) {
+    const files = obogPendingDocs[catId];
+    if (!files || files.length === 0) return;
+    try {
+      const inCat = obogDocsCache.filter((d) => d.category_id === catId);
+      let maxOrder = inCat.reduce((max, d) => Math.max(max, d.sort_order || 0), -1);
+      for (const p of files) {
+        const path = await uploadToBucket('documents', p.file);
+        maxOrder += 1;
+        const { error } = await sb.from('obog_documents').insert({
+          category_id: catId, file_name: p.fileName, file_path: path, size_label: p.sizeLabel,
+          sort_order: maxOrder,
+        });
+        if (error) throw error;
+      }
+    } catch (err) {
+      showToast('アップロードに失敗しました： ' + err.message);
+      return;
+    }
+    delete obogPendingDocs[catId];
+    document.getElementById(`input-${catId}`).value = '';
+    document.getElementById(`confirm-doc-${catId}`).style.display = 'none';
+    await refreshObogDocsCache();
+    await renderObogAll();
+    showToast('ファイルをアップロードしました');
+  }
+
+  async function removeObogDoc(id) {
+    if (!confirm('このファイルを削除しますか？')) return;
+    const doc = obogDocsCache.find((d) => d.id === id);
+    const { error } = await sb.from('obog_documents').delete().eq('id', id);
+    if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+    if (doc && doc.file_path) await removeFromBucket(doc.file_path);
+    await refreshObogDocsCache();
+    await renderObogAll();
+    showToast('削除しました');
+  }
+
+  let obogIsReordering = false;
+
+  async function moveObogDocInCategory(id, catId, direction) {
+    if (obogIsReordering) return;
+    obogIsReordering = true;
+    const listEl = document.getElementById('list-' + catId);
+    if (listEl) listEl.querySelectorAll('[data-doc-move-up],[data-doc-move-down]').forEach((b) => { b.disabled = true; });
+    const oldRects = {};
+    if (listEl) {
+      listEl.querySelectorAll('[data-flip-id]').forEach((el) => {
+        oldRects[el.dataset.flipId] = el.getBoundingClientRect();
+      });
+    }
+
+    try {
+      const list = loadObogDocs().filter((d) => d.category_id === catId);
+      const idx = list.findIndex((d) => d.id === id);
+      const targetIdx = idx + direction;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
+      const a = list[idx], b = list[targetIdx];
+      const r1 = await sb.from('obog_documents').update({ sort_order: b.sort_order }).eq('id', a.id);
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('obog_documents').update({ sort_order: a.sort_order }).eq('id', b.id);
+      if (r2.error) throw r2.error;
+      await refreshObogDocsCache();
+      renderObogCategory(catId);
+      showToast('並べ替えました。');
+    } catch (err) {
+      showToast('並べ替えに失敗しました： ' + (err && err.message ? err.message : err));
+      return;
+    } finally {
+      obogIsReordering = false;
+    }
+
+    if (listEl) {
+      const newEls = listEl.querySelectorAll('[data-flip-id]');
+      newEls.forEach((el) => {
+        const oldRect = oldRects[el.dataset.flipId];
+        if (!oldRect) return;
+        const newRect = el.getBoundingClientRect();
+        const dy = oldRect.top - newRect.top;
+        if (dy) {
+          el.style.transition = 'none';
+          el.style.transform = `translateY(${dy}px)`;
+        }
+      });
+      void listEl.offsetHeight;
+      newEls.forEach((el) => {
+        el.style.transition = 'transform 320ms cubic-bezier(.4,0,.2,1)';
+        el.style.transform = '';
+      });
+    }
+  }
+
+  function renderObogCategory(catId) {
+    const listEl = document.getElementById('list-' + catId);
+    if (!listEl) return;
+    const committed = loadObogDocs().filter((d) => d.category_id === catId);
+    if (committed.length === 0) {
+      listEl.innerHTML = '<p class="empty-row">まだファイルがありません</p>';
+      return;
+    }
+    listEl.innerHTML = committed.map((d, i) => {
+      const canReorder = committed.length > 1;
+      return `
+        <div class="file-row" data-flip-id="${escapeHtml(d.id)}">
+          <span class="file-icon">${escapeHtml(getExtLabel(d.file_name))}</span>
+          <div class="file-info">
+            <div class="file-name"><span class="file-name-text">${escapeHtml(d.file_name)}</span></div>
+            <div class="file-meta">${d.size_label || ''}</div>
+          </div>
+          <div class="file-actions">
+            ${canReorder ? `<button class="icon-btn" data-doc-move-up="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
+            ${canReorder ? `<button class="icon-btn" data-doc-move-down="${escapeHtml(d.id)}" data-cat="${escapeHtml(catId)}" ${i === committed.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
+            <button class="icon-btn" type="button" data-open-file="${escapeHtml(d.id)}">閲覧</button>
+            <button class="icon-btn" type="button" data-download-file="${escapeHtml(d.id)}">ダウンロード</button>
+            <button class="icon-btn" data-remove="${escapeHtml(d.id)}">削除</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    listEl.querySelectorAll('[data-doc-move-up]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveObogDocInCategory(btn.getAttribute('data-doc-move-up'), btn.getAttribute('data-cat'), -1);
+      });
+    });
+    listEl.querySelectorAll('[data-doc-move-down]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveObogDocInCategory(btn.getAttribute('data-doc-move-down'), btn.getAttribute('data-cat'), 1);
+      });
+    });
+    listEl.querySelectorAll('[data-open-file]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-open-file');
+        const doc = committed.find((d) => d.id === id);
+        if (doc && doc.file_path) location.href = getPublicUrl(doc.file_path);
+      });
+    });
+    listEl.querySelectorAll('[data-download-file]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-download-file');
+        const doc = committed.find((d) => d.id === id);
+        if (doc && doc.file_path) downloadFile(getPublicUrl(doc.file_path), doc.file_name);
+      });
+    });
+    listEl.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        removeObogDoc(btn.getAttribute('data-remove'));
+      });
+    });
+  }
+
+  async function renderObogAll() {
+    loadObogCategories().forEach((cat) => renderObogCategory(cat.id));
+    await renderObogUncategorizedDocs();
+  }
+
+  async function renderObogUncategorizedDocs() {
+    const box = document.getElementById('obogUncategorizedDocsBox');
+    if (!box) return;
+    const catIds = loadObogCategories().map((c) => c.id);
+    const orphaned = loadObogDocs().filter((d) => !d.category_id || !catIds.includes(d.category_id));
+    if (orphaned.length === 0) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+    const cats = loadObogCategories();
+    box.style.display = 'block';
+    box.innerHTML = `
+      <p style="color:var(--rust-dark);font-family:var(--f-mono);font-size:12px;margin-bottom:12px;line-height:1.9;">
+        削除された見出しに属していた資料が${orphaned.length}件あります。どの見出しに移すか決めてください。決めるまでこの案内は表示され続けます（移動するまで、これらの資料の見出しは「なし」として扱われます）。
+      </p>
+      <div class="file-list" id="obogUncategorizedDocsList"></div>
+    `;
+    const listEl = document.getElementById('obogUncategorizedDocsList');
+    listEl.innerHTML = orphaned.map((d) => `
+      <div class="file-row">
+        <span class="file-icon">${escapeHtml(getExtLabel(d.file_name))}</span>
+        <div class="file-info">
+          <div class="file-name"><span class="file-name-text">${escapeHtml(d.file_name)}</span></div>
+          <div class="file-meta">見出し：なし ・ ${d.size_label || ''}</div>
+        </div>
+        <div class="file-actions" style="gap:8px;">
+          <button class="icon-btn" data-view-orphan="${escapeHtml(d.id)}">閲覧</button>
+          <button class="icon-btn" data-download-orphan="${escapeHtml(d.id)}">ダウンロード</button>
+          <select data-reassign-select="${escapeHtml(d.id)}" style="font-family:var(--f-mono);font-size:16px;color:var(--ink);border:1px solid var(--cream-line);border-radius:4px;padding:6px 8px;">
+            ${cats.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`).join('')}
+          </select>
+          <button class="icon-btn" data-reassign-btn="${escapeHtml(d.id)}">この見出しに移動</button>
+        </div>
+      </div>
+    `).join('');
+    listEl.querySelectorAll('[data-view-orphan]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const docId = btn.getAttribute('data-view-orphan');
+        const doc = orphaned.find((d) => d.id === docId);
+        if (doc) location.href = getPublicUrl(doc.file_path);
+      });
+    });
+    listEl.querySelectorAll('[data-download-orphan]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const docId = btn.getAttribute('data-download-orphan');
+        const doc = orphaned.find((d) => d.id === docId);
+        if (doc) downloadFile(getPublicUrl(doc.file_path), doc.file_name);
+      });
+    });
+    listEl.querySelectorAll('[data-reassign-btn]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const docId = btn.getAttribute('data-reassign-btn');
+        const sel = listEl.querySelector(`[data-reassign-select="${docId}"]`);
+        const newCat = sel.value;
+        const { error } = await sb.from('obog_documents').update({ category_id: newCat }).eq('id', docId);
+        if (error) { showToast('移動に失敗しました： ' + error.message); return; }
+        await refreshObogDocsCache();
+        await renderObogAll();
+        showToast('見出しを移動しました');
+      });
+    });
+  }
+
   // リンク集まわり
   let linkCategoriesCache = [];
   let linkCardsCache = []; // 各カードに links: [{label,url}] を付与済み
@@ -2082,7 +2719,7 @@
     container.innerHTML = BLOCK_ORDER.map((b) => `
       <div style="border:1px solid var(--cream-line);border-radius:8px;padding:18px;margin-bottom:16px;">
         <p style="font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">${b.label}</p>
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch;">
+        <div class="block-grid">
           <div style="min-width:0;display:flex;flex-direction:column;">
             <p style="font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);margin-bottom:8px;">写真</p>
             <label class="dropzone" id="drop-block-photo-${b.id}" style="padding:16px;">
@@ -2403,6 +3040,134 @@
   async function initFaqAdmin() {
     await refreshFaqsCache();
     renderFaqList();
+  }
+
+  // OB・OG会のお知らせ
+  let obogNoticesCache = [];
+  let editingObogNoticeId = null;
+  let pendingObogNoticeSubmit = null;
+
+  async function refreshObogNoticesCache() {
+    const { data, error } = await sb.from('obog_notices').select('*').order('notice_date', { ascending: false });
+    if (error) { showToast('お知らせの取得に失敗しました'); return; }
+    obogNoticesCache = data || [];
+  }
+
+  function renderObogNoticeList() {
+    const listEl = document.getElementById('list-obog-notices');
+    const countEl = document.getElementById('obogNoticeListCount');
+    if (countEl) countEl.textContent = String(obogNoticesCache.length);
+    if (obogNoticesCache.length === 0) {
+      listEl.innerHTML = '<p class="empty-row">まだお知らせがありません。上のフォームから追加してください。</p>';
+      return;
+    }
+    listEl.innerHTML = obogNoticesCache.map((n) => `
+      <div class="file-row">
+        <div class="file-info">
+          <div class="file-name"><span class="file-name-text">${escapeHtml(n.notice_date)}</span></div>
+          <div class="file-meta">${escapeHtml((n.body || '').slice(0, 40))}${(n.body || '').length > 40 ? '…' : ''}</div>
+        </div>
+        <div class="file-actions">
+          <button class="icon-btn" data-obog-notice-edit="${escapeHtml(n.id)}">編集</button>
+          <button class="icon-btn" data-obog-notice-remove="${escapeHtml(n.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-obog-notice-edit]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-obog-notice-edit');
+        const n = obogNoticesCache.find((x) => x.id === id);
+        if (!n) return;
+        editingObogNoticeId = id;
+        document.getElementById('obogNoticeDate').value = n.notice_date;
+        document.getElementById('obogNoticeBody').value = n.body;
+        document.getElementById('obogNoticeSubmit').textContent = '変更を保存';
+        document.getElementById('obogNoticeCancelEdit').style.display = 'inline-block';
+        document.getElementById('obogNoticeDate').closest('.cat-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    listEl.querySelectorAll('[data-obog-notice-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-obog-notice-remove');
+        if (!confirm('このお知らせを削除しますか？')) return;
+        const { error } = await sb.from('obog_notices').delete().eq('id', id);
+        if (error) { showToast('削除に失敗しました： ' + error.message); return; }
+        await refreshObogNoticesCache();
+        if (editingObogNoticeId === id) resetObogNoticeForm();
+        renderObogNoticeList();
+        showToast('削除しました');
+      });
+    });
+  }
+
+  function resetObogNoticeForm() {
+    editingObogNoticeId = null;
+    document.getElementById('obogNoticeDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('obogNoticeBody').value = '';
+    document.getElementById('obogNoticeSubmit').textContent = 'お知らせを追加';
+    document.getElementById('obogNoticeSubmit').disabled = false;
+    document.getElementById('obogNoticeCancelEdit').style.display = 'none';
+    document.getElementById('obogNoticeFormError').style.display = 'none';
+    document.getElementById('obogNoticeConfirmBox').style.display = 'none';
+  }
+  document.getElementById('obogNoticeCancelEdit').addEventListener('click', resetObogNoticeForm);
+
+  async function commitObogNoticeSubmit() {
+    if (!pendingObogNoticeSubmit) return;
+    const { editingId, notice_date, body } = pendingObogNoticeSubmit;
+    try {
+      if (editingId) {
+        const { error } = await sb.from('obog_notices').update({ notice_date, body }).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('obog_notices').insert({ notice_date, body });
+        if (error) throw error;
+      }
+    } catch (err) {
+      showToast('登録に失敗しました： ' + err.message);
+      return;
+    }
+    pendingObogNoticeSubmit = null;
+    resetObogNoticeForm();
+    await refreshObogNoticesCache();
+    renderObogNoticeList();
+    showToast(editingId ? 'お知らせを更新しました' : 'お知らせを追加しました');
+  }
+
+  document.getElementById('obogNoticeSubmit').addEventListener('click', () => {
+    const notice_date = document.getElementById('obogNoticeDate').value;
+    const body = document.getElementById('obogNoticeBody').value.trim();
+    const errorEl = document.getElementById('obogNoticeFormError');
+    const missing = [];
+    if (!notice_date) missing.push('日付');
+    if (!body) missing.push('内容');
+    if (missing.length > 0) {
+      errorEl.textContent = missing.join('・') + 'が入力されていません';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+    pendingObogNoticeSubmit = { editingId: editingObogNoticeId, notice_date, body };
+    document.getElementById('obogNoticeConfirmText').textContent = editingObogNoticeId ? 'この内容に変更してもよろしいですか？' : 'このお知らせを追加してもよろしいですか？';
+    document.getElementById('obogNoticeConfirmYes').textContent = editingObogNoticeId ? '変更を確定' : '追加を確定';
+    document.getElementById('obogNoticeConfirmBox').style.display = 'block';
+    document.getElementById('obogNoticeSubmit').disabled = true;
+    document.getElementById('obogNoticeConfirmBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  document.getElementById('obogNoticeDate').addEventListener('input', () => { document.getElementById('obogNoticeFormError').style.display = 'none'; });
+  document.getElementById('obogNoticeBody').addEventListener('input', () => { document.getElementById('obogNoticeFormError').style.display = 'none'; });
+  document.getElementById('obogNoticeConfirmYes').addEventListener('click', commitObogNoticeSubmit);
+  document.getElementById('obogNoticeConfirmNo').addEventListener('click', () => {
+    pendingObogNoticeSubmit = null;
+    document.getElementById('obogNoticeConfirmBox').style.display = 'none';
+    document.getElementById('obogNoticeSubmit').disabled = false;
+  });
+
+  async function initObogNoticeAdmin() {
+    await refreshObogNoticesCache();
+    document.getElementById('obogNoticeDate').value = new Date().toISOString().slice(0, 10);
+    renderObogNoticeList();
   }
 
   // ホームの写真
@@ -3217,10 +3982,12 @@
     pendingAbout = null;
     pendingRecords = null;
     pendingDocs = {};
+    obogPendingDocs = {};
     pendingBlocks = {};
     pendingJoinPhotos = {};
     pendingLinkSubmit = null;
     pendingFaqSubmit = null;
+    pendingObogNoticeSubmit = null;
     pendingBlogImages = [];
     await renderHero();
     await renderAbout();
@@ -3228,6 +3995,9 @@
     await refreshCategoriesCache();
     await refreshDocsCache();
     await renderAll();
+    await refreshObogCategoriesCache();
+    await refreshObogDocsCache();
+    await renderObogAll();
     await renderBlocksPanels();
     await renderJoinPhotosPanels();
     renderLinkList();
@@ -3235,6 +4005,9 @@
     await refreshFaqsCache();
     renderFaqList();
     resetFaqForm();
+    await refreshObogNoticesCache();
+    renderObogNoticeList();
+    resetObogNoticeForm();
     resetBlogForm();
     await refreshBlogPosts();
     renderBlogList();
