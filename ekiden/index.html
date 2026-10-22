@@ -75,6 +75,17 @@
   .tabs[hidden] { display: none; }
   .syncbar { margin: 0 0 10px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; background: var(--head); }
   .syncbar[hidden] { display: none; }
+  /* ログイン画面（部のサイトの編集者ログインと同じ形） */
+  .gate { max-width: 380px; margin: 48px auto; border: 1px solid var(--line); border-radius: 6px; padding: 32px 24px; text-align: center; }
+  .gate h2 { font-size: 18px; margin: 0 0 8px; }
+  .gate-note { font-size: 13px; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
+  .gate-input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 4px; font-size: 16px; margin-bottom: 12px; }
+  .gate-err { font-size: 12px; font-weight: bold; margin: -4px 0 10px; }
+  .gate-err[hidden] { display: none; }
+  .gate-btn { width: 100%; font-family: var(--f-display); font-size: 14px; letter-spacing: 0.04em; background: var(--accent); color: var(--accent-fg);
+    border: 0; padding: 12px 20px; border-radius: 4px; }
+  .gate-btn:disabled { opacity: .6; }
+  .gate-back { margin-top: 14px; background: none; border: 0; color: var(--muted); font-size: 12px; text-decoration: underline; }
   button.minor { padding: 6px 8px; font-size: 12px; background: none; border: 1px solid transparent;
     border-radius: 6px; color: var(--muted); }
   button { padding: 8px 10px; font-size: 14px; white-space: nowrap; cursor: pointer; }
@@ -203,16 +214,16 @@
   <h3>スタート</h3>
   <ul>
     <li>レースのスタート（号砲）と同時にスタートボタンを押します。押された瞬間に計測が開始されます。</li>
-    <li>スタートボタンは、スタート地点にいる人が押します。スタートボタンは全ての計測シートに存在します。どこのページのスタートボタンを押してもらっても大丈夫です。</li>
-    <li>男子と女子のスタートは別々です。男子の計測シートでは「男子スタート」、女子の計測シートでは「女子スタート」を、それぞれの号砲と同時に押します。</li>
-    <li>スタートボタンを誤って押してしまったときは、タイマーの下の「キャンセル」で取り消して、押し直します。</li>
+    <li>スタートボタンは、スタート地点にいる人が押します。スタートボタンは全ての計測シートに存在します。どのシートにあるスタートボタンを押してもらっても構いません。</li>
+    <li>男子の計測シートでは「男子スタート」、女子の計測シートでは「女子スタート」を、それぞれの号砲と同時に押します。</li>
+    <li>スタートボタンを誤って押してしまったときは、タイマーの下の「キャンセル」で取り消すことができます。</li>
   </ul>
   <h3>通過の記録</h3>
   <ul>
     <li>記録する中継所を選び、走者が中継線を通過した瞬間に「通過」を押します。チーム名はその場で入れなくてかまいません。後から入れなおすことができます。チーム名は、表の「未入力」をタップして選びます。</li>
-    <li>集団で来たときは、通過した人数分だけ押します。連打すると1回ずつ記録されるので、押しすぎたときは「取消」で削除できます。</li>
+    <li>集団で来たときは、通過した人数分だけ押します。連打すると1回ずつ記録されます。押しすぎたときは「取消」で削除できます。</li>
     <li>1秒の間に何人も来て押しきれなかったときは、あとで経過時刻をタップして正しい時刻に直します。</li>
-    <li>表の「先頭差」「前差」をタップすると修正ができます。直すとその通過の経過時刻が変わり、区間記録や後ろの人の前差なども計算し直されます。</li>
+    <li>表の「先頭差」「前差」をタップすると修正ができます。どちらかを修整するとその通過の経過時刻が変わり、区間記録なども計算し直されます。</li>
     <li>押し忘れた通過は、表の下の「＋ 通過を手動で追加」で、経過時間か通過時刻を入れて追加できます。</li>
     <li>誤って押してしまった通過は、表の左の「取消」で取り消せます。</li>
   </ul>
@@ -220,14 +231,14 @@
   <p class="hownote">繰り上げとは、前の走者が決められた時間までに中継所に着かなかったときに、到着を待たずに次の走者をスタートさせることです。繰り上げになったチームは、元のたすきの代わりに繰り上げ用のたすきをつけて走ります。</p>
   <ul>
     <li>繰り上げの合図と同時に「繰り上げ実行」を押します。押した時刻が繰り上げ時刻になり、未着のチームが繰り上げスタートになります。</li>
-    <li>繰り上げを実行したときにチーム名が入っていない通過があると、すでに着いているチームでも、まだ着いていないものとして繰り上げスタートになってしまいます。あとからその通過にチーム名を入れれば、そのチームの繰り上げは自動で取り消されます。</li>
-    <li>繰り上げのあとに前走者が着いたら、いつもどおり「通過」を押してチーム名を入れます。</li>
+    <li>繰り上げを実行したときにチーム名が未入力の通過があると、既に襷を繋いだチームでも、まだ繋いでないものとして画面上では繰り上げスタートとして扱われます。後からその通過にチーム名を入力すれば、そのチームの繰り上げは自動で取り消されます。</li>
+    <li>繰り上げのあとに前走者が中継地点に到着したら、これまで通り「通過」を押してチーム名を入力します。</li>
     <li>繰り上げボタンを誤って押してしまった場合は、繰り上げボタンの横の「繰り上げをキャンセル」で取り消して、押し直せます。</li>
   </ul>
   <h3>記録の保存</h3>
   <ul>
-    <li>記録はインターネット上に保存され、速報を開いている全員の画面にすぐ反映されます。</li>
-    <li>電波が悪いところで押した記録はスマホに残しておき、つながったときに自動で送ります。送れていない記録があるあいだは、画面の上に表示が出ます。</li>
+    <li>記録はインターネット上に保存され、速報を開いている全員の画面にすぐに反映されます。</li>
+    <li>電波が悪いところで押した記録はスマホに残しておき、つながったときに自動で送られます。送れていない記録があるあいだは、画面の上に表示が出ます。</li>
   </ul>
 </details>
 
@@ -499,27 +510,52 @@ function loggedIn() {
   if (sb) return !!getPass();
   try { return localStorage.getItem(AUTH_KEY) === PASS_HASH; } catch (e) { return false; }
 }
-async function requireLogin() {
-  if (loggedIn()) return true;
-  const v = await modal({ msg: '計測シートと設定ページはパスワードが必要です。パスワードを入力してください。', input: '', password: true, okLabel: 'ログイン' });
-  if (v == null) return false;
-  const pass = toHalf(v).trim();
+// パスワードを確かめて、合っていればこのスマホに覚えておく。返り値：null（成功）か、出すエラー文
+async function tryLogin(raw) {
+  const pass = toHalf(raw).trim();
+  if (!pass) return 'パスワードを入力してください。';
   if (sb) {
     const r = await sb.rpc('ekiden_check', { pass });
-    if (r.error) { await say('ログインできませんでした。通信を確認してください。'); return false; }
-    if (r.data !== true) { await say('パスワードが違います。'); return false; }
+    if (r.error) return 'ログインできませんでした。通信を確認してください。';
+    if (r.data !== true) return 'ログインに失敗しました。パスワードをご確認ください。';
     setPass(pass);
     sync();
-    return true;
+    return null;
   }
-  if (passHash(pass) !== PASS_HASH) { await say('パスワードが違います。'); return false; }
+  if (passHash(pass) !== PASS_HASH) return 'ログインに失敗しました。パスワードをご確認ください。';
   try { localStorage.setItem(AUTH_KEY, PASS_HASH); } catch (e) {}
-  return true;
+  return null;
 }
-// 計測・設定を開く前に：最初の読み込みが終わっていること、ログインしていること
-async function openGuard() {
-  if (!ready) { say('記録を読み込んでいます。少し待ってから開いてください。'); return false; }
-  return requireLogin();
+// 計測・設定を開く。ログインしていなければ、ログイン画面を出してから開く
+function openPage(tab, div) {
+  if (!ready) { say('記録を読み込んでいます。少し待ってから開いてください。'); return; }
+  if (tab === 'settings' && ALL.tab !== 'settings' && ALL.tab !== 'login') ALL.prev = { tab: ALL.tab, div: ALL.cur };   // 設定の戻る先
+  if (div) useDiv(div);
+  if (loggedIn()) ALL.tab = tab;
+  else { ALL.loginNext = tab; ALL.tab = 'login'; }
+  save(); render(); window.scrollTo(0, 0);
+}
+// 部のサイトの編集者ログインと同じ形のログイン画面
+function viewLogin() {
+  const inp = el('input', { type: 'password', class: 'gate-input', placeholder: 'パスワード', autocomplete: 'current-password' });
+  const err = el('p', { class: 'gate-err', hidden: true });
+  const btn = el('button', { class: 'gate-btn' }, 'ログイン');
+  const go = async () => {
+    btn.disabled = true;
+    const e = await tryLogin(inp.value);
+    btn.disabled = false;
+    if (e) { err.textContent = e; err.hidden = false; inp.focus(); inp.select(); return; }
+    ALL.tab = ALL.loginNext === 'settings' ? 'settings' : 'measure';
+    save(); render(); window.scrollTo(0, 0);
+  };
+  btn.addEventListener('click', go);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  setTimeout(() => inp.focus(), 0);
+  return [el('div', { class: 'gate' },
+    el('h2', null, '計測用ログイン'),
+    el('p', { class: 'gate-note' }, '計測シートと設定ページを開くにはパスワードが必要です。'),
+    inp, err, btn,
+    el('button', { class: 'gate-back', onclick: () => { ALL.tab = 'sokuho'; save(); render(); } }, '速報に戻る'))];
 }
 async function logout() {
   if (ALL.tab === 'settings' && settingsDirty() && !await askYesNo('「保存」を押していない入力は保存されません。ログアウトしますか？')) return;
@@ -901,16 +937,17 @@ function drawTabs() {
   const box = document.getElementById('tabs');
   box.replaceChildren(...Object.keys(DIVS).filter(k => ALL.use[k]).map(k => el('div', { class: 'tabrow div-' + k },
     ...[['sokuho', '速報'], ['measure', '計測']].map(([tab, label]) =>
-      el('button', { class: 'tab-' + tab + (ALL.cur === k && ALL.tab === tab ? ' on' : ''),
-        onclick: async () => { if (tab === 'measure' && !await openGuard()) return; useDiv(k); ALL.tab = tab; save(); render(); window.scrollTo(0, 0); } },
+      el('button', { class: 'tab-' + tab + (ALL.cur === k && (ALL.tab === tab || (ALL.tab === 'login' && ALL.loginNext === tab)) ? ' on' : ''),
+        onclick: () => { if (tab === 'measure') openPage('measure', k); else { useDiv(k); ALL.tab = tab; save(); render(); window.scrollTo(0, 0); } } },
         el('span', { class: 'tabdiv' }, DIVS[k]), label)))));
 }
 
 function render() {
   if (!ALL.use[ALL.cur]) useDiv(ALL.use.m ? 'm' : 'w');   // オフにした方を開いていたとき
-  if (ALL.tab !== 'sokuho' && !loggedIn()) ALL.tab = 'sokuho';
+  if (ALL.tab === 'login' && loggedIn()) ALL.tab = ALL.loginNext === 'settings' ? 'settings' : 'measure';
+  if (ALL.tab !== 'sokuho' && ALL.tab !== 'login' && !loggedIn()) ALL.tab = 'sokuho';
   const inSettings = ALL.tab === 'settings';
-  document.getElementById('logoutbtn').hidden = ALL.tab === 'sokuho' || !loggedIn();
+  document.getElementById('logoutbtn').hidden = ALL.tab === 'sokuho' || ALL.tab === 'login' || !loggedIn();
   drawTabs();
   document.body.className = 'div-' + ALL.cur;   // 通過ボタンの色
   const howto = document.getElementById('howto');
@@ -924,6 +961,7 @@ function render() {
   if (D.point > D.legs) D.point = D.legs;
   if (ALL.tab === 'measure') v.append(...viewMeasure());
   else if (ALL.tab === 'sokuho') v.append(...viewSokuho());
+  else if (ALL.tab === 'login') v.append(...viewLogin());
   else v.append(...viewSettings());
   tick();
 }
@@ -1328,11 +1366,7 @@ function tick() {
 }
 
 document.getElementById('logoutbtn').addEventListener('click', logout);
-document.getElementById('setbtn').addEventListener('click', async () => {
-  if (!await openGuard()) return;
-  if (ALL.tab !== 'settings') ALL.prev = { tab: ALL.tab, div: ALL.cur };   // 戻る先
-  ALL.tab = 'settings'; save(); render(); window.scrollTo(0, 0);
-});
+document.getElementById('setbtn').addEventListener('click', () => openPage('settings'));
 async function backFromSettings() {
   if (settingsDirty() && !await modal({ msg: '「保存」を押していないため、設定で入力した内容は保存されません。戻りますか？', okLabel: '戻る', cancelLabel: 'キャンセル' })) return;
   discardSettings();
