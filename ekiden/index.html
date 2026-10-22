@@ -552,7 +552,7 @@ function viewLogin() {
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   setTimeout(() => inp.focus(), 0);
   return [el('div', { class: 'gate' },
-    el('h2', null, '計測用ログイン'),
+    el('h2', null, '計測者ログイン'),
     el('p', { class: 'gate-note' }, '計測シートと設定ページを開くにはパスワードが必要です。'),
     inp, err, btn,
     el('button', { class: 'gate-back', onclick: () => { ALL.tab = 'sokuho'; save(); render(); } }, '速報に戻る'))];
@@ -952,7 +952,7 @@ function render() {
   document.body.className = 'div-' + ALL.cur;   // 通過ボタンの色
   const howto = document.getElementById('howto');
   if (howto) howto.hidden = ALL.tab !== 'measure';
-  document.getElementById('setbtn').hidden = inSettings;
+  document.getElementById('setbtn').hidden = inSettings || ALL.tab === 'login';
   document.getElementById('backbtn').hidden = !inSettings;
   document.getElementById('backbtn2').hidden = !inSettings;
   document.getElementById('tabs').hidden = inSettings;
