@@ -141,6 +141,7 @@
   table.sogo td.tname { text-align: left; }
   table.sogo .tname { min-width: 6.5em; }
   table.sogo td.total { font-weight: bold; }
+  table.sogo td.total .state { font-weight: normal; font-size: 12px; color: var(--muted); }
   table.sogo tr.r2 td { border-bottom: 2px solid var(--line); }
   table.sogo tr.r1 td.rk, table.sogo tr.r1 td.tm, table.sogo tr.r1 td.lbl { border-bottom: 1px dotted var(--line); }
   h2.section { margin-top: 28px; padding-top: 12px; border-top: 2px solid var(--line); }
@@ -698,7 +699,7 @@ function legRank(t, leg) {
 }
 function teamState(t) {
   for (let l = 1; l <= D.legs; l++) {
-    if (arrOf(t, l) == null) return startOf(t, l) != null ? `${l}区 走行中` : `${l}区 未出走`;
+    if (arrOf(t, l) == null) return startOf(t, l) != null ? `${l}区走行中` : `${l}区未出走`;
   }
   return 'フィニッシュ';
 }
@@ -1155,9 +1156,6 @@ function viewTable() {
   const tb = el('tbody');
   order.forEach(t => {
     const finished = arrOf(t, fin) != null;
-    let lastP = 0;
-    for (let l = 1; l <= D.legs; l++) if (arrOf(t, l) != null) lastP = l;
-    const c = lastP ? cumSec(t, lastP) : null;
     const place = isOp(t) ? 'OP' : finished && cumSec(t, fin) != null ? placeOf(t) : '—';
     const passCells = [], legCells = [];
     for (let l = 1; l <= D.legs; l++) {
@@ -1174,8 +1172,9 @@ function viewTable() {
       el('tr', { class: 'r1' },
         el('td', { rowspan: 2, class: 'place' }, place),
         el('td', { rowspan: 2, class: 'tname' }, teamName(t)),
-        el('td', { rowspan: 2, class: 'total' }, c != null ? fP(c) : '—',
-          el('div', { class: 'muted' }, lastP && lastP < fin ? `${lastP}区まで` : teamState(t) === 'フィニッシュ' ? '' : teamState(t))),
+        // フィニッシュしたら総合タイム、まだなら今の状態（1区走行中など）
+        el('td', { rowspan: 2, class: 'total' }, finished && cumSec(t, fin) != null
+          ? fP(cumSec(t, fin)) : el('span', { class: 'state' }, teamState(t))),
         el('td', { class: 'lbl' }, '通過'), ...passCells),
       el('tr', { class: 'r2' }, el('td', { class: 'lbl' }, '区間'), ...legCells));
   });
