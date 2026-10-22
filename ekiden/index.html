@@ -32,8 +32,8 @@
   .tabs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
   .tabrow { display: flex; gap: 4px; }
   /* 速報を見る人の方が多いので広めに */
-  .tabs button.tab-sokuho { flex: 2; }
-  .tabs button.tab-measure { flex: 1; }
+  .tabs button.tab-sokuho { flex: 1; }
+  .tabs button.tab-measure { flex: 0 0 auto; padding: 10px 12px; }   /* 計測は文字が収まる幅だけ */
   .tabs button { flex: 1; padding: 10px; font-size: 15px; border: 1px solid var(--line);
     background: var(--head); color: var(--fg); border-radius: 6px; }
   .tabs .tabdiv { margin-right: 6px; padding: 0 6px; font-size: 12px; font-weight: bold; }
@@ -429,7 +429,9 @@ async function loadRemote() {
 }
 
 let loadTimer = null;
-const loadSoon = () => { clearTimeout(loadTimer); loadTimer = setTimeout(loadRemote, 300); };
+// 通過が続けて入ったときにまとめて1回で読むよう、少し待ってから読み込む（見る人が多いと通信量が増えるため）
+const loadSoon = () => { clearTimeout(loadTimer); loadTimer = setTimeout(loadRemote, 1000); };
+let live = false;   // リアルタイム通知がつながっているか
 
 function showSyncState() {
   const bar = document.getElementById('syncbar');
@@ -466,8 +468,10 @@ async function startShared() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_div' }, loadSoon)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_tap' }, loadSoon)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_kur' }, loadSoon)
-    .subscribe();
-  setInterval(loadRemote, 15000);   // リアルタイムの通知が届かなかったときの保険
+    .subscribe(st => { live = st === 'SUBSCRIBED'; if (live) loadSoon(); });
+  // 通知がつながっていないときだけ15秒ごとに読み直す（つながっていても念のため1分ごと）
+  let tickCount = 0;
+  setInterval(() => { tickCount++; if (!live || tickCount % 4 === 0) loadRemote(); }, 15000);
   window.addEventListener('online', () => { sync(); loadRemote(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { measureClock(); loadRemote(); } });
   document.addEventListener('focusout', () => setTimeout(() => {
