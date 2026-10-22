@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>駅伝記録</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #222; --muted: #666; --line: #ccc; --head: #f0f0f0;
+    --accent: #222; --accent-fg: #fff; --top: #ffe14d; --done: #e4e4e4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161616; --fg: #eee; --muted: #aaa; --line: #444; --head: #262626;
+      --accent: #eee; --accent-fg: #111; --top: #e6c62e; --done: #2c2c2c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: sans-serif; max-width: 720px; margin: 16px auto; padding: 0 16px;
+    background: var(--bg); color: var(--fg);
+  }
+  h1 { font-size: 22px; margin: 8px 0; }
+  h2 { font-size: 17px; margin: 20px 0 8px; }
+  details { margin-bottom: 12px; font-size: 14px; color: var(--muted); }
+  details li { margin: 4px 0; }
+  details h3 { font-size: 14px; margin: 10px 0 2px; color: var(--fg); }
+  details ul { margin: 0; padding-left: 20px; }
+  .hownote { margin: 0 0 4px; line-height: 1.6; }
+  .tabs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .tabrow { display: flex; gap: 4px; }
+  /* 速報を見る人の方が多いので広めに */
+  .tabs button.tab-sokuho { flex: 2; }
+  .tabs button.tab-measure { flex: 1; }
+  .tabs button { flex: 1; padding: 10px; font-size: 15px; border: 1px solid var(--line);
+    background: var(--head); color: var(--fg); border-radius: 6px; }
+  .tabs .tabdiv { margin-right: 6px; padding: 0 6px; font-size: 12px; font-weight: bold; }
+  .tabs button.on { background: var(--divc); color: #fff; border-color: var(--divc); }
+  /* 男女の色はタブと通過ボタンだけに使う */
+  .div-m { --divc: #1a5fd0; }
+  .div-w { --divc: #d32f2f; }
+  .divheadrow { display: flex; align-items: center; gap: 14px; margin-top: 28px; }
+  .divhead { border-left: 6px solid var(--fg); padding-left: 8px; margin: 0; }
+  h3 { font-size: 15px; margin: 16px 0 6px; }
+  .usechk { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; margin-left: auto; cursor: pointer; }
+  /* iPhone風のスイッチ */
+  .ios-switch { position: relative; display: inline-block; flex: 0 0 auto; width: 51px; height: 31px; }
+  .ios-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+  .ios-switch .track { position: absolute; inset: 0; border-radius: 16px; background: #e9e9ea; transition: background .2s; }
+  .ios-switch .knob { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
+    background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: transform .2s; }
+  .ios-switch input:checked + .track { background: #34c759; }
+  .ios-switch input:disabled { cursor: default; }
+  .ios-switch input:disabled + .track { opacity: .45; }
+  .ios-switch input:checked + .track .knob { transform: translateX(20px); }
+  @media (prefers-color-scheme: dark) { .ios-switch .track { background: #39393d; } }
+  .resetrow { align-items: center; }
+  .lockednote { font-size: 14px; font-weight: bold; margin: 0 0 8px; line-height: 1.6; }
+  input:disabled { background: var(--done); color: var(--muted); }
+  .row.resetall { margin-top: 20px; }
+  .foot { display: flex; justify-content: flex-end; gap: 6px; margin-top: 28px; }
+  .foot button[hidden], .titlebar button[hidden] { display: none; }
+  .titlebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .tabs[hidden] { display: none; }
+  .syncbar { margin: 0 0 10px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; background: var(--head); }
+  .syncbar[hidden] { display: none; }
+  button.minor { padding: 6px 8px; font-size: 12px; background: none; border: 1px solid transparent;
+    border-radius: 6px; color: var(--muted); }
+  button { padding: 8px 10px; font-size: 14px; white-space: nowrap; cursor: pointer; }
+  #timer { font-size: 44px; text-align: center; margin: 8px 0; font-variant-numeric: tabular-nums; }
+  .gunrow { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .gunrow button { padding: 14px 24px; font-size: 19px; }
+  select, input { font-size: 15px; padding: 6px; background: var(--bg); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 4px; }
+  .pointsel { border: 1px solid var(--line); border-radius: 6px; width: 100%; font-size: 17px; padding: 10px; margin-bottom: 6px; }
+  .selnote { font-size: 13px; font-weight: bold; color: var(--fg); margin: 0 0 10px; line-height: 1.5; }
+  .panel { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 14px; }
+  .panel b { font-size: 16px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid var(--line); padding: 6px; text-align: center; font-size: 14px;
+    font-variant-numeric: tabular-nums; }
+  th { background: var(--head); }
+  .tag { display: inline-block; font-size: 11px; padding: 0 4px; border: 1px solid var(--muted);
+    border-radius: 3px; margin-left: 2px; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .edit { text-decoration: underline dotted; cursor: pointer; }
+  .teamlist { display: flex; flex-direction: column; gap: 8px; }
+  .teamblk { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; padding: 10px;
+    border: 1px solid var(--line); border-radius: 8px; }
+  .teamblk .fld { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 2px; }
+  .teamblk .fld.grow { flex: 1; min-width: 140px; }
+  .teamblk .fld input { width: 100%; }
+  .teamblk .opchk { display: flex; align-items: center; gap: 4px; font-size: 14px; padding-bottom: 8px; }
+  .teamblk .rm { color: var(--fg); border: 1px solid var(--line); background: var(--bg); border-radius: 6px; }
+  .addbtn { padding: 5px 12px; font-size: 13px; border: 1px dashed var(--muted); background: var(--bg);
+    color: var(--fg); border-radius: 6px; }
+  .savebtn { padding: 10px 24px; font-size: 16px; background: var(--accent); color: var(--accent-fg);
+    border: 1px solid var(--accent); border-radius: 8px; }
+  .danger { color: var(--fg); font-weight: bold; }
+  .tapbtn { padding: 28px 0 !important; width: 100%; font-size: 26px !important; border-radius: 12px;
+    border: 2px solid var(--divc, var(--accent)); background: var(--divc, var(--accent)); color: #fff; }
+  .tapbtn:active { opacity: .7; }
+  .tapbtn .tapmain, .tapbtn .tapsub, .tapbtn .tapkur { display: block; }
+  .tapbtn .tapkur { display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 12px; font-size: 14px; font-weight: bold; background: #fff; color: var(--divc, var(--fg)); }
+  .tapbtn .tapsub { font-size: 15px; font-weight: normal; margin-top: 6px; white-space: normal; }
+  .kurbtn { padding: 10px 14px; font-size: 15px; border-radius: 8px; border: 2px solid var(--fg);
+    background: var(--bg); color: var(--fg); font-weight: bold; }
+  tr.pending td { color: var(--muted); }
+  table.sogo { width: auto; min-width: 100%; }
+  table.sogo th, table.sogo td { padding: 3px 5px; font-size: 13px; white-space: nowrap; }
+  table.sogo td.rk { min-width: 1.8em; border-right: none; color: var(--muted); }
+  table.sogo td.tm { text-align: right; border-left: none; }
+  table.sogo td.top { background: var(--top); color: #222; font-weight: bold; }
+  table.sogo td.wt { background: var(--done); }
+  table.sogo td.lbl { font-size: 11px; color: var(--muted); }
+  table.sogo td.place { font-weight: bold; }
+  table.sogo td.tname { text-align: left; }
+  table.sogo .tname { min-width: 6.5em; }
+  table.sogo td.total { font-weight: bold; }
+  table.sogo tr.r2 td { border-bottom: 2px solid var(--line); }
+  table.sogo tr.r1 td.rk, table.sogo tr.r1 td.tm, table.sogo tr.r1 td.lbl { border-bottom: 1px dotted var(--line); }
+  h2.section { margin-top: 28px; padding-top: 12px; border-top: 2px solid var(--line); }
+  .notpassed { margin-top: 10px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 8px;
+    font-size: 14px; line-height: 1.6; }
+  tr.pending td.kurdone, td.kurdone { color: var(--fg); font-weight: bold; font-size: 12px; white-space: nowrap; }
+  td.rmcell { padding: 2px; width: 1%; }
+  .rmlap { padding: 2px 6px; font-size: 11px; border-radius: 6px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); }
+  .savearea { margin-top: 24px; padding-top: 14px; border-top: 2px solid var(--line); }
+  .resethead { margin-top: 40px; padding-top: 16px; border-top: 2px solid var(--line); }
+  .savearea .savebtn { width: 100%; padding: 12px; font-size: 17px; }
+  .teamcount { font-size: 13px; color: var(--muted); }
+  .setnote { font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.6; }
+  .setnote.lead { font-size: 14px; color: var(--fg); }
+  .setnote ul { margin: 0; padding-left: 18px; }
+  .sortbar { display: flex; gap: 6px; justify-content: flex-start; margin: 0 0 6px; }
+  .sortbar button { padding: 3px 9px; font-size: 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); }
+  .sortbar button.on { border-color: var(--muted); color: var(--fg); background: var(--head); }
+  .startbox { text-align: center; }
+  .startbox #timer { margin: 2px 0 6px; }
+  .startpre { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .startpre .gunbtn { min-width: 10em; padding: 12px 20px; font-size: 18px; }
+  .startbtns { display: flex; align-items: flex-end; gap: 8px; }
+  .startpost { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .startcancel { padding: 2px 8px; font-size: 12px; border-radius: 6px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); }
+  .kurrow { flex-wrap: nowrap; }
+  .kurrow .kurbtn { white-space: nowrap; flex-shrink: 0; }
+  .kurcancel { white-space: nowrap; padding: 3px 7px; font-size: 12px; border-radius: 6px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); align-self: flex-end; }
+  @media (max-width: 380px) { .kurrow .kurbtn { padding: 9px 9px; font-size: 14px; } .kurrow .kurcancel { font-size: 11px; padding: 3px 6px; white-space: normal; flex-shrink: 1; min-width: 0; line-height: 1.3; } }
+  .kurbtn.done { background: var(--done); border-color: var(--line); color: var(--muted); opacity: 1; }
+  .tsel { font-size: 14px; padding: 3px; max-width: 160px; }
+  .tsel.empty { border: 2px solid var(--fg); color: var(--fg); font-weight: bold; }
+  table.sokuho th, table.sokuho td { padding: 3px 4px; font-size: 14px; line-height: 1.3; }
+  table.sokuho th { font-size: 12px; }
+  table.sokuho td:nth-child(2) { text-align: left; }
+  .toast { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 90;
+    background: rgba(40,40,40,.92); color: #fff; padding: 22px 30px; border-radius: 14px; font-size: 20px;
+    font-weight: bold; box-shadow: 0 4px 20px rgba(0,0,0,.3); transition: opacity .4s; white-space: nowrap;
+    pointer-events: none; }
+  .toast.out { opacity: 0; }
+  .moverlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center;
+    justify-content: center; padding: 16px; z-index: 100; }
+  .mbox { background: var(--bg); color: var(--fg); border-radius: 12px; padding: 16px; width: 100%; max-width: 360px; }
+  .mmsg { white-space: pre-wrap; font-size: 15px; line-height: 1.5; margin-bottom: 12px; }
+  .minput { width: 100%; font-size: 18px; margin-bottom: 12px; }
+  .mteamrow { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 15px; }
+  .mteamrow select { flex: 1; font-size: 16px; padding: 6px; }
+  .modes { display: flex; gap: 16px; margin-bottom: 8px; font-size: 15px; }
+  .modeopt { display: flex; align-items: center; gap: 4px; }
+  .modeopt input { width: 18px; height: 18px; margin: 0; }
+  .mbox .minput + .muted { margin: -6px 0 12px; font-size: 13px; }
+  .mbox .muted.danger { color: var(--fg); font-weight: bold; }
+  .mbtns { display: flex; gap: 8px; justify-content: flex-end; }
+  .mbtns button { padding: 10px 18px; font-size: 15px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--head); color: var(--fg); }
+  .mbtns .mok { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="titlebar"><h1>駅伝記録</h1><button class="minor" id="backbtn2">速報・計測画面に戻る</button></div>
+
+<div class="tabs" id="tabs"></div>
+<div id="syncbar" class="syncbar" hidden></div>
+
+<details id="howto">
+  <summary>計測の説明・注意点</summary>
+  <h3>スタート</h3>
+  <ul>
+    <li>レースのスタート（号砲）と同時にスタートボタンを押します。押された瞬間に計測が開始されます。</li>
+    <li>スタートボタンは、スタート地点にいる人が押します。スタートボタンは全ての計測シートに存在します。どこのページのスタートボタンを押してもらっても大丈夫です。</li>
+    <li>男子と女子のスタートは別々です。男子の計測シートでは「男子スタート」、女子の計測シートでは「女子スタート」を、それぞれの号砲と同時に押します。</li>
+    <li>スタートボタンを誤って押してしまったときは、タイマーの下の「キャンセル」で取り消して、押し直します。</li>
+  </ul>
+  <h3>通過の記録</h3>
+  <ul>
+    <li>記録する中継所を選び、走者が中継線を通過した瞬間に「通過」を押します。チーム名はその場で入れなくてかまいません。後から入れなおすことができます。チーム名は、表の「未入力」をタップして選びます。</li>
+    <li>集団で来たときは、通過した人数分だけ押します。連打すると1回ずつ記録されるので、押しすぎたときは「取消」で削除できます。</li>
+    <li>1秒の間に何人も来て押しきれなかったときは、あとで経過時刻をタップして正しい時刻に直します。</li>
+    <li>表の「先頭差」「前差」をタップすると修正ができます。直すとその通過の経過時刻が変わり、区間記録や後ろの人の前差なども計算し直されます。</li>
+    <li>押し忘れた通過は、表の下の「＋ 通過を手動で追加」で、経過時間か通過時刻を入れて追加できます。</li>
+    <li>誤って押してしまった通過は、表の左の「取消」で取り消せます。</li>
+  </ul>
+  <h3>繰り上げ</h3>
+  <p class="hownote">繰り上げとは、前の走者が決められた時間までに中継所に着かなかったときに、到着を待たずに次の走者をスタートさせることです。繰り上げになったチームは、元のたすきの代わりに繰り上げ用のたすきをつけて走ります。</p>
+  <ul>
+    <li>繰り上げの合図と同時に「繰り上げ実行」を押します。押した時刻が繰り上げ時刻になり、未着のチームが繰り上げスタートになります。</li>
+    <li>繰り上げを実行したときにチーム名が入っていない通過があると、すでに着いているチームでも、まだ着いていないものとして繰り上げスタートになってしまいます。あとからその通過にチーム名を入れれば、そのチームの繰り上げは自動で取り消されます。</li>
+    <li>繰り上げのあとに前走者が着いたら、いつもどおり「通過」を押してチーム名を入れます。</li>
+    <li>繰り上げボタンを誤って押してしまった場合は、繰り上げボタンの横の「繰り上げをキャンセル」で取り消して、押し直せます。</li>
+  </ul>
+  <h3>記録の保存</h3>
+  <ul>
+    <li>記録はインターネット上に保存され、速報を開いている全員の画面にすぐ反映されます。</li>
+    <li>電波が悪いところで押した記録はスマホに残しておき、つながったときに自動で送ります。送れていない記録があるあいだは、画面の上に表示が出ます。</li>
+  </ul>
+</details>
+
+<div id="view"></div>
+<div class="foot"><button class="minor" id="logoutbtn">ログアウト</button><button class="minor" id="setbtn">設定</button><button class="minor" id="backbtn">速報・計測画面に戻る</button></div>
+
+<script>
+const KEY = 'ekidenRecord_v1';
+
+const DIVS = { m: '男子', w: '女子' };
+
+// 男子・女子それぞれのデータ（記録も設定も別々に持つ）
+function defaults() {
+  return {
+    legs: 5,
+    teams: [{ no: '1', name: 'チームA' }, { no: '2', name: 'チームB' }, { no: '3', name: 'チームC' }],
+    gun: null,   // スタート時刻(ms)
+    taps: {},    // 中継所 -> [{ id, time, team }]  中継所kはk区のゴール。teamは後から入れる
+    kur: {},     // チーム -> { 区: 繰り上げ時刻 }
+    point: 1
+  };
+}
+function allDefaults() {
+  return { cur: 'm', tab: 'sokuho', prev: null, use: { m: true, w: true }, divs: { m: defaults(), w: defaults() } };
+}
+function fixDiv(s) {
+  const d = Object.assign(defaults(), s || {});
+  // 最初の版はチームごとの到着時刻で保存していたので、通過の形に直す
+  if (s && s.arr && !s.taps) {
+    for (const t in s.arr) for (const pt in s.arr[t])
+      (d.taps[pt] = d.taps[pt] || []).push({ id: t + '-' + pt, time: s.arr[t][pt], team: t });
+  }
+  delete d.arr; delete d.tab; delete d.prevTab; delete d.status; delete d.log;
+  return d;
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.divs) {
+      const a = Object.assign(allDefaults(), s);
+      a.use = Object.assign({ m: true, w: true }, s.use);
+      a.divs = { m: fixDiv(s.divs.m), w: fixDiv(s.divs.w) };
+      return a;
+    }
+    if (s) {
+      // 男女別にする前のデータは男子として読む
+      const a = allDefaults();
+      a.tab = s.tab === 'measure' ? 'measure' : 'sokuho';
+      a.divs.m = fixDiv(s);
+      return a;
+    }
+  } catch (e) {}
+  return allDefaults();
+}
+function save() { saveLocal(); sync(); }
+let ALL = load();
+let D = ALL.divs[ALL.cur];   // 今開いている方（男子 or 女子）
+function useDiv(k) { ALL.cur = k; D = ALL.divs[k]; }
+const divName = () => DIVS[ALL.cur];
+
+// ---------- Supabase との共有 ----------
+// 部のサイトと同じプロジェクト。公開用のキーなのでページに書いてよい
+// 書き込みは ekiden_write 関数だけで受け付け、そこでパスワードを確かめる（ekiden_supabase.sql）
+const SUPABASE_URL = 'https://wafgojuwqwfnjkbjttfx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_MfW-H10DbxprhFwoIB_n_g_nQ9EU8B8';
+
+const sb = (typeof window !== 'undefined' && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+  : null;   // 読み込めなかったときは、このスマホの中だけで動く
+
+const SRV_KEY = 'ekidenServer_v1';
+let srv = null;          // 最後にサーバーと一致していた内容（ここと比べて、自分が変えた分だけ送る）
+let ready = !sb;         // サーバーから一度読み込めたか
+let syncing = false, syncAgain = false, retryTimer = null, offline = false;
+let pendingLoad = false, pendingRender = false;
+let clockOffset = 0;     // スマホの時計のずれ。スタートと通過を別のスマホで押しても合うようにサーバーの時計にそろえる
+
+const nowMs = () => Date.now() + clockOffset;
+
+// 比べやすい形にする
+function snapOf(d, use) {
+  const taps = {}, kur = {};
+  for (const p in d.taps) for (const o of d.taps[p]) taps[o.id] = { point: +p, time: o.time, team: o.team || '' };
+  for (const t in d.kur) for (const leg in d.kur[t]) kur[t + '|' + leg] = d.kur[t][leg];
+  return { use: !!use, legs: d.legs, teams: JSON.stringify(d.teams), gun: d.gun, taps, kur };
+}
+const localSnap = () => ({ m: snapOf(ALL.divs.m, ALL.use.m), w: snapOf(ALL.divs.w, ALL.use.w) });
+
+function changesFor(k, a, b) {
+  const div = {};
+  if (a.use !== b.use) div.use_div = a.use;
+  if (a.legs !== b.legs) div.legs = a.legs;
+  if (a.teams !== b.teams) div.teams = JSON.parse(a.teams);
+  if (a.gun !== b.gun) div.gun = a.gun;
+  const tapUp = [], tapDel = [], kurUp = [], kurDel = [];
+  for (const id in a.taps) {
+    const x = a.taps[id], y = b.taps[id];
+    if (!y || x.point !== y.point || x.time !== y.time || x.team !== y.team)
+      tapUp.push({ id, div: k, point: x.point, t_ms: x.time, team: x.team });
+  }
+  for (const id in b.taps) if (!a.taps[id]) tapDel.push(id);
+  for (const key in a.kur) if (a.kur[key] !== b.kur[key]) {
+    const [team, leg] = key.split('|');
+    kurUp.push({ div: k, team, leg: +leg, t_ms: a.kur[key] });
+  }
+  for (const key in b.kur) if (!(key in a.kur)) { const [team, leg] = key.split('|'); kurDel.push({ team, leg: +leg }); }
+  const empty = !Object.keys(div).length && !tapUp.length && !tapDel.length && !kurUp.length && !kurDel.length;
+  return empty ? null : { div, tapUp, tapDel, kurUp, kurDel };
+}
+function unsynced() {
+  if (!sb || !srv) return false;
+  const l = localSnap();
+  return !!(changesFor('m', l.m, srv.m) || changesFor('w', l.w, srv.w));
+}
+
+function saveLocal() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(ALL));
+    if (srv) localStorage.setItem(SRV_KEY, JSON.stringify(srv));
+  } catch (e) {}
+}
+
+// 男子・女子の変更をまとめて1回で送る（途中で切れても半端に書き込まれない）
+async function pushAll(cs) {
+  const ops = { div: [], tap_up: [], tap_del: [], kur_up: [], kur_del: [] };
+  for (const k in cs) {
+    const c = cs[k];
+    if (Object.keys(c.div).length) ops.div.push({ div: k, set: c.div });
+    ops.tap_up.push(...c.tapUp);
+    ops.tap_del.push(...c.tapDel);
+    ops.kur_up.push(...c.kurUp);
+    ops.kur_del.push(...c.kurDel.map(x => ({ div: k, team: x.team, leg: x.leg })));
+  }
+  const r = await sb.rpc('ekiden_write', { pass: getPass(), ops });
+  if (r.error) throw r.error;
+}
+
+async function sync() {
+  if (!sb || !ready) return;
+  if (syncing) { syncAgain = true; return; }
+  syncing = true;
+  try {
+    do {
+      syncAgain = false;
+      const l = localSnap(), cs = {};
+      for (const k of ['m', 'w']) { const c = changesFor(k, l[k], srv[k]); if (c) cs[k] = c; }
+      if (!Object.keys(cs).length) break;
+      if (!getPass()) throw { code: 'nopass' };
+      await pushAll(cs);
+      srv = l;
+      saveLocal();
+    } while (syncAgain);
+    offline = false;
+  } catch (e) {
+    offline = true;
+    // パスワードが変わっていたら、もう一度ログインしてもらう
+    if (e && (e.code === '42501' || e.code === 'nopass')) {
+      const was = !!getPass();
+      setPass(null); saveLocal(); render();
+      if (was) say('パスワードが変わったため、ログアウトしました。もう一度ログインすると、送れていない記録も送られます。');
+    }
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(sync, 4000);   // つながるまで送り直す
+  }
+  syncing = false;
+  showSyncState();
+  if (!offline && pendingLoad) loadRemote();
+}
+
+const modalOpen = () => !!document.querySelector('.moverlay');
+const typing = () => { const a = document.activeElement; return !!(a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && a.closest('#view')); };
+
+async function loadRemote() {
+  if (!sb) return;
+  // 送っていない変更があるとき・確認画面を出しているときは、上書きしないように後回し
+  if (syncing || modalOpen() || (ready && unsynced())) { pendingLoad = true; if (ready && unsynced()) sync(); return; }
+  pendingLoad = false;
+  let rows;
+  try {
+    rows = await Promise.all([
+      sb.from('ekiden_div').select('*'),
+      sb.from('ekiden_tap').select('*'),
+      sb.from('ekiden_kur').select('*')]);
+    rows.forEach(r => { if (r.error) throw r.error; });
+  } catch (e) {
+    offline = true; showSyncState(); return;
+  }
+  if (syncing || modalOpen() || (ready && unsynced())) { pendingLoad = true; return; }
+  const [divs, taps, kurs] = rows.map(r => r.data);
+  for (const k of ['m', 'w']) {
+    const d = ALL.divs[k], row = divs.find(r => r.div === k);
+    if (row) {
+      d.legs = row.legs; d.teams = row.teams || []; d.gun = row.gun;
+      ALL.use[k] = row.use_div !== false;
+    }
+    d.taps = {};
+    taps.filter(t => t.div === k).sort((a, b) => a.t_ms - b.t_ms)
+      .forEach(t => (d.taps[t.point] = d.taps[t.point] || []).push({ id: t.id, time: Number(t.t_ms), team: t.team || '' }));
+    d.kur = {};
+    kurs.filter(x => x.div === k).forEach(x => { (d.kur[x.team] = d.kur[x.team] || {})[x.leg] = Number(x.t_ms); });
+  }
+  D = ALL.divs[ALL.cur];
+  srv = localSnap();
+  ready = true; offline = false;
+  saveLocal();
+  showSyncState();
+  if (typing()) pendingRender = true; else render();
+}
+
+let loadTimer = null;
+const loadSoon = () => { clearTimeout(loadTimer); loadTimer = setTimeout(loadRemote, 300); };
+
+function showSyncState() {
+  const bar = document.getElementById('syncbar');
+  if (!bar) return;
+  let msg = '';
+  if (!sb && typeof location !== 'undefined' && /^https?:/.test(location.protocol)) msg = '共有サーバーにつながっていません。記録はこのスマホの中だけに保存されます。ページを読み込み直してください。';
+  else if (sb && !ready) msg = offline ? '記録を読み込めません。通信を確認してください。' : '記録を読み込んでいます…';
+  else if (sb && offline) msg = unsynced() ? '通信待ち：送れていない記録があります。つながると自動で送ります。' : '通信が切れています。速報が最新でない可能性があります。';
+  bar.textContent = msg;
+  bar.hidden = !msg;
+}
+
+async function measureClock() {
+  try {
+    const t0 = Date.now();
+    const r = await sb.rpc('ekiden_now');
+    const t1 = Date.now();
+    if (!r.error && r.data != null) clockOffset = Math.round(Number(r.data) - (t0 + t1) / 2);
+  } catch (e) {}
+}
+
+async function startShared() {
+  showSyncState();
+  if (!sb) return;
+  try { srv = JSON.parse(localStorage.getItem(SRV_KEY) || 'null'); } catch (e) {}
+  // 前に読み込んだことがあれば、通信できなくてもその続きから使える
+  if (srv) { ready = true; sync(); }
+  else { ALL.divs = { m: defaults(), w: defaults() }; D = ALL.divs[ALL.cur]; }
+  showSyncState();
+  render();
+  measureClock();
+  loadRemote();
+  sb.channel('ekiden')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_div' }, loadSoon)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_tap' }, loadSoon)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ekiden_kur' }, loadSoon)
+    .subscribe();
+  setInterval(loadRemote, 15000);   // リアルタイムの通知が届かなかったときの保険
+  window.addEventListener('online', () => { sync(); loadRemote(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { measureClock(); loadRemote(); } });
+  document.addEventListener('focusout', () => setTimeout(() => {
+    if (pendingRender && !typing()) { pendingRender = false; render(); }
+  }, 0));
+}
+
+// ---------- ログイン（計測と設定だけ） ----------
+// 共有するときはパスワードをサーバーで確かめ、書き込むたびに一緒に送る。ログアウトするまでこのスマホに残す
+const AUTH_KEY = 'ekidenAuth_v1', PASS_KEY = 'ekidenPass_v1';
+const PASS_HASH = '1r7fbd8';   // Supabase を読み込めなかったとき（このスマホだけで使うとき）用
+const passHash = str => { let h = 5381; for (const c of str) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return h.toString(36); };
+function getPass() { try { return localStorage.getItem(PASS_KEY); } catch (e) { return null; } }
+function setPass(v) { try { if (v) localStorage.setItem(PASS_KEY, v); else localStorage.removeItem(PASS_KEY); } catch (e) {} }
+function loggedIn() {
+  if (sb) return !!getPass();
+  try { return localStorage.getItem(AUTH_KEY) === PASS_HASH; } catch (e) { return false; }
+}
+async function requireLogin() {
+  if (loggedIn()) return true;
+  const v = await modal({ msg: '計測シートと設定ページはパスワードが必要です。パスワードを入力してください。', input: '', password: true, okLabel: 'ログイン' });
+  if (v == null) return false;
+  const pass = toHalf(v).trim();
+  if (sb) {
+    const r = await sb.rpc('ekiden_check', { pass });
+    if (r.error) { await say('ログインできませんでした。通信を確認してください。'); return false; }
+    if (r.data !== true) { await say('パスワードが違います。'); return false; }
+    setPass(pass);
+    sync();
+    return true;
+  }
+  if (passHash(pass) !== PASS_HASH) { await say('パスワードが違います。'); return false; }
+  try { localStorage.setItem(AUTH_KEY, PASS_HASH); } catch (e) {}
+  return true;
+}
+// 計測・設定を開く前に：最初の読み込みが終わっていること、ログインしていること
+async function openGuard() {
+  if (!ready) { say('記録を読み込んでいます。少し待ってから開いてください。'); return false; }
+  return requireLogin();
+}
+async function logout() {
+  if (ALL.tab === 'settings' && settingsDirty() && !await askYesNo('「保存」を押していない入力は保存されません。ログアウトしますか？')) return;
+  if (sb && unsynced()) { await say('まだ送れていない記録があります。通信がつながって送り終わってからログアウトしてください。'); return; }
+  if (!await askYesNo('ログアウトしますか？計測シートと設定ページを開くには、もう一度パスワードが必要になります。')) return;
+  if (sb) setPass(null);
+  else try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
+  discardSettings();
+  ALL.tab = 'sokuho'; save(); render(); window.scrollTo(0, 0);
+}
+
+// ---------- 小道具 ----------
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'disabled' || k === 'selected' || k === 'checked') e[k] = true;
+    else e.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => { if (c != null) e.append(c instanceof Node ? c : document.createTextNode(String(c))); });
+  return e;
+}
+const p2 = n => String(n).padStart(2, '0');
+const sec = ms => Math.ceil(Math.max(0, ms) / 1000);   // 秒未満は切り上げ
+function fmtS(s) {
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return h ? h + ':' + p2(m) + ':' + p2(x) : p2(m) + ':' + p2(x);
+}
+const fmt = ms => fmtS(sec(ms));
+// 速報用。区間タイムは60分を超えても分のまま
+const hms = s => [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60];
+const ms2 = s => [Math.floor(s / 60), s % 60];
+// 全角で入力されても読めるようにする（「３３：５１」→「33:51」）
+const toHalf = str => String(str || '').normalize('NFKC').replace(/[\s　]/g, '').replace(/[：﹕]/g, ':');
+function clock(ms) { const d = new Date(ms); return p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()); }
+function parseClock(str, baseMs) {
+  const m = toHalf(str).match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return null;
+  const d = new Date(baseMs != null ? baseMs : Date.now());
+  d.setHours(+m[1], +m[2], +(m[3] || 0), 0);
+  return d.getTime();
+}
+
+// ---------- ダイアログ ----------
+// confirm() だとアプリ内ブラウザで出ないことがあったので自前で出す
+function modal({ msg, input = null, cancel = true, okLabel = 'OK', cancelLabel = 'キャンセル', password = false }) {
+  return new Promise(resolve => {
+    const box = el('div', { class: 'mbox' });
+    const inp = input !== null ? el('input', { type: password ? 'password' : 'text', class: 'minput', value: input, autocomplete: password ? 'current-password' : null }) : null;
+    const close = v => { ov.remove(); resolve(v); };
+    const ok = () => close(inp ? inp.value : true);
+    box.append(el('div', { class: 'mmsg' }, msg));
+    if (inp) {
+      box.append(inp);
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') ok(); });
+    }
+    box.append(el('div', { class: 'mbtns' },
+      cancel ? el('button', { onclick: () => close(null) }, cancelLabel) : null,
+      el('button', { class: 'mok', onclick: ok }, okLabel)));
+    const ov = el('div', { class: 'moverlay' }, box);
+    document.body.append(ov);
+    if (inp) { inp.focus(); inp.select(); }
+  });
+}
+const ask = msg => modal({ msg }).then(v => v !== null);
+const askYesNo = msg => modal({ msg, okLabel: 'はい', cancelLabel: 'いいえ' }).then(v => v !== null);
+const askInput = (msg, def) => modal({ msg, input: def == null ? '' : String(def) });
+const say = msg => modal({ msg, cancel: false });
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = el('div', { class: 'toast' }, msg);
+  document.body.append(t);
+  setTimeout(() => t.classList.add('out'), 2200);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// ---------- 計算ルール ----------
+const teamName = no => { const t = D.teams.find(t => t.no === no); return t ? t.name : no; };
+const tapsOf = p => (D.taps[p] || []).slice().sort((a, b) => a.time - b.time);
+const arrOf = (t, p) => { const x = (D.taps[p] || []).find(x => x.team === t); return x ? x.time : null; };
+const kurOf = (t, leg) => (D.kur[t] && D.kur[t][leg] != null) ? D.kur[t][leg] : null;
+const isOp = t => { const x = D.teams.find(o => o.no === t); return !!(x && x.op); };
+const pointLabel = p => p < D.legs ? `第${p}中継所（${p}区→${p + 1}区）` : 'フィニッシュ';
+
+// 1区はスタート、繰り上げがあればその時刻、それ以外は前の走者の到着
+function startOf(t, leg) {
+  if (leg === 1) return D.gun;
+  const k = kurOf(t, leg);
+  if (k != null) return k;
+  return arrOf(t, leg - 1);
+}
+// スタートからの経過秒。差をとる前にそれぞれ秒に切り上げる
+// （差をとってから切り上げると公式記録と1秒ずれることがある）
+const es = ms => Math.ceil((ms - D.gun) / 1000);
+function legMs(t, leg) {
+  const a = arrOf(t, leg), s = startOf(t, leg);
+  if (a == null || s == null || a < s || D.gun == null) return null;
+  return (es(a) - es(s)) * 1000;
+}
+// 通過順位は通算タイムで決める（繰り上げがあると到着順とずれるため）。同タイムは到着順
+function byCum(p) {
+  return (a, b) => {
+    const ca = cumSec(a, p), cb = cumSec(b, p);
+    if (ca != null && cb != null && ca !== cb) return ca - cb;
+    return arrOf(a, p) - arrOf(b, p);
+  };
+}
+// その区かそれより前に繰り上げがあったか（備考の「繰」）
+function hadKur(t, p) {
+  for (let j = 2; j <= Math.min(p, D.legs); j++) if (kurOf(t, j) != null) return true;
+  return false;
+}
+// 繰り上げになって、まだ前の走者が着いていないチーム
+const kurPending = p => p < D.legs
+  ? D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null && arrOf(t, p) == null) : [];
+function tasuki(t, leg) {
+  for (let j = 2; j <= leg; j++) if (kurOf(t, j) != null) return '白';
+  return '通常';
+}
+// 通算 = 区間記録の合計
+function cumSec(t, p) {
+  let s = 0;
+  for (let l = 1; l <= p; l++) { const m = legMs(t, l); if (m == null) return null; s += sec(m); }
+  return s;
+}
+function legRank(t, leg) {
+  const m = legMs(t, leg);
+  if (m == null || isOp(t)) return null;
+  const mine = sec(m); let r = 1;
+  D.teams.forEach(o => {
+    if (o.no === t || o.op) return;
+    const x = legMs(o.no, leg);
+    if (x != null && sec(x) < mine) r++;
+  });
+  return r;
+}
+function teamState(t) {
+  for (let l = 1; l <= D.legs; l++) {
+    if (arrOf(t, l) == null) return startOf(t, l) != null ? `${l}区 走行中` : `${l}区 未出走`;
+  }
+  return 'フィニッシュ';
+}
+// ---------- 操作 ----------
+// iPhoneは vibrate() がないので、switch付きチェックボックスを押したときの触覚を借りる（iOS 18〜）
+function buzz(pattern) {
+  try {
+    if (typeof navigator.vibrate === 'function' && navigator.vibrate(pattern)) return;
+  } catch (e) {}
+  try {
+    const label = document.createElement('label');
+    label.setAttribute('aria-hidden', 'true');
+    label.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.setAttribute('switch', '');
+    label.appendChild(input);
+    document.head.appendChild(label);
+    label.click();
+    document.head.removeChild(label);
+  } catch (e) {}
+}
+
+function gunStart() {
+  if (D.gun != null) return;
+  D.gun = nowMs();
+  buzz([60, 60, 60]);
+  save(); render();
+}
+// 記録はスタートからの経過で計算しているので、スタートを消すときは記録も全部消す
+async function cancelGun() {
+  if (D.gun == null) { say(`${divName()}のスタートはまだ押されていません。キャンセルするものはありません。`); return; }
+  const n = Object.values(D.taps).reduce((a, l) => a + l.length, 0);
+  const k = Object.values(D.kur).reduce((a, o) => a + Object.keys(o).length, 0);
+  const extra = n || k ? '\n計測した全てのデータが削除されます。' : '';
+  if (!await askYesNo(`${divName()}のスタート（${clock(D.gun)}）をキャンセルしますか？${extra}`)) return;
+  if (!await askYesNo(`本当に${divName()}のスタートをキャンセルしますか？`)) return;
+  Object.assign(D, { gun: null, taps: {}, kur: {} });
+  save(); render();
+}
+async function tap() {
+  const p = D.point;
+  if (D.gun == null) { say(`先に${divName()}の計測シートの「${divName()}スタート」を押してください。`); return; }
+  const now = nowMs();
+  const id = now + '-' + Math.random().toString(36).slice(2, 6);
+  (D.taps[p] = D.taps[p] || []).push({ id, time: now, team: '' });
+  buzz(40);
+  save(); render();
+}
+// チーム名を後から入れたとき、繰り上げ時刻より前に着いていたなら繰り上げを外す
+function fixKuriage(t, p) {
+  if (!t || p >= D.legs) return;
+  const k = kurOf(t, p + 1), a = arrOf(t, p);
+  if (k != null && a != null && a <= k) delete D.kur[t][p + 1];
+}
+async function assign(p, id, team) {
+  const list = D.taps[p] || [];
+  const x = list.find(o => o.id === id);
+  if (!x) return;
+  const other = team ? list.find(o => o.team === team && o.id !== id) : null;
+  if (other) {
+    if (!await ask(`${teamName(team)} はすでに${tapsOf(p).indexOf(other) + 1}番目の通過に入力されています。入れ替えますか？`)) { render(); return; }
+    other.team = x.team;
+  }
+  x.team = team;
+  fixKuriage(x.team, p);
+  if (other) fixKuriage(other.team, p);
+  save(); render();
+}
+function parseElapsed(str) {
+  const m = toHalf(str).match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const h = +(m[1] || 0), mi = +m[2], se = +m[3];
+  if (se >= 60 || (m[1] && mi >= 60)) return null;
+  return h * 3600 + mi * 60 + se;
+}
+// 経過時間か通過時刻で時間を入れてもらう。teamPoint を渡すとチームも選べる
+// 返り値は時刻(ms)。チームも選ぶときは { ms, team }。キャンセルは null
+let timeMode = 'elapsed';   // 前回選んだ方を覚えておく
+function askTime(title, curMs, teamPoint = null) {
+  return new Promise(resolve => {
+    const fmtFor = (m, ms) => ms == null ? '' : (m === 'elapsed' ? fmtS(es(ms)) : clock(ms));
+    const hint = el('div', { class: 'muted' });
+    const inp = el('input', { type: 'text', class: 'minput', inputmode: 'numeric' });
+    const setHint = () => {
+      hint.textContent = timeMode === 'elapsed'
+        ? '経過時間（スタートからの時間）　例：33:51'
+        : '通過時刻（時計の時刻）　例：12:02:57';
+      inp.placeholder = timeMode === 'elapsed' ? '33:51' : '12:02:57';
+    };
+    const opt = (m, label) => {
+      const r = el('input', { type: 'radio', name: 'timemode', value: m, checked: timeMode === m });
+      r.addEventListener('change', () => {
+        const prev = timeMode; timeMode = m; setHint();
+        if (curMs != null && inp.value === fmtFor(prev, curMs)) inp.value = fmtFor(m, curMs);
+      });
+      return el('label', { class: 'modeopt' }, r, label);
+    };
+    inp.value = fmtFor(timeMode, curMs);
+    setHint();
+    let tsel = null, teamRow = null;
+    if (teamPoint != null) {
+      const used = new Set((D.taps[teamPoint] || []).filter(o => o.team).map(o => o.team));
+      tsel = el('select', { class: 'mteam' },
+        el('option', { value: '' }, '未入力（あとで選ぶ）'),
+        ...teamOptions(used, null));
+      teamRow = el('label', { class: 'mteamrow' }, el('span', null, 'チーム'), tsel);
+    }
+    const close = v => { ov.remove(); resolve(v); };
+    const ok = () => {
+      const v = inp.value.trim();
+      if (!v) { close(null); return; }
+      let ms = null;
+      if (timeMode === 'elapsed') { const sc = parseElapsed(v); if (sc != null) ms = D.gun + sc * 1000; }
+      else ms = parseClock(v, D.gun);
+      if (ms == null) {
+        hint.textContent = timeMode === 'elapsed' ? '「33:51」の形で入力してください。' : '「12:02:57」の形で入力してください。';
+        hint.classList.add('danger'); return;
+      }
+      if (ms < D.gun) { hint.textContent = 'スタートより前の時刻にはできません。'; hint.classList.add('danger'); return; }
+      close(teamPoint != null ? { ms, team: tsel.value } : ms);
+    };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') ok(); });
+    const box = el('div', { class: 'mbox' },
+      el('div', { class: 'mmsg' }, title),
+      el('div', { class: 'modes' }, opt('elapsed', '経過時間'), opt('clock', '通過時刻')),
+      inp, hint, teamRow,
+      el('div', { class: 'mbtns' },
+        el('button', { onclick: () => close(null) }, 'キャンセル'),
+        el('button', { class: 'mok', onclick: ok }, 'OK')));
+    const ov = el('div', { class: 'moverlay' }, box);
+    document.body.append(ov);
+    inp.focus(); inp.select();
+  });
+}
+async function addManualTap(p) {
+  if (D.gun == null) { say('先に「スタート」を押してください。'); return; }
+  const r = await askTime(`${pointLabel(p)} に通過を追加します。`, null, p);
+  if (r == null) return;
+  const ms = r.ms;
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  (D.taps[p] = D.taps[p] || []).push({ id, time: ms, team: '' });
+  if (r.team) await assign(p, id, r.team);
+  save(); render();
+  toast(`${fmtS(es(ms))} の通過を追加しました。`);
+}
+// 先頭差・前差を直す＝その差になるように通過時刻を動かす
+async function editGap(p, id, kind) {
+  const list = tapsOf(p), i = list.findIndex(o => o.id === id);
+  if (i <= 0) return;
+  const x = list[i], ref = kind === 'lead' ? list[0] : list[i - 1];
+  const label = kind === 'lead' ? '先頭差' : '前差';
+  const v = await askInput(`${label}を直します。${kind === 'lead' ? '先頭' : '1つ前の通過'}から何秒差かを入れてください。（例：00:07 または 7）`,
+    fmtS(es(x.time) - es(ref.time)));
+  if (v == null) return;
+  const str = toHalf(v).trim();
+  const g = /^\d+$/.test(str) ? +str : parseElapsed(str);
+  if (g == null) { say('「00:07」か「7」（秒）の形で入力してください。'); return; }
+  const k = es(ref.time) + g;
+  // 同じ秒の中で順番が入れ替わらないように、差0なら基準の直後、それ以外は秒の頭に置く
+  const ms = g === 0 ? ref.time + 1 : D.gun + (k - 1) * 1000 + 1;
+  const st = x.team ? startOf(x.team, p) : null;
+  if (st != null && ms < st) { say(`スタート時刻（${clock(st)}）より前にはできません。`); return; }
+  x.time = ms;
+  fixKuriage(x.team, p);
+  save(); render();
+}
+async function editTap(p, id) {
+  const x = (D.taps[p] || []).find(o => o.id === id);
+  if (!x) return;
+  const ms = await askTime('通過の時間を直します。', x.time);
+  if (ms == null) return;
+  const st = x.team ? startOf(x.team, p) : null;
+  if (st != null && ms < st) { say(`スタート時刻（${clock(st)}）より前にはできません。`); return; }
+  x.time = ms;
+  fixKuriage(x.team, p);
+  save(); render();
+}
+async function doKuriage(p) {
+  const T = nowMs();
+  const targets = D.teams.map(t => t.no).filter(t => arrOf(t, p) == null && kurOf(t, p + 1) == null);
+  if (!targets.length) { say('繰り上げ対象のチームがありません。'); return; }
+  // 号砲に合わせて押すので確認は出さない
+  targets.forEach(t => { (D.kur[t] = D.kur[t] || {})[p + 1] = T; });
+  buzz([80, 60, 80]);
+  save(); render();
+  toast('繰り上げを実行しました。');
+}
+async function cancelKuriage(p) {
+  const targets = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
+  if (!targets.length) { say(`${p + 1}区の繰り上げはまだ実行されていません。キャンセルするものはありません。`); return; }
+  if (!await askYesNo(`${p + 1}区の繰り上げをキャンセルしますか？\n${targets.map(teamName).join('、')}`)) return;
+  if (!await askYesNo(`本当に${p + 1}区の繰り上げをキャンセルしますか？`)) return;
+  targets.forEach(t => { delete D.kur[t][p + 1]; });
+  save(); render();
+}
+async function deleteTap(p, id) {
+  const list = tapsOf(p);
+  const i = list.findIndex(o => o.id === id);
+  if (i < 0) return;
+  const x = list[i];
+  const who = x.team ? teamName(x.team) : 'チーム名未入力';
+  if (!await askYesNo(`${i + 1}番目の通過（${who}・${fmt(x.time - D.gun)}）を取り消しますか？`)) return;
+  D.taps[p] = (D.taps[p] || []).filter(o => o.id !== id);
+  save(); render();
+}
+
+// ---------- 画面 ----------
+// 表の下の「未通過」（繰り上げで表に「未着」と出ているチームは除く）
+function notPassedBox(p) {
+  const pend = new Set(kurPending(p));
+  const waiting = D.teams.filter(t => arrOf(t.no, p) == null && !pend.has(t.no));
+  const unassigned = (D.taps[p] || []).filter(o => !o.team).length;
+  if (!waiting.length) return null;
+  return el('div', { class: 'notpassed' },
+    el('div', null, el('b', null, `未通過（${waiting.length}）`), '：', waiting.map(t => t.name).join('、')),
+    unassigned ? el('div', { class: 'muted' }, `※チーム名が未入力の通過が ${unassigned} 件あるため、この中に通過済みのチームが含まれているかもしれません。`) : null);
+}
+
+// まだ入れていないチームを上に、ほかの行で入力済みのチームは「入力済み」としてまとめて下に
+function teamOptions(used, cur) {
+  const opt = t => el('option', { value: t.no, selected: cur === t.no }, t.op ? `${t.name}（OP）` : t.name);
+  const rest = D.teams.filter(t => !used.has(t.no)), done = D.teams.filter(t => used.has(t.no));
+  const out = rest.map(opt);
+  if (done.length) out.push(el('optgroup', { label: '入力済み' }, ...done.map(opt)));
+  return out;
+}
+function teamSelect(p, x) {
+  const used = new Set((D.taps[p] || []).filter(o => o.team && o.id !== x.id).map(o => o.team));
+  return el('select', { class: 'tsel' + (x.team ? '' : ' empty'), onchange: e => assign(p, x.id, e.target.value) },
+    el('option', { value: '', selected: !x.team }, '未入力'),
+    ...teamOptions(used, x.team));
+}
+
+function drawTabs() {
+  const box = document.getElementById('tabs');
+  box.replaceChildren(...Object.keys(DIVS).filter(k => ALL.use[k]).map(k => el('div', { class: 'tabrow div-' + k },
+    ...[['sokuho', '速報'], ['measure', '計測']].map(([tab, label]) =>
+      el('button', { class: 'tab-' + tab + (ALL.cur === k && ALL.tab === tab ? ' on' : ''),
+        onclick: async () => { if (tab === 'measure' && !await openGuard()) return; useDiv(k); ALL.tab = tab; save(); render(); window.scrollTo(0, 0); } },
+        el('span', { class: 'tabdiv' }, DIVS[k]), label)))));
+}
+
+function render() {
+  if (!ALL.use[ALL.cur]) useDiv(ALL.use.m ? 'm' : 'w');   // オフにした方を開いていたとき
+  if (ALL.tab !== 'sokuho' && !loggedIn()) ALL.tab = 'sokuho';
+  const inSettings = ALL.tab === 'settings';
+  document.getElementById('logoutbtn').hidden = ALL.tab === 'sokuho' || !loggedIn();
+  drawTabs();
+  document.body.className = 'div-' + ALL.cur;   // 通過ボタンの色
+  const howto = document.getElementById('howto');
+  if (howto) howto.hidden = ALL.tab !== 'measure';
+  document.getElementById('setbtn').hidden = inSettings;
+  document.getElementById('backbtn').hidden = !inSettings;
+  document.getElementById('backbtn2').hidden = !inSettings;
+  document.getElementById('tabs').hidden = inSettings;
+  const v = document.getElementById('view');
+  v.replaceChildren();
+  if (D.point > D.legs) D.point = D.legs;
+  if (ALL.tab === 'measure') v.append(...viewMeasure());
+  else if (ALL.tab === 'sokuho') v.append(...viewSokuho());
+  else v.append(...viewSettings());
+  tick();
+}
+
+function viewMeasure() {
+  const p = D.point, out = [];
+  out.push(el('div', { class: 'panel startbox' },
+    el('div', { id: 'timer' }, '00:00'),
+    D.gun == null
+      ? el('div', { class: 'startpre' },
+          el('div', { class: 'startbtns' },
+            el('button', { class: 'kurbtn gunbtn', onclick: gunStart }, `${divName()}スタート`),
+            el('button', { class: 'startcancel', onclick: cancelGun }, 'キャンセル')),
+          el('div', { class: 'muted' }, 'レースのスタートと同時に押します'))
+      : el('div', { class: 'startpost' },
+          el('span', { class: 'muted' }, `${divName()}スタート ${clock(D.gun)}`),
+          el('button', { class: 'startcancel', onclick: cancelGun }, 'キャンセル'))));
+
+  const sel = el('select', { class: 'pointsel', onchange: e => { D.point = +e.target.value; save(); render(); } });
+  for (let i = 1; i <= D.legs; i++) sel.append(el('option', { value: i, selected: i === p }, `${divName()}・${pointLabel(i)}`));
+  out.push(sel);
+  out.push(el('p', { class: 'selnote' }, '選んでいる計測シートが合っているか、必ず確認してから計測を行ってください。'));
+
+  if (p < D.legs) {
+    const waiting = D.teams.filter(t => arrOf(t.no, p) == null && kurOf(t.no, p + 1) == null).length;
+    const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
+    out.push(el('div', { class: 'panel' },
+      el('div', null, el('b', null, `${p + 1}区 繰り上げスタート`)),
+      el('div', { class: 'muted' }, '繰り上げの号砲と同時にボタンを押してください。誤って繰り上げボタンを押してしまった場合はキャンセルボタンを押してください。'),
+      el('div', { class: 'row kurrow' },
+        kurDone.length
+          ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
+              `繰り上げ済み ${clock(kurOf(kurDone[0], p + 1))}`, waiting ? `　追加 ${waiting}` : '')
+          : el('button', { class: 'kurbtn', onclick: () => doKuriage(p), disabled: waiting === 0 }, `繰り上げ実行（未着 ${waiting}）`),
+        el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル'))));
+  }
+
+  const list = tapsOf(p);
+  const unassigned = list.filter(o => !o.team).length;
+  // この中継所で繰り上げをしていたら通過ボタンにも出す
+  const kurHere = p < D.legs ? D.teams.map(t => kurOf(t.no, p + 1)).find(v => v != null) : null;
+  out.push(el('div', { class: 'gunrow' }, el('button', { class: 'tapbtn', onclick: tap },
+    el('span', { class: 'tapmain' }, '通過'),
+    el('span', { class: 'tapsub' }, `${divName()}・${pointLabel(p)}`),
+    kurHere != null ? el('span', { class: 'tapkur' }, `${p + 1}区 繰り上げ済み（${clock(kurHere)}）`) : null)));
+  if (unassigned) out.push(el('div', { class: 'row' }, el('span', { class: 'muted' }, `チーム名 未入力：${unassigned}件`)));
+
+  out.push(el('h2', null, `${divName()}・${pointLabel(p)} 通過`));
+  const tb = el('tbody');
+  list.forEach((x, i) => {
+    const t = x.team, a = x.time;
+    const lm = t ? legMs(t, p) : null;
+    tb.append(el('tr', null,
+      el('td', { class: 'rmcell' }, el('button', { class: 'rmlap', onclick: () => deleteTap(p, x.id), title: 'このラップを取り消す' }, '取消')),
+      el('td', null, i + 1),
+      el('td', null, teamSelect(p, x)),
+      el('td', null, el('span', { class: 'edit', onclick: () => editTap(p, x.id) }, fmt(a - D.gun)),
+        el('div', { class: 'muted' }, clock(a))),
+      el('td', null, i === 0 ? '-' : el('span', { class: 'edit', onclick: () => editGap(p, x.id, 'lead') }, fmtS(es(a) - es(list[0].time)))),
+      el('td', null, i === 0 ? '-' : el('span', { class: 'edit', onclick: () => editGap(p, x.id, 'prev') }, fmtS(es(a) - es(list[i - 1].time)))),
+      el('td', null, lm != null ? fmt(lm) : '—'),
+      el('td', { class: t && hadKur(t, p) ? 'kurdone' : null }, t && hadKur(t, p) ? '繰' : '')));
+  });
+  kurPending(p).forEach(t => tb.append(el('tr', { class: 'pending' },
+    el('td', null, ''), el('td', null, '—'), el('td', null, teamName(t)), el('td', { colspan: 4 }, '未着'),
+    el('td', { class: hadKur(t, p) ? 'kurdone' : null }, hadKur(t, p) ? '繰' : ''))));
+  out.push(el('div', { class: 'scroll' }, el('table', null,
+    el('thead', null, el('tr', null, ...['', '順', 'チーム', '経過', '先頭差', '前差', `${p}区記録`, '備考'].map(h => el('th', null, h)))),
+    tb)));
+  if (!list.length && !kurPending(p).length) out.push(el('p', { class: 'muted' }, 'まだ通過はありません。'));
+  out.push(el('div', { class: 'row' }, el('button', { class: 'addbtn', onclick: () => addManualTap(p) }, '＋ 通過を手動で追加')));
+  { const npb = notPassedBox(p); if (npb) out.push(npb); }
+  return out;
+}
+
+// 速報の行。チーム名が入っている行は通算タイム順に並べ替え、未入力の行はその位置のまま
+function sokuhoRows(p) {
+  const phys = tapsOf(p);
+  const slots = phys.map((x, i) => x.team ? i : -1).filter(i => i >= 0);
+  const sorted = phys.filter(x => x.team).sort((a, b) => byCum(p)(a.team, b.team));
+  const list = phys.slice();
+  slots.forEach((pos, k) => { list[pos] = sorted[k]; });
+  return list.map((x, i) => {
+      const t = x.team;
+      if (!t) return { x, t: '', rank: i + 1, univ: '', pass: null,
+        leg: null, legRank: '', kur: false, kurDone: false };
+      const lm = legMs(t, p), c = cumSec(t, p), r = legRank(t, p);
+      return {
+        x, t, rank: i + 1, univ: teamName(t),
+        pass: c != null ? hms(c) : null,
+        leg: lm != null ? ms2(sec(lm)) : null,
+        legRank: isOp(t) ? 'OP' : (r != null ? r : ''),
+        kur: kurOf(t, p) != null, kurDone: hadKur(t, p)
+      };
+    });
+}
+
+function viewSokuho() {
+  const p = D.point, out = [];
+  const sel = el('select', { class: 'pointsel', onchange: e => { D.point = +e.target.value; save(); render(); } });
+  for (let i = 1; i <= D.legs; i++) sel.append(el('option', { value: i, selected: i === p }, `${divName()}・${i}区`));
+  out.push(sel);
+  // 並べ替えても順位の数字は通過順位のまま
+  const sortMode = D.sokuhoSort === 'leg' ? 'leg' : 'pass';
+  const setSort = m => { D.sokuhoSort = m; save(); render(); };
+  out.push(el('div', { class: 'sortbar' },
+    el('button', { class: sortMode === 'pass' ? 'on' : null, onclick: () => setSort('pass') }, '通過順に並べる'),
+    el('button', { class: sortMode === 'leg' ? 'on' : null, onclick: () => setSort('leg') }, '区間順位順に並べる')));
+  const rows = sokuhoRows(p);
+  if (sortMode === 'leg') {
+    // 未入力の行は最後
+    const key = r => r.leg ? r.leg[0] * 60 + r.leg[1] : Infinity;
+    rows.sort((a, b) => key(a) - key(b) || a.rank - b.rank);
+  }
+  const tb = el('tbody');
+  rows.forEach(r => {
+    tb.append(el('tr', null,
+      el('td', null, r.rank),
+      el('td', { class: r.univ ? null : 'muted' }, r.univ || '未入力'),
+      el('td', null, r.pass ? `${r.pass[0]}:${p2(r.pass[1])}:${p2(r.pass[2])}` : '—'),
+      el('td', null, r.leg ? `${r.leg[0]}:${p2(r.leg[1])}` : '—',
+        r.kur ? el('span', { class: 'tag' }, '繰') : null),
+      el('td', null, r.legRank),
+      el('td', { class: r.kurDone ? 'kurdone' : null }, r.kurDone ? '繰' : '')));
+  });
+  const pend = kurPending(p);
+  pend.forEach(t => tb.append(el('tr', { class: 'pending' },
+    el('td', null, '—'), el('td', null, teamName(t)), el('td', { colspan: 3 }, '未着'),
+    el('td', { class: hadKur(t, p) ? 'kurdone' : null }, hadKur(t, p) ? '繰' : ''))));
+  out.push(el('div', { class: 'scroll' }, el('table', { class: 'sokuho' },
+    el('thead', null, el('tr', null,
+      ...['順位', 'チーム', '通過', '区間タイム', '区間順位', '備考'].map(h => el('th', null, h)))),
+    tb)));
+  if (!rows.length && !pend.length) out.push(el('p', { class: 'muted' }, 'まだ通過したチームはありません。'));
+  { const npb = notPassedBox(p); if (npb) out.push(npb); }
+  out.push(el('p', { class: 'muted' },
+    '通過タイムは区間記録の合計です。',
+    '区間順位はOPを除きます。「繰」は、この区間またはそれより前の区間で繰り上げスタートになったチームです。'));
+  out.push(el('h2', { class: 'section' }, '全区間の記録'));
+  out.push(...viewTable());
+  return out;
+}
+
+function viewTable() {
+  const out = [];
+  const fin = D.legs;
+  // 区間上位者数（区間1位の数、同じなら2位の数…）
+  const rankCount = t => {
+    const cnt = new Array(D.teams.length + 2).fill(0);
+    for (let l = 1; l <= D.legs; l++) { const r = legRank(t, l); if (r != null) cnt[r]++; }
+    return cnt;
+  };
+  // 同タイムのとき：繰り上げがなければ着順、あれば区間上位者数（箱根の規定）で決める
+  const hadAnyKur = t => { for (let l = 2; l <= D.legs; l++) if (kurOf(t, l) != null) return true; return false; };
+  const tieBreak = (a, b) => {
+    if (!hadAnyKur(a) && !hadAnyKur(b)) return arrOf(a, fin) - arrOf(b, fin);
+    const ca = rankCount(a), cb = rankCount(b);
+    for (let r = 1; r < ca.length; r++) if (ca[r] !== cb[r]) return cb[r] - ca[r];
+    return arrOf(a, fin) - arrOf(b, fin);
+  };
+  const finTeams = D.teams.map(t => t.no).filter(t => !isOp(t) && arrOf(t, fin) != null && cumSec(t, fin) != null);
+  const better = (a, b) => cumSec(a, fin) < cumSec(b, fin) || (cumSec(a, fin) === cumSec(b, fin) && tieBreak(a, b) < 0);
+  const placeOf = t => 1 + finTeams.filter(o => o !== t && better(o, t)).length;
+  // 並び順：先の中継所まで進んでいるチームが上。同じ中継所ならそこでの通過順
+  const lastPoint = t => { for (let l = D.legs; l >= 1; l--) if (arrOf(t, l) != null) return l; return 0; };
+  const order = D.teams.map((t, i) => ({ t: t.no, i, lp: lastPoint(t.no) }))
+    .sort((a, b) => {
+      if (a.lp !== b.lp) return b.lp - a.lp;
+      if (a.lp === 0) return a.i - b.i;
+      if (a.lp === fin && finTeams.includes(a.t) && finTeams.includes(b.t)) return placeOf(a.t) - placeOf(b.t) || byCum(fin)(a.t, b.t);
+      return byCum(a.lp)(a.t, b.t);
+    })
+    .map(o => o.t);
+  // 通算タイムは何度も使うので先に計算しておく
+  const cumAt = {};
+  for (let l = 1; l <= D.legs; l++) {
+    cumAt[l] = {};
+    D.teams.forEach(o => { if (arrOf(o.no, l) != null) cumAt[l][o.no] = cumSec(o.no, l); });
+  }
+  const rankList = {};
+  for (let l = 1; l <= D.legs; l++)
+    rankList[l] = D.teams.filter(o => !o.op && cumAt[l][o.no] != null).map(o => cumAt[l][o.no]);
+  const passRank = (t, p) => {
+    if (isOp(t)) return null;
+    const c = cumAt[p][t];
+    if (c == null) return null;
+    return 1 + rankList[p].filter(x => x < c).length;
+  };
+  // 8:31 / 30:01 / 1:03:09 の形（公式記録の書き方に合わせた）
+  const fP = x => { const h = Math.floor(x / 3600), m = Math.floor(x % 3600 / 60), q = x % 60; return h ? `${h}:${p2(m)}:${p2(q)}` : `${m}:${p2(q)}`; };
+  const tb = el('tbody');
+  order.forEach(t => {
+    const finished = arrOf(t, fin) != null;
+    let lastP = 0;
+    for (let l = 1; l <= D.legs; l++) if (arrOf(t, l) != null) lastP = l;
+    const c = lastP ? cumSec(t, lastP) : null;
+    const place = isOp(t) ? 'OP' : finished && cumSec(t, fin) != null ? placeOf(t) : '—';
+    const passCells = [], legCells = [];
+    for (let l = 1; l <= D.legs; l++) {
+      const cum = cumAt[l][t] != null ? cumAt[l][t] : null;
+      const pr = cum != null ? passRank(t, l) : null;
+      passCells.push(el('td', { class: 'rk' }, pr != null ? pr : ''),
+                     el('td', { class: 'tm' }, cum != null ? fP(cum) : ''));
+      const m = legMs(t, l), r = legRank(t, l), k = kurOf(t, l);
+      legCells.push(el('td', { class: 'rk' + (r === 1 ? ' top' : '') }, r != null ? r : (isOp(t) && m != null ? 'OP' : '')),
+                    el('td', { class: 'tm' + (tasuki(t, l) === '白' ? ' wt' : ''), title: k != null ? '繰り上げスタート ' + clock(k) : null },
+                      k != null ? el('span', { class: 'tag' }, '繰') : null, m != null ? fP(sec(m)) : ''));
+    }
+    tb.append(
+      el('tr', { class: 'r1' },
+        el('td', { rowspan: 2, class: 'place' }, place),
+        el('td', { rowspan: 2, class: 'tname' }, teamName(t)),
+        el('td', { rowspan: 2, class: 'total' }, c != null ? fP(c) : '—',
+          el('div', { class: 'muted' }, lastP && lastP < fin ? `${lastP}区まで` : teamState(t) === 'フィニッシュ' ? '' : teamState(t))),
+        el('td', { class: 'lbl' }, '通過'), ...passCells),
+      el('tr', { class: 'r2' }, el('td', { class: 'lbl' }, '区間'), ...legCells));
+  });
+  const legHead = [];
+  for (let l = 1; l <= D.legs; l++) legHead.push(el('th', { colspan: 2 }, `第${l}区`));
+  out.push(el('div', { class: 'scroll' }, el('table', { class: 'sogo' },
+    el('thead', null, el('tr', null,
+      el('th', { class: 'place' }, '順位'), el('th', { class: 'tname' }, 'チーム名'), el('th', null, '総合タイム'), el('th', null, ''), ...legHead)),
+    tb)));
+  out.push(el('p', { class: 'muted' },
+    '各チーム上段の「通過」はその区を走り終えた時点の通過順位と通算タイム、下段の「区間」は区間順位と区間タイムです。',
+    '黄色は区間1位、「繰」は繰り上げスタート（灰色は白たすき）です。並びは最新の通過順、順位・区間順位はOPを除きます。',
+    '総合タイムは区間記録の合計です。'));
+  return out;
+}
+
+// 設定画面で入力中の内容。「保存」を押すまで ALL には入れない
+// { use: {m, w}, m: { legs, teams }, w: { legs, teams } }
+let draft = null;
+const hasRecords = (no, d = D) => Object.values(d.taps).some(l => l.some(o => o.team === no)) || !!(d.kur[no] && Object.keys(d.kur[no]).length);
+function makeDraft() {
+  const dr = { use: { ...ALL.use } };
+  for (const k in DIVS) {
+    const d = ALL.divs[k];
+    dr[k] = { legs: String(d.legs), teams: d.teams.map(t => ({ no: t.no, name: t.name, op: !!t.op, orig: t.no })) };
+  }
+  return dr;
+}
+function settingsDirty() {
+  if (!draft) return false;
+  for (const k in DIVS) {
+    if (!draft.use[k] || ALL.divs[k].gun != null) continue;
+    const d = ALL.divs[k], x = draft[k];
+    if (String(x.legs).trim() !== String(d.legs)) return true;
+    if (x.teams.length !== d.teams.length) return true;
+    if (x.teams.some((t, i) => { const o = d.teams[i];
+      return t.orig !== o.no || t.name.trim() !== o.name || !!t.op !== !!o.op; })) return true;
+  }
+  return false;
+}
+function discardSettings() { draft = null; }
+
+async function saveSettings() {
+  const keys = Object.keys(DIVS).filter(k => draft.use[k]);
+  const ready = {};
+  for (const k of keys) {
+    if (ALL.divs[k].gun != null) continue;   // 計測中は変更不可
+    const x = draft[k], who = DIVS[k];
+    const n = parseInt(toHalf(String(x.legs)), 10);
+    if (!(n >= 1 && n <= 30)) { say(`${who}：区間数は1〜30で入力してください。`); return; }
+    const teams = x.teams.map(t => ({ ...t, name: t.name.trim() }));
+    if (!teams.length) { say(`${who}：チームを1つ以上登録してください。`); return; }
+    const seen = new Set();
+    for (const [i, t] of teams.entries()) {
+      if (!t.name) { say(`${who}：${i + 1}番目のチームの大学名が空です。`); return; }
+      if (seen.has(t.name)) { say(`${who}：「${t.name}」が2つ登録されています。`); return; }
+      seen.add(t.name);
+    }
+    ready[k] = { n, teams };
+  }
+  for (const k of Object.keys(ready)) {
+    const d = ALL.divs[k], { n, teams } = ready[k];
+    // 削除したチームが入っていた通過は未入力に戻す
+    const map = {};
+    teams.forEach(t => { if (t.orig != null) map[t.orig] = t.no; });
+    Object.values(d.taps).forEach(l => l.forEach(o => { if (o.team) o.team = map[o.team] || ''; }));
+    const kur = {};
+    for (const t in d.kur) if (map[t]) kur[map[t]] = d.kur[t];
+    d.kur = kur;
+    d.legs = n;
+    d.teams = teams.map(t => ({ no: t.no, name: t.name, op: !!t.op }));
+  }
+  discardSettings();
+  save(); render(); say('保存しました。');
+}
+
+// 「男子の部」「女子の部」のスイッチ。オフにするとその部を初期化する（保存ボタンは不要）
+async function toggleUse(k, box) {
+  if (ALL.divs[k].gun != null) { box.checked = true; return; }
+  if (box.checked) {
+    ALL.use[k] = true; draft.use[k] = true;
+    save(); render(); return;
+  }
+  box.checked = true;   // 「はい」を押すまではオンのまま
+  const others = Object.keys(DIVS).filter(j => j !== k && ALL.use[j]);
+  if (!others.length) { say('男子と女子の両方をオフにすることはできません。'); return; }
+  if (!await askYesNo(`${DIVS[k]}の記録と設定（区間数・チーム）が初期化されます。よろしいですか？`)) return;
+  ALL.divs[k] = defaults();
+  ALL.use[k] = false;
+  if (ALL.cur === k) useDiv(others[0]);
+  draft.use[k] = false;
+  draft[k] = makeDraft()[k];
+  save(); render();
+}
+
+function divSettings(k, showNotes) {
+  const x = draft[k], d = ALL.divs[k], out = [];
+  const locked = d.gun != null;   // スタート後は変更できない
+  out.push(el('div', { class: 'divheadrow div-' + k },
+    el('h2', { class: 'divhead' }, `${DIVS[k]}の部`),
+    el('label', { class: 'usechk', 'aria-label': `${DIVS[k]}の部` },
+      el('span', { class: 'ios-switch' },
+        el('input', { type: 'checkbox', checked: draft.use[k], disabled: locked, onchange: e => toggleUse(k, e.target) }),
+        el('span', { class: 'track' }, el('span', { class: 'knob' }))))));
+  if (!draft.use[k]) {
+    out.push(el('p', { class: 'setnote' },
+      `${DIVS[k]}の速報と計測シートは表示されません。${DIVS[k]}が出走する場合スイッチをオンにしてください。`));
+    return out;
+  }
+  if (locked) out.push(el('p', { class: 'lockednote' },
+    `${DIVS[k]}は計測が始まっているため変更できません。`));
+  out.push(el('h3', null, '区間数'));
+  if (showNotes) out.push(el('p', { class: 'setnote' }, '区間数を入力してください。'));
+  out.push(el('div', { class: 'row' },
+    el('input', { type: 'number', min: 1, max: 30, value: x.legs, style: 'width:80px', disabled: locked, oninput: e => { x.legs = e.target.value; } }), '区間'));
+
+  out.push(el('h3', null, 'チーム'));
+  if (showNotes) out.push(el('div', { class: 'setnote' }, el('ul', null,
+    el('li', null, '「＋ チームを追加」で枠を増やし、1つの枠に1チームずつ、ゼッケン番号、大学名の順で記入してください（例：1 ○○大学）。同じものは2つ登録できません。'),
+    el('li', null, 'オープン参加のチームは「OP」にチェックを入れます。区間順位と総合順位には含まれず、そのチームの順位の欄には「OP」と表示されます。'))));
+  const list = el('div', { class: 'teamlist div-' + k });
+  x.teams.forEach((t, i) => {
+    list.append(el('div', { class: 'teamblk' },
+      el('label', { class: 'fld grow' }, el('span', null, 'ゼッケン番号・大学名'),
+        el('input', { type: 'text', value: t.name, placeholder: '例：1 ○○大学', disabled: locked, oninput: e => { t.name = e.target.value; } })),
+      el('label', { class: 'opchk' },
+        el('input', { type: 'checkbox', checked: t.op, disabled: locked, onchange: e => { t.op = e.target.checked; } }), 'OP'),
+      locked ? null : el('button', { class: 'rm', onclick: async () => {
+        const label = t.name || 'このチーム';
+        const warn = t.orig != null && hasRecords(t.orig, d) ? '\nこのチームの通過記録の大学名は「未入力」に戻ります。' : '';
+        if (!await askYesNo(`${DIVS[k]}の ${label} を削除しますか？${warn}`)) return;
+        x.teams.splice(i, 1); render();
+      } }, '削除')));
+  });
+  out.push(list);
+  out.push(el('div', { class: 'row' },
+    locked ? null : el('button', { class: 'addbtn', onclick: () => {
+      // no は記録とひもづけるための番号（画面には出さない）
+      const nums = x.teams.concat(d.teams).map(t => parseInt(t.no, 10)).filter(v => !isNaN(v));
+      x.teams.push({ no: String(nums.length ? Math.max(...nums) + 1 : 1), name: '', op: false, orig: null });
+      render();
+      const ins = document.querySelectorAll(`.teamlist.div-${k} input[type=text]`);
+      if (ins.length) ins[ins.length - 1].focus();
+    } }, '＋ チームを追加'),
+    el('span', { class: 'teamcount' }, `現在の登録チーム数：${x.teams.length}`)));
+  return out;
+}
+
+function viewSettings() {
+  const out = [];
+  if (!draft) draft = makeDraft();
+  out.push(el('p', { class: 'setnote lead' },
+    '区間数と出場チームを登録する画面です。全て入力したら、下にある「保存」を押してください。'));
+
+  out.push(el('p', { class: 'setnote' }, '「男子の部」「女子の部」の見出しの横にあるスイッチをオフにすると、その部門の記録・設定は初期化され、速報・計測シートも表示されなくなります。'));
+  for (const k of Object.keys(DIVS)) out.push(...divSettings(k, true));
+  out.push(el('div', { class: 'savearea' },
+    el('div', { class: 'setnote' }, '区間数とチームの入力内容をまとめて保存します。'),
+    el('button', { class: 'savebtn', onclick: () => saveSettings() }, '保存')));
+
+  const resetKeys = Object.keys(DIVS).filter(k => ALL.use[k]);
+  out.push(el('h2', { class: 'resethead' }, 'リセット'));
+  out.push(el('div', { class: 'setnote' }, el('ul', null,
+    el('li', null, '「男子の記録削除」「女子の記録削除」：記録のみ削除します。設定した区間数とチームは残ります。'),
+    el('li', null, '「全てリセット」：男女の記録・設定を初期化します。'))));
+  out.push(el('div', { class: 'row resetrow' },
+    ...resetKeys.map(k => el('button', { onclick: async () => {
+      if (!await askYesNo(`${DIVS[k]}の記録（スタート・通過・繰り上げ）を削除しますか？設定した区間数とチームは残ります。元には戻せません。`)) return;
+      Object.assign(ALL.divs[k], { gun: null, taps: {}, kur: {}, point: 1 });
+      if (draft) draft[k] = makeDraft()[k];
+      save(); render();
+    } }, `${DIVS[k]}の記録削除`))));
+  // 押し間違えないように少し離して置く
+  out.push(el('div', { class: 'row resetrow resetall' },
+    el('button', { onclick: async () => {
+      if (!await askYesNo('男子と女子の両方の記録と設定（区間数・チーム）が初期化されます。元には戻せません。よろしいですか？')) return;
+      ALL = Object.assign(allDefaults(), { tab: 'settings', prev: ALL.prev });
+      D = ALL.divs[ALL.cur];
+      discardSettings();
+      save(); render();
+    } }, '全てリセット')));
+  return out;
+}
+
+function tick() {
+  const tm = document.getElementById('timer');
+  if (tm) tm.textContent = D.gun != null ? fmt(Math.max(0, nowMs() - D.gun)) : '00:00';
+}
+
+document.getElementById('logoutbtn').addEventListener('click', logout);
+document.getElementById('setbtn').addEventListener('click', async () => {
+  if (!await openGuard()) return;
+  if (ALL.tab !== 'settings') ALL.prev = { tab: ALL.tab, div: ALL.cur };   // 戻る先
+  ALL.tab = 'settings'; save(); render(); window.scrollTo(0, 0);
+});
+async function backFromSettings() {
+  if (settingsDirty() && !await modal({ msg: '「保存」を押していないため、設定で入力した内容は保存されません。戻りますか？', okLabel: '戻る', cancelLabel: 'キャンセル' })) return;
+  discardSettings();
+  const pv = ALL.prev || {};
+  if (pv.div && ALL.use[pv.div]) useDiv(pv.div);
+  ALL.tab = pv.tab === 'measure' ? 'measure' : 'sokuho'; save(); render(); window.scrollTo(0, 0);
+}
+document.getElementById('backbtn').addEventListener('click', backFromSettings);
+document.getElementById('backbtn2').addEventListener('click', backFromSettings);
+setInterval(tick, 250);
+render();
+startShared();
+</script>
+</body>
+</html>
