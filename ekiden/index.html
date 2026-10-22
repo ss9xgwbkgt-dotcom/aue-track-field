@@ -33,7 +33,8 @@
   .tabrow { display: flex; gap: 4px; }
   /* 速報を見る人の方が多いので広めに */
   .tabs button.tab-sokuho { flex: 1; }
-  .tabs button.tab-measure { flex: 0 0 auto; padding: 10px 12px; }   /* 計測は文字が収まる幅だけ */
+  .tabs button.tab-measure { flex: 0 0 auto; padding: 10px 8px; }
+  .tabs button.tab-measure .tabdiv { margin-right: 3px; padding: 0 3px; }   /* 計測は文字が収まる幅だけ */
   .tabs button { flex: 1; padding: 10px; font-size: 15px; border: 1px solid var(--line);
     background: var(--head); color: var(--fg); border-radius: 6px; }
   .tabs .tabdiv { margin-right: 6px; padding: 0 6px; font-size: 12px; font-weight: bold; }
