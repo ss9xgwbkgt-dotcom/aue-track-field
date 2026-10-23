@@ -232,7 +232,16 @@
   .startbox.started { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 6px 0 10px; }
   .startbox.started #timer { font-size: 34px; margin: 0; }
   .startbox.started .startpost { flex-direction: column; align-items: flex-start; gap: 2px; }
-  .kurpanel { margin-top: 28px; border-top: 2px solid var(--line); }
+  /* 繰り上げ：たたんでいても目に入るよう、太い枠と太字で */
+  .kurbox { border: 2px solid var(--fg); border-radius: 4px; margin: 0 0 12px; }
+  .kurbox.done { border-color: var(--line); }
+  .kurhead { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px; background: none; border: 0;
+    color: var(--fg); font-family: var(--f-display); font-size: 16px; font-weight: 700; text-align: left; white-space: normal; }
+  .kurbox.done .kurhead { color: var(--muted); font-weight: 500; }
+  .kurarrow { font-size: 12px; }
+  .kurlabel { flex: 1; }
+  .kuropen { font-size: 12px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; }
+  .kurbody { padding: 0 12px 12px; border-top: 1px solid var(--line); }
   table th { white-space: nowrap; }   /* 見出しが1文字ずつ縦に折り返さないように */
   .kurnote { font-size: 12px; color: var(--muted); margin: 4px 0 2px; line-height: 1.5; }   /* 「追加 N」が付いて長くなっても、キャンセルを次の行に回して画面からはみ出さない */
 </style>
@@ -1029,6 +1038,30 @@ function viewMeasure() {
     el('span', { class: 'tapmain' }, '通過'),
     el('span', { class: 'tapsub' }, `${divName()}・${pointLabel(p)}`),
     kurHere != null ? el('span', { class: 'tapkur' }, `${p + 1}区 繰り上げ済み（${clock(kurHere)}）`) : null)));
+  // 繰り上げ：通過ボタンのすぐ下に、ふだんは1行にたたんで置く
+  // （たたんでいる間は実行ボタンが出ないので、通過を連打しても押し間違えない）
+  if (p < D.legs) {
+    const waiting = D.teams.filter(t => arrOf(t.no, p) == null && kurOf(t.no, p + 1) == null).length;
+    const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
+    const key = ALL.cur + ':' + p;
+    const open = !!(ALL.kurOpen && ALL.kurOpen[key]);
+    const toggle = () => { ALL.kurOpen = ALL.kurOpen || {}; ALL.kurOpen[key] = !open; saveLocal(); render(); };
+    const label = kurDone.length
+      ? `${p + 1}区 繰り上げ済み（${clock(kurOf(kurDone[0], p + 1))}）`
+      : `${p + 1}区 繰り上げスタート（未着 ${waiting}）`;
+    out.push(el('div', { class: 'kurbox' + (open ? ' open' : '') + (kurDone.length ? ' done' : '') },
+      el('button', { class: 'kurhead', onclick: toggle },
+        el('span', { class: 'kurarrow' }, open ? '▼' : '▶'), el('span', { class: 'kurlabel' }, label),
+        el('span', { class: 'kuropen' }, open ? '閉じる' : '開く')),
+      open ? el('div', { class: 'kurbody' },
+        el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に下の「繰り上げ実行」を押してください。'),
+        el('div', { class: 'row kurrow' },
+          kurDone.length
+            ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
+                `繰り上げ済み ${clock(kurOf(kurDone[0], p + 1))}`, waiting ? `　追加 ${waiting}` : '')
+            : el('button', { class: 'kurbtn', onclick: () => doKuriage(p), disabled: waiting === 0 }, `繰り上げ実行（未着 ${waiting}）`),
+          el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル'))) : null));
+  }
   if (unassigned) out.push(el('div', { class: 'row' }, el('span', { class: 'muted' }, `チーム名 未入力：${unassigned}件`)));
 
   out.push(el('h2', null, `${divName()}・${pointLabel(p)} 通過`));
@@ -1057,20 +1090,6 @@ function viewMeasure() {
   out.push(el('div', { class: 'row' }, el('button', { class: 'addbtn', onclick: () => addManualTap(p) }, '＋ 通過を手動で追加')));
   { const npb = notPassedBox(p); if (npb) out.push(npb); }
 
-  // 繰り上げは押すことが少なく確認もないので、通過ボタンから離して一番下に置く
-  if (p < D.legs) {
-    const waiting = D.teams.filter(t => arrOf(t.no, p) == null && kurOf(t.no, p + 1) == null).length;
-    const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
-    out.push(el('div', { class: 'panel kurpanel' },
-      el('div', null, el('b', null, `${p + 1}区 繰り上げスタート`)),
-      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に下の「繰り上げ実行」を押してください。'),
-      el('div', { class: 'row kurrow' },
-        kurDone.length
-          ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
-              `繰り上げ済み ${clock(kurOf(kurDone[0], p + 1))}`, waiting ? `　追加 ${waiting}` : '')
-          : el('button', { class: 'kurbtn', onclick: () => doKuriage(p), disabled: waiting === 0 }, `繰り上げ実行（未着 ${waiting}）`),
-        el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル'))));
-  }
 
   return out;
 }
