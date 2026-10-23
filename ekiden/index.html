@@ -1039,13 +1039,13 @@ function viewMeasure() {
     const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
     out.push(el('div', { class: 'kurbox' },
       el('div', { class: 'kurhead' }, `${p + 1}区 繰り上げスタート`),
-      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に下の「繰り上げ実行」を押してください。'),
       el('div', { class: 'row kurrow' },
         kurDone.length
           ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
               `繰り上げ済み ${clock(kurOf(kurDone[0], p + 1))}`, waiting ? `　追加 ${waiting}` : '')
           : el('button', { class: 'kurbtn', onclick: () => doKuriage(p), disabled: waiting === 0 }, `繰り上げ実行（未着 ${waiting}）`),
-        el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル'))));
+        el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル')),
+      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に上の「繰り上げ実行」を押してください。')));
   }
   if (unassigned) out.push(el('div', { class: 'row' }, el('span', { class: 'muted' }, `チーム名 未入力：${unassigned}件`)));
 
