@@ -212,6 +212,8 @@
   .teamlist { gap: 0; border-top: 1px solid var(--line); }
   .teamblk { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 0; }
   .note1 { font-size: 12px; color: var(--muted); margin: 8px 0; }
+  .notelist { font-size: 12px; color: var(--muted); margin: 4px 0 8px; padding-left: 18px; }
+  .notelist li { margin: 2px 0; }
   details.more { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
   details.more summary { cursor: pointer; }
   details.more ul { margin: 4px 0 0; padding-left: 18px; }
@@ -233,6 +235,7 @@
   .startbox.started #timer { font-size: 34px; margin: 0; }
   .startbox.started .startpost { flex-direction: column; align-items: flex-start; gap: 2px; }
   /* 繰り上げ：たたんでいても目に入るよう、太い枠と太字で */
+  .kurnote.tablenote { margin: 0 0 16px; }
   .kurnote.tapnote { margin: -4px 0 20px; }
   .kurbox { margin: 0 0 14px; }
   .kurhead { font-family: var(--f-display); font-size: 16px; font-weight: 700; margin: 0 0 2px; }
@@ -1073,6 +1076,7 @@ function viewMeasure() {
     tb)));
   if (!list.length && !kurPending(p).length) out.push(el('p', { class: 'muted' }, 'まだ通過はありません。'));
   out.push(el('div', { class: 'row' }, el('button', { class: 'addbtn', onclick: () => addManualTap(p) }, '＋ 通過を手動で追加')));
+  out.push(el('p', { class: 'kurnote tablenote' }, 'チーム名は▼から選んでください。点線の数字を押すと、時間を修正できます。誤って押した通過は「取消」で消せます。押し忘れた通過は「＋ 通過を手動で追加」から入力できます。'));
   { const npb = notPassedBox(p); if (npb) out.push(npb); }
 
 
@@ -1223,11 +1227,11 @@ function viewTable() {
     el('thead', null, el('tr', null,
       el('th', { class: 'place' }, '順位'), el('th', { class: 'tname' }, 'チーム名'), el('th', null, '総合タイム'), el('th', null, ''), ...legHead)),
     tb)));
-  out.push(el('p', { class: 'note1' }, '上段は通過順位と通算タイム、下段は区間順位と区間タイム。黄色は区間1位。'));
-  out.push(el('details', { class: 'more' }, el('summary', null, '表の見方'), el('ul', null,
+  out.push(el('ul', { class: 'notelist' },
+    el('li', null, '上段は通過順位と通過タイム、下段は区間順位と区間タイムです。黄色は区間1位です。'),
     el('li', null, '通過タイム・総合タイムは、区間記録の合計です。'),
-    el('li', null, '「繰」は、その区間かそれより前の区間で繰り上げスタートになったチームです（灰色は白たすき）。'),
-    el('li', null, '並びは最新の通過順です。順位・区間順位はOPを除きます。'))));
+    el('li', null, '「繰」はその区間で繰り上げスタートになったことを表します。灰色のマスは白たすきで走った区間です。'),
+    el('li', null, '並びは最新の通過順です。順位・区間順位はOPを除きます。')));
   return out;
 }
 
