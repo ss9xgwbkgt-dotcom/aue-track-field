@@ -1020,7 +1020,7 @@ function viewMeasure() {
     const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
     out.push(el('div', { class: 'panel' },
       el('div', null, el('b', null, `${p + 1}区 繰り上げスタート`)),
-      el('p', { class: 'kurnote' }, `制限時間までに前の走者が着かなかったチームを、${p + 1}区の走者だけ先にスタートさせます。繰り上げの号砲と同時に押してください。`),
+      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に下の「繰り上げ実行」を押してください。'),
       el('div', { class: 'row kurrow' },
         kurDone.length
           ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
