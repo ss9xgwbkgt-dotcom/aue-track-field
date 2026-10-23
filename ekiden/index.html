@@ -228,7 +228,8 @@
   /* 計測の表：経過タイムを大きく */
   td .edit { font-size: 15px; font-weight: 700; }
   table.sokuho tr.pending td { font-size: 14px; font-weight: normal; }
-  .kurrow { flex-wrap: wrap; }   /* 「追加 N」が付いて長くなっても、キャンセルを次の行に回して画面からはみ出さない */
+  .kurrow { flex-wrap: wrap; }
+  .kurnote { font-size: 12px; color: var(--muted); margin: 4px 0 2px; line-height: 1.5; }   /* 「追加 N」が付いて長くなっても、キャンセルを次の行に回して画面からはみ出さない */
 </style>
 </head>
 <body>
@@ -243,6 +244,7 @@
   <ul>
     <li>レースのスタート（号砲）と同時にスタートボタンを押します。押された瞬間に計測が開始されます。</li>
     <li>スタートボタンは、スタート地点にいる人が押します。スタートボタンは全ての計測シートに存在します。どのシートにあるスタートボタンを押してもらっても構いません。</li>
+    <li>スタート地点の人がスタートボタンを押すと、ほかの人の計測シートにもすぐ反映され、全員のタイマーが一斉に動き出します。ほかの場所の人は押す必要はありません。</li>
     <li>男子の計測シートでは「男子スタート」、女子の計測シートでは「女子スタート」を、それぞれの号砲と同時に押します。</li>
     <li>スタートボタンを誤って押してしまったときは、タイマーの下の「キャンセル」で取り消すことができます。</li>
   </ul>
@@ -1002,7 +1004,8 @@ function viewMeasure() {
       ? el('div', { class: 'startpre' },
           el('div', { class: 'startbtns' },
             el('button', { class: 'kurbtn gunbtn', onclick: gunStart }, `${divName()}スタート`),
-            el('button', { class: 'startcancel', onclick: cancelGun }, 'キャンセル')))
+            el('button', { class: 'startcancel', onclick: cancelGun }, 'キャンセル')),
+          el('p', { class: 'kurnote' }, 'スタート地点の人が押すと、全員の計測シートに反映され、タイマーが一斉に動き出します。'))
       : el('div', { class: 'startpost' },
           el('span', { class: 'muted' }, `${divName()}スタート ${clock(D.gun)}`),
           el('button', { class: 'startcancel', onclick: cancelGun }, 'キャンセル'))));
@@ -1017,6 +1020,7 @@ function viewMeasure() {
     const kurDone = D.teams.map(t => t.no).filter(t => kurOf(t, p + 1) != null);
     out.push(el('div', { class: 'panel' },
       el('div', null, el('b', null, `${p + 1}区 繰り上げスタート`)),
+      el('p', { class: 'kurnote' }, `制限時間までに前の走者が着かなかったチームを、${p + 1}区の走者だけ先にスタートさせます。繰り上げの号砲と同時に押してください。`),
       el('div', { class: 'row kurrow' },
         kurDone.length
           ? el('button', { class: 'kurbtn done', onclick: () => doKuriage(p), disabled: waiting === 0 },
