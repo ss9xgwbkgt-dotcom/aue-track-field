@@ -1035,7 +1035,7 @@ function viewMeasure() {
     el('span', { class: 'tapmain' }, '通過'),
     el('span', { class: 'tapsub' }, `${divName()}・${pointLabel(p)}`),
     kurHere != null ? el('span', { class: 'tapkur' }, `${p + 1}区 繰り上げ済み（${clock(kurHere)}）`) : null)));
-  out.push(el('p', { class: 'kurnote tapnote' }, (p >= D.legs ? 'ランナーがフィニッシュラインを' : 'ランナーが中継線を') + '越えたタイミングで「通過」を押してください。ラップは下の表に記録され、チーム名はそこであとから選べます。'));
+  out.push(el('p', { class: 'kurnote tapnote' }, (p >= D.legs ? 'ランナーがフィニッシュラインを' : 'ランナーが中継線を') + '越えたタイミングで「通過」を押してください。ラップは下の表に記録され、チーム名は表であとから登録できます。'));
   // 繰り上げ：通過ボタンのすぐ下に置く
   if (p < D.legs) {
     const waiting = D.teams.filter(t => arrOf(t.no, p) == null && kurOf(t.no, p + 1) == null).length;
