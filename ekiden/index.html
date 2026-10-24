@@ -1048,7 +1048,7 @@ function viewMeasure() {
               `繰り上げ済み ${clock(kurOf(kurDone[0], p + 1))}`, waiting ? `　追加 ${waiting}` : '')
           : el('button', { class: 'kurbtn', onclick: () => doKuriage(p), disabled: waiting === 0 }, `繰り上げ実行（未着 ${waiting}）`),
         el('button', { class: 'kurcancel', onclick: () => cancelKuriage(p) }, '繰り上げをキャンセル')),
-      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームの次走者を先にスタートさせます。繰り上げの号砲が鳴ると同時に上の「繰り上げ実行」を押してください。')));
+      el('p', { class: 'kurnote' }, '制限時間内に前走者が中継所に到着できなかったチームは、前走者の到着を待たずに次走者をスタートさせます。繰り上げの号砲が鳴ると同時に、上の「繰り上げ実行」を押してください。')));
   }
   if (unassigned) out.push(el('div', { class: 'row' }, el('span', { class: 'muted' }, `チーム名 未入力：${unassigned}件`)));
 
